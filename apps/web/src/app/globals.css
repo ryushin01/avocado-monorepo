@@ -1,0 +1,16 @@
+@import "@avocado/ui/styles.css";
+
+/* 공통 UI 패키지의 클래스도 Tailwind가 찾도록 소스 위치를 알려준다. */
+@source "../../../../packages/ui/src";
+
+/* avocado의 색: 어두운 바탕 위에 흰 패널, 주황 강조색 */
+:root {
+  --primary: #ff5100;
+  --primary-foreground: #ffffff;
+  --ring: #ff5100;
+}
+
+@theme inline {
+  --color-page: #111111;
+  --color-brand-green: #76cc1c;
+}

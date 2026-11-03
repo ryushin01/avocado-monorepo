@@ -1,0 +1,25 @@
+{
+  "name": "@avocado/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./catalog": "./src/catalog/index.ts",
+    "./kiosk": "./src/kiosk.ts"
+  },
+  "bin": {
+    "copy-catalog-assets": "./scripts/copy-assets.mjs"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "import:avocado": "node scripts/import-avocado.mjs",
+    "import:avocado-images": "node scripts/import-avocado-images.mjs"
+  },
+  "devDependencies": {
+    "@avocado/config": "workspace:*",
+    "sharp": "^0.35.5",
+    "typescript": "^5",
+    "vitest": "^5.1.0"
+  }
+}

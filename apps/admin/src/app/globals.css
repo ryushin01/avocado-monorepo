@@ -1,0 +1,4 @@
+@import "@avocado/ui/styles.css";
+
+/* 공통 UI 패키지의 클래스도 Tailwind가 찾도록 소스 위치를 알려준다. */
+@source "../../../../packages/ui/src";

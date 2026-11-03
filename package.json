@@ -1,0 +1,26 @@
+{
+  "name": "avocado",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:admin": "turbo run dev --filter=@avocado/admin",
+    "dev:launcher": "turbo run dev --filter=@avocado/launcher --filter=@avocado/admin",
+    "dev:web": "turbo run dev --filter=@avocado/web",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "e2e": "turbo run e2e",
+    "import:avocado": "pnpm --filter @avocado/domain import:avocado",
+    "import:avocado-images": "pnpm --filter @avocado/domain import:avocado-images",
+    "import:avocado-media": "pnpm --filter @avocado/web import:avocado-media"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

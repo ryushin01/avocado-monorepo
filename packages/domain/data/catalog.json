@@ -1,0 +1,3501 @@
+{
+  "categories": [
+    {
+      "key": "strategy",
+      "label": "전략 게임",
+      "bggType": "Strategy",
+      "description": "전략 게임은 전세계적으로 인기가 가장 많은 장르입니다."
+    },
+    {
+      "key": "thematic",
+      "label": "테마 게임",
+      "bggType": "Thematic",
+      "description": "테마 게임이 속삭이는 이야기의 바다로 빠져드실 준비가 되셨나요?"
+    },
+    {
+      "key": "family",
+      "label": "가족 게임",
+      "bggType": "Family",
+      "description": "저연령층이나 게임에 대한 이해도가 부족한 이들도 누구든지 쉽게 즐길 수 있는 게임입니다."
+    },
+    {
+      "key": "party",
+      "label": "파티 게임",
+      "bggType": "Party",
+      "description": "시끌벅적한 분위기에서 사람들과 웃을 준비가 되셨나요?"
+    },
+    {
+      "key": "abstract",
+      "label": "추상 전략 게임",
+      "bggType": "Abstract",
+      "description": "추상 전략 게임으로 두뇌 대결을 벌여보세요!"
+    },
+    {
+      "key": "wargame",
+      "label": "워게임",
+      "bggType": "Wargames",
+      "description": "영화에서만 보던 전쟁을 테이블 위에서!"
+    },
+    {
+      "key": "customizable",
+      "label": "컬렉터블 게임",
+      "bggType": "Customizable",
+      "description": "무엇인가 수집하는 것이 취미라면!"
+    }
+  ],
+  "games": [
+    {
+      "bggId": 174430,
+      "rank": 1,
+      "name": "글룸헤이븐",
+      "englishName": "Gloomhaven",
+      "imageUrl": "https://cf.geekdo-images.com/sZYp_3BTDGjh2unaZfZmuA__original/img/7d-lj5Gd1e8PFnD97LYFah2c45M=/0x0/filters:format(jpeg)/pic2437871.jpg",
+      "thumbnailUrl": "/images/games/174430.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Isaac Childres"
+      ],
+      "categories": [
+        "strategy",
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "전투",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 8.6,
+      "weight": 3.9,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 342942,
+      "rank": 2,
+      "name": "아크 노바",
+      "englishName": "Ark Nova",
+      "imageUrl": "https://cf.geekdo-images.com/SoU8p28Sk1s8MSvoM4N8pQ__original/img/g4S18szTdrXCdIwVKzMKrZrYAcM=/0x0/filters:format(jpeg)/pic6293412.jpg",
+      "thumbnailUrl": "/images/games/342942.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Mathias Wigge"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "동물",
+        "경제",
+        "환경"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 90,
+      "playTimeMax": 150,
+      "minAge": 14,
+      "rating": 8.5,
+      "weight": 3.74,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 233078,
+      "rank": 3,
+      "name": "여명의 제국: 4판",
+      "englishName": "Twilight Imperium: Fourth Edition",
+      "imageUrl": "https://cf.geekdo-images.com/_Ppn5lssO5OaildSE-FgFA__original/img/kVpZ0Maa_LeQGWxOqsYKP3N4KUY=/0x0/filters:format(jpeg)/pic3727516.jpg",
+      "thumbnailUrl": "/images/games/233078.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Dane Beltrami",
+        "Corey Konieczka",
+        "Christian T. Petersen"
+      ],
+      "categories": [
+        "strategy",
+        "thematic"
+      ],
+      "tags": [
+        "문명",
+        "경제",
+        "탐사",
+        "협상",
+        "정치",
+        "SF",
+        "우주 탐사",
+        "워게임"
+      ],
+      "minPlayers": 3,
+      "maxPlayers": 6,
+      "bestPlayers": "6",
+      "playTimeMin": 240,
+      "playTimeMax": 480,
+      "minAge": 14,
+      "rating": 8.6,
+      "weight": 4.32,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 167791,
+      "rank": 4,
+      "name": "테라포밍 마스",
+      "englishName": "Terraforming Mars",
+      "imageUrl": "https://cf.geekdo-images.com/wg9oOLcsKvDesSUdZQ4rxw__original/img/thIqWDnH9utKuoKVEUqveDixprI=/0x0/filters:format(jpeg)/pic3536616.jpg",
+      "thumbnailUrl": "/images/games/167791.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Jacob Fryxelius"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "환경",
+        "산업",
+        "SF",
+        "영토 건설"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "3",
+      "playTimeMin": 120,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 8.4,
+      "weight": 3.26,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 316554,
+      "rank": 5,
+      "name": "듄: 임페리움",
+      "englishName": "Dune: Imperium",
+      "imageUrl": "https://cf.geekdo-images.com/PhjygpWSo-0labGrPBMyyg__original/img/mZzaBAEEJpMlHWWmC0R6Su0OibQ=/0x0/filters:format(jpeg)/pic5666597.jpg",
+      "thumbnailUrl": "/images/games/316554.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Paul Dennen"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "영화 테마",
+        "소설 기반",
+        "정치",
+        "SF"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3-4",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 8.4,
+      "weight": 3.04,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 162886,
+      "rank": 6,
+      "name": "정령섬",
+      "englishName": "Spirit Island",
+      "imageUrl": "https://cf.geekdo-images.com/kjCm4ZvPjIZxS-mYgSPy1g__original/img/9uLd9C3XAvInLCLhAoXqKVk56zs=/0x0/filters:format(jpeg)/pic7013651.jpg",
+      "thumbnailUrl": "/images/games/162886.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "R. Eric Reuss"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "판타지",
+        "전투",
+        "신화",
+        "영토 건설"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 8.4,
+      "weight": 4.06,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 220308,
+      "rank": 7,
+      "name": "가이아 프로젝트",
+      "englishName": "Gaia Project",
+      "imageUrl": "https://cf.geekdo-images.com/hGWFm3hbMlCDsfCsauOQ4g__original/img/tjlflQtUPFiTpLpwk1NCVCS29Ic=/0x0/filters:format(png)/pic5375625.png",
+      "thumbnailUrl": "/images/games/220308.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Jens Drögemüller",
+        "Helge Ostertag"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "문명",
+        "경제",
+        "미니어처",
+        "SF",
+        "우주 탐사",
+        "영토 건설"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3-4",
+      "playTimeMin": 60,
+      "playTimeMax": 150,
+      "minAge": 12,
+      "rating": 8.4,
+      "weight": 4.4,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 169786,
+      "rank": 8,
+      "name": "사이드",
+      "englishName": "Scythe",
+      "imageUrl": "https://cf.geekdo-images.com/7k_nOxpO9OGIjhLq2BUZdA__original/img/HlDb9F365w0tSP8uD1vf1pfniQE=/0x0/filters:format(jpeg)/pic3163924.jpg",
+      "thumbnailUrl": "/images/games/169786.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Jamey Stegmaier"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "전투",
+        "SF",
+        "영토 건설"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 90,
+      "playTimeMax": 115,
+      "minAge": 14,
+      "rating": 8.2,
+      "weight": 3.44,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 173346,
+      "rank": 9,
+      "name": "7 원더스: 대결",
+      "englishName": "7 Wonders Duel",
+      "imageUrl": "https://cf.geekdo-images.com/zdagMskTF7wJBPjX74XsRw__original/img/Ju836WNSaW7Mab9Vjq2TJ_FqhWQ=/0x0/filters:format(jpeg)/pic2576399.jpg",
+      "thumbnailUrl": "/images/games/173346.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Antoine Bauza",
+        "Bruno Cathala"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "카드 게임",
+        "도시 건설",
+        "문명",
+        "경제"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 10,
+      "rating": 8.1,
+      "weight": 2.23,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 246900,
+      "rank": 10,
+      "name": "이클립스: 두 번째 여명",
+      "englishName": "Eclipse: Second Dawn for the Galaxy",
+      "imageUrl": "https://cf.geekdo-images.com/Oh3kHw6lweg6ru71Q16h2Q__original/img/yW7d4RNfU1ndISCaPlfGYUyxnRU=/0x0/filters:format(jpeg)/pic5235277.jpg",
+      "thumbnailUrl": "/images/games/246900.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Touko Tahkokallio"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "문명",
+        "탐사",
+        "SF",
+        "우주 탐사",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "bestPlayers": "4, 6",
+      "playTimeMin": 60,
+      "playTimeMax": 200,
+      "minAge": 14,
+      "rating": 8.5,
+      "weight": 3.67,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 120677,
+      "rank": 11,
+      "name": "테라 미스티카",
+      "englishName": "Terra Mystica",
+      "imageUrl": "https://cf.geekdo-images.com/bre12I1YiXkZr7elvriz4A__original/img/_dZS7fVfdc4DhJPbqnDpwTT4uF0=/0x0/filters:format(jpeg)/pic5375624.jpg",
+      "thumbnailUrl": "/images/games/120677.webp",
+      "yearReleased": 2012,
+      "designers": [
+        "Jens Drögemüller",
+        "Helge Ostertag"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "문명",
+        "경제",
+        "판타지",
+        "영토 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 150,
+      "minAge": 12,
+      "rating": 8.1,
+      "weight": 3.97,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 205637,
+      "rank": 12,
+      "name": "아컴 호러: 카드 게임",
+      "englishName": "Arkham Horror: The Card Game",
+      "imageUrl": "https://cf.geekdo-images.com/B5F5ulz0UivNgrI9Ky0euA__original/img/guEKCewM_2e5ugltSN3dTSwdZJI=/0x0/filters:format(jpeg)/pic3122349.jpg",
+      "thumbnailUrl": "/images/games/205637.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Nate French",
+        "Maxine Juniper Newman",
+        "Matthew J. Newman"
+      ],
+      "categories": [
+        "customizable",
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "카드 게임",
+        "탐사",
+        "판타지",
+        "호러",
+        "소설 기반"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 8.1,
+      "weight": 3.53,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 164928,
+      "rank": 13,
+      "name": "오를레앙",
+      "englishName": "Orléans",
+      "imageUrl": "https://cf.geekdo-images.com/nagl1li6kYt9elV9jbfVQw__original/img/Qn6vlBaTUaHNFsqohIUjd0EA4z0=/0x0/filters:format(jpeg)/pic6228507.jpg",
+      "thumbnailUrl": "/images/games/164928.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Reiner Stockhausen"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "중세",
+        "종교",
+        "여행"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 90,
+      "playTimeMax": 90,
+      "minAge": 12,
+      "rating": 8.1,
+      "weight": 3.03,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 199792,
+      "rank": 14,
+      "name": "에버델",
+      "englishName": "Everdell",
+      "imageUrl": "https://cf.geekdo-images.com/fjE7V5LNq31yVEW_yuqI-Q__original/img/HQ1ti16wT9lqja5_h3gUfHUIcVI=/0x0/filters:format(png)/pic3918905.png",
+      "thumbnailUrl": "/images/games/199792.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "James A. Wilson"
+      ],
+      "categories": [
+        "family",
+        "strategy"
+      ],
+      "tags": [
+        "동물",
+        "카드 게임",
+        "도시 건설",
+        "판타지"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 40,
+      "playTimeMax": 80,
+      "minAge": 13,
+      "rating": 8,
+      "weight": 2.81,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 170216,
+      "rank": 15,
+      "name": "블러드 레이지",
+      "englishName": "Blood Rage",
+      "imageUrl": "https://cf.geekdo-images.com/HkZSJfQnZ3EpS214xtuplg__original/img/Myy6IPDJDzLoPdXrPXVZcddBQoQ=/0x0/filters:format(jpeg)/pic2439223.jpg",
+      "thumbnailUrl": "/images/games/170216.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Eric M. Lang"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "판타지",
+        "전투",
+        "미니어처",
+        "신화"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 7.9,
+      "weight": 2.88,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 284378,
+      "rank": 16,
+      "name": "칸반 EV",
+      "englishName": "Kanban EV",
+      "imageUrl": "https://cf.geekdo-images.com/L2Wn-zUqkcHgqvwvY212Ig__original/img/Htra4hvxjBlejtNEIUns_B3CNNc=/0x0/filters:format(jpeg)/pic4924232.jpg",
+      "thumbnailUrl": "/images/games/284378.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Vital Lacerda"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "산업"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 180,
+      "minAge": 14,
+      "rating": 8.4,
+      "weight": 4.31,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 314040,
+      "rank": 17,
+      "name": "팬데믹 레거시: 시즌 0",
+      "englishName": "Pandemic Legacy: Season 0",
+      "imageUrl": "https://cf.geekdo-images.com/y0x1zbkpUXjddzWWnhekYw__original/img/2VlfzwT4b8f1s2HqbilcjR-bM3I=/0x0/filters:format(jpeg)/pic5581457.jpg",
+      "thumbnailUrl": "/images/games/314040.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Rob Daviau",
+        "Matt Leacock"
+      ],
+      "categories": [
+        "strategy",
+        "thematic"
+      ],
+      "tags": [
+        "스파이 / 비밀 요원"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 45,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 8.4,
+      "weight": 3.14,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 216132,
+      "rank": 18,
+      "name": "클랜 오브 칼레도니아",
+      "englishName": "Clans of Caledonia",
+      "imageUrl": "https://cf.geekdo-images.com/SPuwc6RJ6y4PnTH36Pegsg__original/img/GcuvCavv-ZZP5_O1kCTrZELuZdY=/0x0/filters:format(png)/pic3511783.png",
+      "thumbnailUrl": "/images/games/216132.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Juma Al-JouJou"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "농업"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 30,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 7.9,
+      "weight": 3.46,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 266810,
+      "rank": 19,
+      "name": "서쪽 왕국의 성기사",
+      "englishName": "Paladins of the West Kingdom",
+      "imageUrl": "https://cf.geekdo-images.com/4nhokcLdYoo6ulbZ1rmGgA__original/img/9ktZDu003VVVTw0RxD-ufLYV1HQ=/0x0/filters:format(png)/pic4462987.png",
+      "thumbnailUrl": "/images/games/266810.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "S J Macdonald",
+        "Shem Phillips"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "중세"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 8,
+      "weight": 3.72,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 230802,
+      "rank": 20,
+      "name": "아줄",
+      "englishName": "Azul",
+      "imageUrl": "https://cf.geekdo-images.com/aPSHJO0d0XOpQR5X-wJonw__original/img/AkbtYVc6xXJF3c9EUrakklcclKw=/0x0/filters:format(png)/pic6973671.png",
+      "thumbnailUrl": "/images/games/230802.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Michael Kiesling"
+      ],
+      "categories": [
+        "abstract",
+        "family"
+      ],
+      "tags": [
+        "추상 전략",
+        "퍼즐",
+        "르네상스"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 45,
+      "minAge": 8,
+      "rating": 7.8,
+      "weight": 1.76,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 191189,
+      "rank": 21,
+      "name": "에이언즈 엔드",
+      "englishName": "Aeon's End",
+      "imageUrl": "https://cf.geekdo-images.com/d50LceHj6LIafa4S_qIsCg__original/img/4MsKNGm47PU9BGW4i2yamMlRSQ0=/0x0/filters:format(jpeg)/pic3189350.jpg",
+      "thumbnailUrl": "/images/games/191189.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Jenny Iglesias",
+        "Nick Little",
+        "Kevin Riley"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지",
+        "전투",
+        "SF"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 7.9,
+      "weight": 2.81,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 159675,
+      "rank": 22,
+      "name": "아를의 평원",
+      "englishName": "Fields of Arle",
+      "imageUrl": "https://cf.geekdo-images.com/0w8go6cfvlpgJKydHUkDtA__original/img/322N77t8F7uTev-U_WCqX5uqmEE=/0x0/filters:format(png)/pic2225968.png",
+      "thumbnailUrl": "/images/games/159675.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Uwe Rosenberg"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "농업",
+        "산업"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 8,
+      "weight": 3.86,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 229853,
+      "rank": 23,
+      "name": "테오티우아칸: 신들의 도시",
+      "englishName": "Teotihuacan: City of Gods",
+      "imageUrl": "https://cf.geekdo-images.com/wW5xjgBJcFyLaEWZwrYuKA__original/img/72kzn6t41ZxLEr3GFd8ir6hDdH4=/0x0/filters:format(jpeg)/pic4583626.jpg",
+      "thumbnailUrl": "/images/games/229853.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Daniele Tascini"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 7.9,
+      "weight": 3.78,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 317985,
+      "rank": 24,
+      "name": "태양 너머로",
+      "englishName": "Beyond the Sun",
+      "imageUrl": "https://cf.geekdo-images.com/BfEHqHQAvZLbRX7y7e9TWg__original/img/h2NEwLqn5mNkcEfMdP_8oMWa9KE=/0x0/filters:format(jpeg)/pic5617866.jpg",
+      "thumbnailUrl": "/images/games/317985.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Dennis K. Chan"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "문명",
+        "SF",
+        "우주 탐사"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 8,
+      "weight": 3.13,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 121921,
+      "rank": 25,
+      "name": "로빈슨 크루소: 저주받은 섬에서의 모험",
+      "englishName": "Robinson Crusoe: Adventures on the Cursed Island",
+      "imageUrl": "https://cf.geekdo-images.com/FbFnaTx3aT5dM18K_bR_Pg__original/img/TB2dGHOnuUr54jQYIJZDIMilOJE=/0x0/filters:format(jpeg)/pic3165731.jpg",
+      "thumbnailUrl": "/images/games/121921.webp",
+      "yearReleased": 2012,
+      "designers": [
+        "Joanna Kijanka",
+        "Ignacy Trzewiczek"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "전투",
+        "소설 기반",
+        "영토 건설"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "1-2",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 7.8,
+      "weight": 3.82,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 93,
+      "rank": 26,
+      "name": "엘 그란데",
+      "englishName": "El Grande",
+      "imageUrl": "https://cf.geekdo-images.com/RRKDHaYtFPHhczkUDcHOmg__original/img/E_QazS4f8ffj6oBcUl3C_VROCEw=/0x0/filters:format(jpeg)/pic7906240.jpg",
+      "thumbnailUrl": "/images/games/93.webp",
+      "yearReleased": 1995,
+      "designers": [
+        "Wolfgang Kramer",
+        "Richard Ulrich"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "중세",
+        "르네상스"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "5",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 7.7,
+      "weight": 3.03,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 264220,
+      "rank": 27,
+      "name": "테인티드 그레일: 아발론의 몰락",
+      "englishName": "Tainted Grail: The Fall of Avalon",
+      "imageUrl": "https://cf.geekdo-images.com/aAwBzPzta4joKfFZt05hCw__original/img/e1HfD3XIvObNuGH6rq7kUSK-5aQ=/0x0/filters:format(jpeg)/pic4385726.jpg",
+      "thumbnailUrl": "/images/games/264220.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Krzysztof Piskorski",
+        "Marcin Świerkot"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "중세",
+        "미니어처",
+        "신화",
+        "여행"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "1-2",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 8.1,
+      "weight": 3.35,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 155821,
+      "rank": 28,
+      "name": "이니스",
+      "englishName": "Inis",
+      "imageUrl": "https://cf.geekdo-images.com/6QE8mnPFmauoj2THsyUYPA__original/img/6bZdn1SNbpIqU7n5pwtncvdNE_U=/0x0/filters:format(jpeg)/pic4739757.jpg",
+      "thumbnailUrl": "/images/games/155821.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Christian Martinez"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "탐사",
+        "중세",
+        "신화",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 7.8,
+      "weight": 2.89,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 42,
+      "rank": 29,
+      "name": "티그리스 & 유프라테스",
+      "englishName": "Tigris & Euphrates",
+      "imageUrl": "https://cf.geekdo-images.com/soAzNVWglCdVBacNjoCTJw__original/img/HClVZy9phFP-NPte4UBQpclsaHU=/0x0/filters:format(jpeg)/pic2338267.jpg",
+      "thumbnailUrl": "/images/games/42.webp",
+      "yearReleased": 1997,
+      "designers": [
+        "Reiner Knizia"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "추상 전략",
+        "고대",
+        "문명",
+        "영토 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 90,
+      "playTimeMax": 90,
+      "minAge": 12,
+      "rating": 7.7,
+      "weight": 3.5,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 36218,
+      "rank": 30,
+      "name": "도미니언",
+      "englishName": "Dominion",
+      "imageUrl": "https://cf.geekdo-images.com/j6iQpZ4XkemZP07HNCODBA__original/img/96COuakNiLRrjDLc1sM4Zxsw4WE=/0x0/filters:format(jpeg)/pic394356.jpg",
+      "thumbnailUrl": "/images/games/36218.webp",
+      "yearReleased": 2008,
+      "designers": [
+        "Donald X. Vaccarino"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "중세"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 13,
+      "rating": 7.6,
+      "weight": 2.35,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 172287,
+      "rank": 31,
+      "name": "미드가르드의 챔피언",
+      "englishName": "Champions of Midgard",
+      "imageUrl": "https://cf.geekdo-images.com/VJwOnMF5vwJg2Yaq6ozn3Q__original/img/iEgr80D4UtP0x_WQUYSB60JwGJ0=/0x0/filters:format(jpeg)/pic2869714.jpg",
+      "thumbnailUrl": "/images/games/172287.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Ole Steiness"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "모험",
+        "주사위",
+        "판타지",
+        "전투",
+        "중세",
+        "신화"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 10,
+      "rating": 7.7,
+      "weight": 2.61,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 262712,
+      "rank": 32,
+      "name": "레스 아르카나",
+      "englishName": "Res Arcana",
+      "imageUrl": "https://cf.geekdo-images.com/gcALy45JfcjyKUn6T3mBIQ__original/img/YLSAurBSWEGi3PHsuQWi8St_0Yg=/0x0/filters:format(jpeg)/pic4422847.jpg",
+      "thumbnailUrl": "/images/games/262712.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Thomas Lehmann"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 60,
+      "minAge": 12,
+      "rating": 7.7,
+      "weight": 2.63,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 12,
+      "rank": 33,
+      "name": "태양신 라",
+      "englishName": "Ra",
+      "imageUrl": "https://cf.geekdo-images.com/k7lG683LBZdvFyS-FH-MpA__original/img/hEqkeRnhyNLxeryIIdOnAHdItfo=/0x0/filters:format(png)/pic6746812.png",
+      "thumbnailUrl": "/images/games/12.webp",
+      "yearReleased": 1999,
+      "designers": [
+        "Reiner Knizia"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "신화"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "3-4",
+      "playTimeMin": 45,
+      "playTimeMax": 60,
+      "minAge": 12,
+      "rating": 7.6,
+      "weight": 2.34,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 147020,
+      "rank": 34,
+      "name": "스타 렐름",
+      "englishName": "Star Realms",
+      "imageUrl": "https://cf.geekdo-images.com/EsJqPL5CB_TMt0MYL-lnVg__original/img/QXgamCDRuBoRJyU1PQjeh58Pvr8=/0x0/filters:format(jpeg)/pic1903816.jpg",
+      "thumbnailUrl": "/images/games/147020.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Robert Dougherty",
+        "Darwin Kastle"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "전투",
+        "SF"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 20,
+      "playTimeMax": 20,
+      "minAge": 12,
+      "rating": 7.6,
+      "weight": 1.93,
+      "difficulty": "easy",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 271324,
+      "rank": 35,
+      "name": "원더풀 월드",
+      "englishName": "It's a Wonderful World",
+      "imageUrl": "https://cf.geekdo-images.com/od4vDTdXGPSVc-kjLqM11w__original/img/sN8TnSkFGCzNM01b_drFxwYnqlM=/0x0/filters:format(jpeg)/pic4651175.jpg",
+      "thumbnailUrl": "/images/games/271324.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Frédéric Guérard"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "문명",
+        "경제",
+        "SF"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 30,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 7.7,
+      "weight": 2.32,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 127023,
+      "rank": 36,
+      "name": "케메트",
+      "englishName": "Kemet",
+      "imageUrl": "https://cf.geekdo-images.com/RmZjhy7_6REp8IaXh9Zqwg__original/img/kRFfkVnQRsBDcbO46TKS6PcT6aE=/0x0/filters:format(jpeg)/pic3979527.jpg",
+      "thumbnailUrl": "/images/games/127023.webp",
+      "yearReleased": 2012,
+      "designers": [
+        "Jacques Bariot",
+        "Guillaume Montiage"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "미니어처",
+        "신화",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "4-5",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 7.7,
+      "weight": 3,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 265188,
+      "rank": 37,
+      "name": "글렌 모어 연대기",
+      "englishName": "Glen More II: Chronicles",
+      "imageUrl": "https://cf.geekdo-images.com/sMRuph3HFUcaSpJZihGZKw__original/img/ehoqoTirtFb5p9Wk2SwWV8nr6ZU=/0x0/filters:format(jpeg)/pic5841874.jpg",
+      "thumbnailUrl": "/images/games/265188.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Matthias Cramer"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "도시 건설",
+        "경제",
+        "농업",
+        "영토 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 7.9,
+      "weight": 3.03,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 249259,
+      "rank": 38,
+      "name": "워 체스트",
+      "englishName": "War Chest",
+      "imageUrl": "https://cf.geekdo-images.com/BryJNSSDbCohXeaJPx3tpw__original/img/pgmg83e1lUqNo7FTLdscWNDwlPE=/0x0/filters:format(png)/pic4232048.png",
+      "thumbnailUrl": "/images/games/249259.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Trevor Benjamin",
+        "David Thompson"
+      ],
+      "categories": [
+        "abstract"
+      ],
+      "tags": [
+        "추상 전략",
+        "중세",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 14,
+      "rating": 7.9,
+      "weight": 2.3,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 199561,
+      "rank": 39,
+      "name": "사그라다",
+      "englishName": "Sagrada",
+      "imageUrl": "https://cf.geekdo-images.com/PZt3EAAGV3dFIVuwMR0AEw__original/img/5ug9EeKlH_ucJEUXaFpTZbBJ1GY=/0x0/filters:format(jpeg)/pic3525224.jpg",
+      "thumbnailUrl": "/images/games/199561.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Adrian Adamescu",
+        "Daryl Andrews"
+      ],
+      "categories": [
+        "abstract",
+        "family"
+      ],
+      "tags": [
+        "주사위",
+        "퍼즐"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 45,
+      "minAge": 14,
+      "rating": 7.5,
+      "weight": 1.92,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 128882,
+      "rank": 40,
+      "name": "레지스탕스: 아발론",
+      "englishName": "The Resistance: Avalon",
+      "imageUrl": "https://cf.geekdo-images.com/LPa6rsGcv8S0-OeNjCOAEQ__original/img/AF8HHaIad1re-eg3kd9mlm2j_ss=/0x0/filters:format(jpeg)/pic1398895.jpg",
+      "thumbnailUrl": "/images/games/128882.webp",
+      "yearReleased": 2012,
+      "designers": [
+        "Don Eskridge"
+      ],
+      "categories": [
+        "party"
+      ],
+      "tags": [
+        "블러핑",
+        "카드 게임",
+        "추론",
+        "판타지",
+        "중세",
+        "협상",
+        "파티 게임",
+        "스파이 / 비밀 요원"
+      ],
+      "minPlayers": 5,
+      "maxPlayers": 10,
+      "bestPlayers": "7-8",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 13,
+      "rating": 7.5,
+      "weight": 1.74,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 150376,
+      "rank": 41,
+      "name": "데드 오브 윈터: 크로스로드 게임",
+      "englishName": "Dead of Winter: A Crossroads Game",
+      "imageUrl": "https://cf.geekdo-images.com/g4mV4BH-ZrhMUVgil-yV1A__original/img/NjrnSg1aeia8I4eETDU3I1Br7a8=/0x0/filters:format(jpeg)/pic3016500.jpg",
+      "thumbnailUrl": "/images/games/150376.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Jonathan Gilmour",
+        "Isaac Vega"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "블러핑",
+        "추론",
+        "호러",
+        "좀비"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 7.5,
+      "weight": 3.01,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 148228,
+      "rank": 42,
+      "name": "스플렌더",
+      "englishName": "Splendor",
+      "imageUrl": "https://cf.geekdo-images.com/rwOMxx4q5yuElIvo-1-OFw__original/img/Y2tUGY2nPTGd_epJYKQXPkQD8AM=/0x0/filters:format(jpeg)/pic1904079.jpg",
+      "thumbnailUrl": "/images/games/148228.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Marc André"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "카드 게임",
+        "경제",
+        "르네상스"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 10,
+      "rating": 7.4,
+      "weight": 1.78,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 822,
+      "rank": 43,
+      "name": "카르카손",
+      "englishName": "Carcassonne",
+      "imageUrl": "https://cf.geekdo-images.com/okM0dq_bEXnbyQTOvHfwRA__original/img/aVZEXAI-cUtuunNfPhjeHlS4fwQ=/0x0/filters:format(png)/pic6544250.png",
+      "thumbnailUrl": "/images/games/822.webp",
+      "yearReleased": 2000,
+      "designers": [
+        "Klaus-Jürgen Wrede"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "도시 건설",
+        "중세",
+        "영토 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 45,
+      "minAge": 7,
+      "rating": 7.4,
+      "weight": 1.9,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 215,
+      "rank": 44,
+      "name": "티츄",
+      "englishName": "Tichu",
+      "imageUrl": "https://cf.geekdo-images.com/gz8_8iYP2SSGVAxpp7CwLg__original/img/9ULfNvkyu0k1m0d63-Mk0k5e0MA=/0x0/filters:format(png)/pic5854968.png",
+      "thumbnailUrl": "/images/games/215.webp",
+      "yearReleased": 1991,
+      "designers": [
+        "Urs Hostettler"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임"
+      ],
+      "minPlayers": 4,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 10,
+      "rating": 7.6,
+      "weight": 2.34,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 285967,
+      "rank": 45,
+      "name": "앙크: 이집트의 신들",
+      "englishName": "Ankh: Gods of Egypt",
+      "imageUrl": "https://cf.geekdo-images.com/_al0scMG_pQfGVM31Scf1Q__original/img/h4jBTaOjznJgWELa6tTrfPqqSeA=/0x0/filters:format(jpeg)/pic6107853.jpg",
+      "thumbnailUrl": "/images/games/285967.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Eric M. Lang"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "전투",
+        "미니어처",
+        "신화"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "2, 4",
+      "playTimeMin": 90,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 7.8,
+      "weight": 3.09,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 146886,
+      "rank": 46,
+      "name": "라 그랑하",
+      "englishName": "La Granja",
+      "imageUrl": "https://cf.geekdo-images.com/ufUK_7N_13rYhsIurbbtzg__original/img/eKzUqIgkc34WsSVq9zSW6sjZgbc=/0x0/filters:format(jpeg)/pic2031777.jpg",
+      "thumbnailUrl": "/images/games/146886.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Michael Keller",
+        "Andreas Odendahl"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "농업"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 7.6,
+      "weight": 3.57,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 223040,
+      "rank": 47,
+      "name": "판타지 왕국",
+      "englishName": "Fantasy Realms",
+      "imageUrl": "https://cf.geekdo-images.com/A7IOpPt-lHrMYsbRmxXWdQ__original/img/kaYIVoFZkbWe0z80bvcqJdFCNlo=/0x0/filters:format(jpeg)/pic6177962.jpg",
+      "thumbnailUrl": "/images/games/223040.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Bruce Glassco"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "bestPlayers": "2-3",
+      "playTimeMin": 20,
+      "playTimeMax": 20,
+      "minAge": 14,
+      "rating": 7.5,
+      "weight": 1.8,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 165722,
+      "rank": 48,
+      "name": "클라스크",
+      "englishName": "KLASK",
+      "imageUrl": "https://cf.geekdo-images.com/oPNuEm_dR987BKoYEF9zGQ__original/img/ZNqEkLMKkrIPxRduZWmWC6VBgoY=/0x0/filters:format(png)/pic7414566.png",
+      "thumbnailUrl": "/images/games/165722.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Mikkel Bertelsen"
+      ],
+      "categories": [
+        "family",
+        "party"
+      ],
+      "tags": [
+        "액션 / 손재주",
+        "실시간"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 10,
+      "playTimeMax": 10,
+      "minAge": 8,
+      "rating": 7.6,
+      "weight": 1.06,
+      "difficulty": "easy",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 274637,
+      "rank": 49,
+      "name": "언매치드: 전설들의 전투, 볼륨 원",
+      "englishName": "Unmatched: Battle of Legends, Volume One",
+      "imageUrl": "https://cf.geekdo-images.com/4AlLbprNustr9G7pbkGRuw__original/img/d7Z89SEv9T_HqPaYEomeKcFmgeA=/0x0/filters:format(jpeg)/pic4621579.jpg",
+      "thumbnailUrl": "/images/games/274637.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Rob Daviau",
+        "Justin D. Jacobson"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지",
+        "전투",
+        "신화",
+        "소설 기반"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 20,
+      "playTimeMax": 40,
+      "minAge": 9,
+      "rating": 7.8,
+      "weight": 1.93,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 228341,
+      "rank": 50,
+      "name": "펄서 2849",
+      "englishName": "Pulsar 2849",
+      "imageUrl": "https://cf.geekdo-images.com/6TOzhqw0BXNxbUZCl0k1sg__original/img/tj-4BHcZxjUmiJpMnPCxXF1g0YY=/0x0/filters:format(jpeg)/pic6285702.jpg",
+      "thumbnailUrl": "/images/games/228341.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Vladimír Suchý"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "주사위",
+        "SF",
+        "우주 탐사"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 7.7,
+      "weight": 3.35,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 198994,
+      "rank": 51,
+      "name": "히어로 렐름",
+      "englishName": "Hero Realms",
+      "imageUrl": "https://cf.geekdo-images.com/BZiR636JJdSBwThtH42DVw__original/img/ntif6KjmWg9hGgDmT_4qEIIXv5s=/0x0/filters:format(jpeg)/pic3744052.jpg",
+      "thumbnailUrl": "/images/games/198994.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Robert Dougherty",
+        "Darwin Kastle"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지",
+        "전투"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 20,
+      "playTimeMax": 20,
+      "minAge": 12,
+      "rating": 7.5,
+      "weight": 1.86,
+      "difficulty": "easy",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 224783,
+      "rank": 52,
+      "name": "빈디케이션",
+      "englishName": "Vindication",
+      "imageUrl": "https://cf.geekdo-images.com/8kEIlWY3rg27NgmVBZkFyg__original/img/LgCwqEKxO2mpOzXf5_6z_pt6vz0=/0x0/filters:format(jpeg)/pic4101638.jpg",
+      "thumbnailUrl": "/images/games/224783.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Marc Neidlinger"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "탐사",
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 45,
+      "playTimeMax": 150,
+      "minAge": 14,
+      "rating": 7.8,
+      "weight": 3.08,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 146508,
+      "rank": 53,
+      "name": "타임 스토리즈",
+      "englishName": "T.I.M.E Stories",
+      "imageUrl": "https://cf.geekdo-images.com/XmwCsjQ3C1Ul53ZN2o8Q-Q__original/img/sUuboe9L4_nrIokyjAE74uklCjE=/0x0/filters:format(png)/pic2617634.png",
+      "thumbnailUrl": "/images/games/146508.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Peggy Chassenet",
+        "Manuel Rozoy"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "퍼즐",
+        "SF"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 90,
+      "playTimeMax": 90,
+      "minAge": 12,
+      "rating": 7.4,
+      "weight": 2.59,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 204583,
+      "rank": 54,
+      "name": "킹도미노",
+      "englishName": "Kingdomino",
+      "imageUrl": "https://cf.geekdo-images.com/3h9W8BfB_rltQ48EBmHliw__original/img/DDk3fDr0FkDpkYAcny5LeekB2qg=/0x0/filters:format(png)/pic3132685.png",
+      "thumbnailUrl": "/images/games/204583.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Bruno Cathala"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "도시 건설",
+        "중세",
+        "영토 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2, 4",
+      "playTimeMin": 15,
+      "playTimeMax": 25,
+      "minAge": 8,
+      "rating": 7.3,
+      "weight": 1.22,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 155068,
+      "rank": 55,
+      "name": "아카디아 퀘스트",
+      "englishName": "Arcadia Quest",
+      "imageUrl": "https://cf.geekdo-images.com/8qyLCqvdZkSpT2lEbwVpeg__original/img/8oGnjG0FUHy9Mo6VkbZVXZmDnwU=/0x0/filters:format(jpeg)/pic2305263.jpg",
+      "thumbnailUrl": "/images/games/155068.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Thiago Aranha",
+        "Guilherme Goulart",
+        "Eric M. Lang",
+        "Fred Perret"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "전투",
+        "미니어처"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 13,
+      "rating": 7.6,
+      "weight": 2.53,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 206718,
+      "rank": 56,
+      "name": "에스노스",
+      "englishName": "Ethnos",
+      "imageUrl": "https://cf.geekdo-images.com/UIKUXkcnH3Bd4fjcPGINcA__original/img/IrqDqjjm1LY66Zkw7l4RwppaBBI=/0x0/filters:format(png)/pic3304124.png",
+      "thumbnailUrl": "/images/games/206718.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Paolo Mori"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "bestPlayers": "4",
+      "playTimeMin": 45,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 7.5,
+      "weight": 2.04,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 108745,
+      "rank": 57,
+      "name": "시즌스",
+      "englishName": "Seasons",
+      "imageUrl": "https://cf.geekdo-images.com/awmZ9rYy-hTgea6Vdp_OoQ__original/img/bQ_yFa_JI_B8y3N4nfXcXYU_tE0=/0x0/filters:format(jpeg)/pic1299390.jpg",
+      "thumbnailUrl": "/images/games/108745.webp",
+      "yearReleased": 2012,
+      "designers": [
+        "Régis Bonnessée"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 7.4,
+      "weight": 2.78,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 285192,
+      "rank": 58,
+      "name": "데스티니즈",
+      "englishName": "Destinies",
+      "imageUrl": "https://cf.geekdo-images.com/oaD1ZQ3yGj6lacLdtqgdnQ__original/img/LJXy5--WfYNypO-Xd7nhkzU5Xzs=/0x0/filters:format(png)/pic5558118.png",
+      "thumbnailUrl": "/images/games/285192.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Michał Gołąb Gołębiowski",
+        "Filip Miłuński"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "전투",
+        "중세",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 3,
+      "bestPlayers": "2",
+      "playTimeMin": 90,
+      "playTimeMax": 150,
+      "minAge": 14,
+      "rating": 7.8,
+      "weight": 1.9,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 146439,
+      "rank": 59,
+      "name": "배틀로어: 2판",
+      "englishName": "BattleLore: Second Edition",
+      "imageUrl": "https://cf.geekdo-images.com/CWlHT1QMeB9hXaPcjE7cyw__original/img/TgJq7DMgaMETYtlc4Img3AmyM00=/0x0/filters:format(jpeg)/pic1854807.jpg",
+      "thumbnailUrl": "/images/games/146439.webp",
+      "yearReleased": 2013,
+      "designers": [
+        "Richard Borg",
+        "Robert A. Kouba"
+      ],
+      "categories": [
+        "wargame"
+      ],
+      "tags": [
+        "판타지",
+        "미니어처",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 45,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 7.7,
+      "weight": 2.71,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 297030,
+      "rank": 60,
+      "name": "테케누: 태양의 오벨리스크",
+      "englishName": "Tekhenu: Obelisk of the Sun",
+      "imageUrl": "https://cf.geekdo-images.com/CBLtzgG8zsqDkUZ_hN5-ew__original/img/jEL4WHl98vZHaZFcw9hDXxsxjSo=/0x0/filters:format(jpeg)/pic5313583.jpg",
+      "thumbnailUrl": "/images/games/297030.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Daniele Tascini",
+        "Dávid Turczi"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "주사위",
+        "신화"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 7.7,
+      "weight": 4.07,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 337627,
+      "rank": 61,
+      "name": "보이드폴",
+      "englishName": "Voidfall",
+      "imageUrl": "https://cf.geekdo-images.com/hItZjdDTNuaCZ7fEztwcUQ__original/img/gIhusTrYRr_2JQGEv0zuSgLtuUo=/0x0/filters:format(jpeg)/pic6153324.jpg",
+      "thumbnailUrl": "/images/games/337627.webp",
+      "yearReleased": 2023,
+      "designers": [
+        "Nigel Buckle",
+        "Dávid Turczi"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "문명",
+        "경제",
+        "SF",
+        "우주 탐사"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 90,
+      "playTimeMax": 240,
+      "minAge": 15,
+      "rating": 8.6,
+      "weight": 4.59,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 364186,
+      "rank": 62,
+      "name": "테라 노바",
+      "englishName": "Terra Nova",
+      "imageUrl": "https://cf.geekdo-images.com/vtUlmpCE_ij4Us9hOPPcZw__original/img/cXScDjjKNWdrgjvDitctDEpVOYI=/0x0/filters:format(png)/pic6896566.png",
+      "thumbnailUrl": "/images/games/364186.webp",
+      "yearReleased": 2022,
+      "designers": [
+        "Andreas Faul"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "판타지",
+        "영토 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3-4",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 12,
+      "rating": 7.2,
+      "weight": 2.86,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 260180,
+      "rank": 63,
+      "name": "프로젝트 L",
+      "englishName": "Project L",
+      "imageUrl": "https://cf.geekdo-images.com/Zwx2ZXS6r6PaxhkaVEe75Q__original/img/nBfsV9V5a-xc3uJkYhE0DN-QVjI=/0x0/filters:format(jpeg)/pic4309147.jpg",
+      "thumbnailUrl": "/images/games/260180.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Michal Mikeš",
+        "Jan Soukal",
+        "Adam Španěl"
+      ],
+      "categories": [
+        "abstract",
+        "family"
+      ],
+      "tags": [
+        "추상 전략",
+        "퍼즐",
+        "비디오 게임 테마"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2-3",
+      "playTimeMin": 20,
+      "playTimeMax": 40,
+      "minAge": 8,
+      "rating": 7.5,
+      "weight": 1.56,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 194594,
+      "rank": 64,
+      "name": "다이스 포지",
+      "englishName": "Dice Forge",
+      "imageUrl": "https://cf.geekdo-images.com/4BTVGQWO0M9ayxyku3FW6Q__original/img/8G3m0Cc_y3Qa0jcFn4ynWTwOV3A=/0x0/filters:format(jpeg)/pic3477004.jpg",
+      "thumbnailUrl": "/images/games/194594.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Régis Bonnessée"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "고대",
+        "주사위",
+        "판타지",
+        "신화"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 45,
+      "playTimeMax": 45,
+      "minAge": 10,
+      "rating": 7.2,
+      "weight": 1.97,
+      "difficulty": "easy",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 170771,
+      "rank": 65,
+      "name": "소드 앤 소서리",
+      "englishName": "Sword & Sorcery",
+      "imageUrl": "https://cf.geekdo-images.com/FNVnu-vB8WjyQTf63Ssvig__original/img/3zH2RQ0XlYefsMEa1Om1bnjNFS4=/0x0/filters:format(jpeg)/pic2673763.jpg",
+      "thumbnailUrl": "/images/games/170771.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Simone Romano",
+        "Nunzio Surace"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "판타지",
+        "전투",
+        "미니어처",
+        "워게임"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "1-2",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 12,
+      "rating": 7.9,
+      "weight": 4.11,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 186751,
+      "rank": 66,
+      "name": "신화적 전투: 판테온",
+      "englishName": "Mythic Battles: Pantheon",
+      "imageUrl": "https://cf.geekdo-images.com/au7lklR-A_0nnTskm4Vohw__original/img/zaRDFiH0FaeA_V73P-mpnKMfk9k=/0x0/filters:format(jpeg)/pic3235453.jpg",
+      "thumbnailUrl": "/images/games/186751.webp",
+      "yearReleased": 2017,
+      "designers": [
+        "Benoit Vogt"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "카드 게임",
+        "미니어처",
+        "신화",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 8.3,
+      "weight": 3.03,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 331398,
+      "rank": 67,
+      "name": "신화적 전투: 라그나로크",
+      "englishName": "Mythic Battles: Ragnarök",
+      "imageUrl": "https://cf.geekdo-images.com/JT8JmvYJxL8QmcRkEn5APw__original/img/AthwUGBqXLO1PSSln5QlU3JAYm0=/0x0/filters:format(png)/pic6005752.png",
+      "thumbnailUrl": "/images/games/331398.webp",
+      "yearReleased": 2023,
+      "designers": [
+        "Benoit Vogt"
+      ],
+      "categories": [
+        "strategy",
+        "wargame"
+      ],
+      "tags": [
+        "고대",
+        "카드 게임",
+        "판타지",
+        "미니어처",
+        "신화",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 8.9,
+      "weight": 3.25,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 325494,
+      "rank": 68,
+      "name": "ISS 뱅가드",
+      "englishName": "ISS Vanguard",
+      "imageUrl": "https://cf.geekdo-images.com/1ySeZNVkVwTvqykMGtHFFQ__original/img/WMa7R2ViiGzzWpKWEdJAOv518PU=/0x0/filters:format(jpeg)/pic7245199.jpg",
+      "thumbnailUrl": "/images/games/325494.webp",
+      "yearReleased": 2022,
+      "designers": [
+        "Andrzej Betkiewicz",
+        "Krzysztof Piskorski",
+        "Paweł Samborski",
+        "Marcin Świerkot"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "미니어처",
+        "SF",
+        "우주 탐사"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "1-2",
+      "playTimeMin": 90,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 8.7,
+      "weight": 3.65,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 34219,
+      "rank": 69,
+      "name": "비블리오스",
+      "englishName": "Biblios",
+      "imageUrl": "https://cf.geekdo-images.com/w9pHmbMbHEFYtuOUcWcruA__original/img/jOmzNb1JROlzeqEmCDScX_IkHVU=/0x0/filters:format(jpeg)/pic759154.jpg",
+      "thumbnailUrl": "/images/games/34219.webp",
+      "yearReleased": 2007,
+      "designers": [
+        "Steve Finn"
+      ],
+      "categories": [
+        "family",
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "중세",
+        "종교"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 10,
+      "rating": 7.2,
+      "weight": 1.68,
+      "difficulty": "easy",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 215341,
+      "rank": 70,
+      "name": "썬더스톤 퀘스트",
+      "englishName": "Thunderstone Quest",
+      "imageUrl": "https://cf.geekdo-images.com/iNbiiQKqSfa4Eoq7U-O4Uw__original/img/xOr7JPv4PnikAfJkvfDS3FRUlhM=/0x0/filters:format(jpeg)/pic3941484.jpg",
+      "thumbnailUrl": "/images/games/215341.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Mike Elliott",
+        "Bryan Reese",
+        "Mark Wootton"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 14,
+      "rating": 7.8,
+      "weight": 2.84,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 322708,
+      "rank": 71,
+      "name": "디센트: 암흑의 전설",
+      "englishName": "Descent: Legends of the Dark",
+      "imageUrl": "https://cf.geekdo-images.com/Q96PxRVbrDxS9_4ZPTJtHQ__original/img/kGU8ligha3fyP0LuVTwmLMK9yEQ=/0x0/filters:format(png)/pic5941333.png",
+      "thumbnailUrl": "/images/games/322708.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Kara Centell-Dunk",
+        "Nathan I. Hajek"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "판타지",
+        "전투",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 120,
+      "playTimeMax": 180,
+      "minAge": 14,
+      "rating": 8,
+      "weight": 2.73,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 292375,
+      "rank": 72,
+      "name": "만리장성",
+      "englishName": "The Great Wall",
+      "imageUrl": "https://cf.geekdo-images.com/3P1cMmZ47nf_L1zLO-pKlg__original/img/8mgbSvzu7-1WX4R8ZRseupThtLY=/0x0/filters:format(jpeg)/pic5016682.jpg",
+      "thumbnailUrl": "/images/games/292375.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Kamil Sanex Cieśla",
+        "Robert Plesowicz",
+        "Łukasz Włodarczyk"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "경제",
+        "판타지",
+        "영토 건설"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 120,
+      "playTimeMax": 180,
+      "minAge": 13,
+      "rating": 7.9,
+      "weight": 3.87,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 15062,
+      "rank": 73,
+      "name": "카멜롯의 그림자",
+      "englishName": "Shadows over Camelot",
+      "imageUrl": "https://cf.geekdo-images.com/JYqwG_v1B3RhpB7NcmeDOA__original/img/_eAaG7PMaTcj1DpHbmUaOBTisoY=/0x0/filters:format(jpeg)/pic70547.jpg",
+      "thumbnailUrl": "/images/games/15062.webp",
+      "yearReleased": 2005,
+      "designers": [
+        "Bruno Cathala",
+        "Serge Laget"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "블러핑",
+        "추론",
+        "판타지",
+        "중세",
+        "신화"
+      ],
+      "minPlayers": 3,
+      "maxPlayers": 7,
+      "bestPlayers": "5-7",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 10,
+      "rating": 7.1,
+      "weight": 2.57,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 248490,
+      "rank": 74,
+      "name": "아틀란티스 라이징 (2판)",
+      "englishName": "Atlantis Rising (Second Edition)",
+      "imageUrl": "https://cf.geekdo-images.com/WRHngbJkWiKAJ4U8xSySIQ__original/img/TXo07OaiWGK59Zu0IBXbnBpbmag=/0x0/filters:format(jpeg)/pic4895878.jpg",
+      "thumbnailUrl": "/images/games/248490.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Galen Ciscell",
+        "Brent Dickman"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "고대",
+        "문명",
+        "주사위",
+        "판타지",
+        "신화",
+        "선사시대",
+        "SF"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 7,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 10,
+      "rating": 7.6,
+      "weight": 2.45,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 133038,
+      "rank": 75,
+      "name": "패스파인더 어드벤처 카드 게임: 룬로드의 부활 - 베이스 세트",
+      "englishName": "Pathfinder Adventure Card Game: Rise of the Runelords - Base Set",
+      "imageUrl": "https://cf.geekdo-images.com/oilW_2LuTedEdM0R2y3_MA__original/img/mI00RqJFHhbrh_YmlimWaXCgjJM=/0x0/filters:format(jpeg)/pic1775517.jpg",
+      "thumbnailUrl": "/images/games/133038.webp",
+      "yearReleased": 2013,
+      "designers": [
+        "Mike Selinker",
+        "Chad Brown",
+        "Tanis O'Connor",
+        "Paul Peterson",
+        "Gaby Weidling"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "카드 게임",
+        "판타지",
+        "전투"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3-4",
+      "playTimeMin": 90,
+      "playTimeMax": 90,
+      "minAge": 13,
+      "rating": 7.2,
+      "weight": 2.72,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 169416,
+      "rank": 76,
+      "name": "패스파인더 어드벤처 카드 게임: 의인의 분노 - 베이스 세트",
+      "englishName": "Pathfinder Adventure Card Game: Wrath of the Righteous - Base Set",
+      "imageUrl": "https://cf.geekdo-images.com/hy7u3vgmUAE1fhWRcW0qtA__original/img/TpKtjwRjwxigsLaI76k6kNHdzn4=/0x0/filters:format(jpeg)/pic2564484.jpg",
+      "thumbnailUrl": "/images/games/169416.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Chad Brown",
+        "Tanis O'Connor",
+        "Paul Peterson",
+        "Mike Selinker",
+        "Liz Spain",
+        "Gaby Weidling"
+      ],
+      "categories": [
+        "customizable",
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "카드 게임",
+        "판타지",
+        "전투"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3-4",
+      "playTimeMin": 120,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 7.5,
+      "weight": 3.05,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 307002,
+      "rank": 77,
+      "name": "레지사이드",
+      "englishName": "Regicide",
+      "imageUrl": "https://cf.geekdo-images.com/C9U2E51tkzLljewFEGQ74g__original/img/Q-a5lAydzhwNLLhy8n326tlxuYE=/0x0/filters:format(jpeg)/pic5837347.jpg",
+      "thumbnailUrl": "/images/games/307002.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Paul Abrahams",
+        "Luke Badger",
+        "Andy Richdale"
+      ],
+      "categories": [
+        "family",
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 10,
+      "playTimeMax": 30,
+      "minAge": 10,
+      "rating": 7.5,
+      "weight": 1.94,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 169513,
+      "rank": 78,
+      "name": "도라스레",
+      "englishName": "Dorasure",
+      "imageUrl": "https://cf.geekdo-images.com/ViUGzQGN1YdhRoN21PB3nw__original/img/2YSrlI2NvKWIGZJznorSjskrLm4=/0x0/filters:format(jpeg)/pic2317622.jpg",
+      "thumbnailUrl": "/images/games/169513.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "KTR"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "판타지",
+        "미니어처"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 10,
+      "rating": 6.4,
+      "weight": 1.86,
+      "difficulty": "easy",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 929,
+      "rank": 79,
+      "name": "위대한 달무티",
+      "englishName": "The Great Dalmuti",
+      "imageUrl": "https://cf.geekdo-images.com/LVCXyZpkL6rPsouhWV3noA__original/img/t1NuvuH7uYwAnPYtrxRBqqQao8o=/0x0/filters:format(jpeg)/pic711236.jpg",
+      "thumbnailUrl": "/images/games/929.webp",
+      "yearReleased": 1995,
+      "designers": [
+        "Richard Garfield"
+      ],
+      "categories": [
+        "party"
+      ],
+      "tags": [
+        "카드 게임",
+        "중세"
+      ],
+      "minPlayers": 4,
+      "maxPlayers": 8,
+      "bestPlayers": "6-7",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 8,
+      "rating": 6.6,
+      "weight": 1.29,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 181960,
+      "rank": 80,
+      "name": "몰타의 관문",
+      "englishName": "Portal of Heroes",
+      "imageUrl": "https://cf.geekdo-images.com/MlNlAilS9tXzdeqjBXA4Vw__original/img/s20ucUov69q80ESwdytMXFyT66k=/0x0/filters:format(png)/pic3989524.png",
+      "thumbnailUrl": "/images/games/181960.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Johannes Schmidauer-König"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 5,
+      "bestPlayers": "3",
+      "playTimeMin": 45,
+      "playTimeMax": 45,
+      "minAge": 10,
+      "rating": 6.8,
+      "weight": 1.79,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 242574,
+      "rank": 81,
+      "name": "센추리: 동방의 바다",
+      "englishName": "Century: Eastern Wonders",
+      "imageUrl": "https://cf.geekdo-images.com/l1xKAcYniMJQNq60H5DdEA__original/img/S37tZ3Ph0N2rryfkjcpgmU4qmCY=/0x0/filters:format(jpeg)/pic3898507.jpg",
+      "thumbnailUrl": "/images/games/242574.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Emerson Matsuuchi"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "해상"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 30,
+      "playTimeMax": 45,
+      "minAge": 8,
+      "rating": 7.1,
+      "weight": 2.1,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 926,
+      "rank": 82,
+      "name": "카탄: 도시와 기사",
+      "englishName": "CATAN: Cities & Knights",
+      "imageUrl": "https://cf.geekdo-images.com/XVjc87_UzjIhagFeO4r8ew__original/img/EjqC0K9hK6XJOEkF6Hmaz3MKndI=/0x0/filters:format(jpeg)/pic2420315.jpg",
+      "thumbnailUrl": "/images/games/926.webp",
+      "yearReleased": 1998,
+      "designers": [
+        "Klaus Teuber"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "중세",
+        "협상"
+      ],
+      "minPlayers": 3,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 90,
+      "playTimeMax": 150,
+      "minAge": 12,
+      "rating": 7.4,
+      "weight": 2.9,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 69789,
+      "rank": 83,
+      "name": "어센션: 덱빌딩 게임",
+      "englishName": "Ascension: Deckbuilding Game",
+      "imageUrl": "https://cf.geekdo-images.com/DP20jf4R3RcsjJUwwV1vCw__original/img/O_DcqcBQGcWqO0HhJVojg5-VMoc=/0x0/filters:format(jpeg)/pic2382123.jpg",
+      "thumbnailUrl": "/images/games/69789.webp",
+      "yearReleased": 2010,
+      "designers": [
+        "John Fiorillo",
+        "Justin Gary",
+        "Brian M. Kibler"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 13,
+      "rating": 7,
+      "weight": 2.14,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 170624,
+      "rank": 84,
+      "name": "크루세이더: 뜻대로 이루소서",
+      "englishName": "Crusaders: Thy Will Be Done",
+      "imageUrl": "https://cf.geekdo-images.com/XkWDxerdbSpZ1UtxWv-a7Q__original/img/a9TPfwOQIsH-4D1JNB86qec2-TI=/0x0/filters:format(jpeg)/pic6740264.jpg",
+      "thumbnailUrl": "/images/games/170624.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Seth Jaffee"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "중세"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3-4",
+      "playTimeMin": 40,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 7.5,
+      "weight": 2.45,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 35052,
+      "rank": 85,
+      "name": "액시스 앤 얼라이즈 기념판",
+      "englishName": "Axis & Allies Anniversary Edition",
+      "imageUrl": "https://cf.geekdo-images.com/wVcuG7IymuvTXcb41ylQmA__original/img/E3a4i6LgXryHpRDrAdajLiIfwS0=/0x0/filters:format(jpeg)/pic318779.jpg",
+      "thumbnailUrl": "/images/games/35052.webp",
+      "yearReleased": 2008,
+      "designers": [
+        "Larry Harris, Jr."
+      ],
+      "categories": [
+        "wargame"
+      ],
+      "tags": [
+        "워게임",
+        "2차 세계대전"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "bestPlayers": "2, 4",
+      "playTimeMin": 360,
+      "playTimeMax": 360,
+      "minAge": 12,
+      "rating": 7.4,
+      "weight": 3.1,
+      "difficulty": "hard",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 315610,
+      "rank": 86,
+      "name": "매시브 다크니스 2: 헬스케이프",
+      "englishName": "Massive Darkness 2: Hellscape",
+      "imageUrl": "https://cf.geekdo-images.com/e-QmT0KuEc0E4bWNih6EVQ__original/img/alQDRawS3Soxpe-sCU3_WBNUCNk=/0x0/filters:format(png)/pic6107854.png",
+      "thumbnailUrl": "/images/games/315610.webp",
+      "yearReleased": 2022,
+      "designers": [
+        "Alex Olteanu",
+        "Marco Portugal"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "전투",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 6,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 8.1,
+      "weight": 2.74,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 59946,
+      "rank": 87,
+      "name": "던전 앤 드래곤: 레이븐로프트 성 보드 게임",
+      "englishName": "Dungeons & Dragons: Castle Ravenloft Board Game",
+      "imageUrl": "https://cf.geekdo-images.com/4opHd-PZm42sUE0DD7m8_w__original/img/tatfzsU05LERJtPwCIXjLjadbnQ=/0x0/filters:format(jpeg)/pic660244.jpg",
+      "thumbnailUrl": "/images/games/59946.webp",
+      "yearReleased": 2010,
+      "designers": [
+        "Rob Heinsoo",
+        "Peter Lee",
+        "Mike Mearls",
+        "Bill Slavicsek"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "전투",
+        "호러",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 12,
+      "rating": 7,
+      "weight": 2.5,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 66356,
+      "rank": 88,
+      "name": "던전 앤 드래곤: 아샤달론의 분노 보드 게임",
+      "englishName": "Dungeons & Dragons: Wrath of Ashardalon Board Game",
+      "imageUrl": "https://cf.geekdo-images.com/jIisRmDxzy6UfiRRpi1Xdw__original/img/o1G0yEkBcvwGa3iC88kkzjKuPEI=/0x0/filters:format(jpeg)/pic968280.jpg",
+      "thumbnailUrl": "/images/games/66356.webp",
+      "yearReleased": 2011,
+      "designers": [
+        "Peter Lee",
+        "Bill Slavicsek"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "전투",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "3-4",
+      "playTimeMin": 60,
+      "playTimeMax": 60,
+      "minAge": 12,
+      "rating": 7.1,
+      "weight": 2.6,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 167400,
+      "rank": 89,
+      "name": "애쉬: 라이즈 오브 피닉스본",
+      "englishName": "Ashes Reborn: Rise of the Phoenixborn",
+      "imageUrl": "https://cf.geekdo-images.com/BxBWqnm98y1qgk9cEmStgQ__original/img/QK9ku5RxaXxttpT_zA4-l-rSIX4=/0x0/filters:format(jpeg)/pic5868255.jpg",
+      "thumbnailUrl": "/images/games/167400.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Isaac Vega"
+      ],
+      "categories": [
+        "customizable"
+      ],
+      "tags": [
+        "카드 게임",
+        "판타지",
+        "전투"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 7.3,
+      "weight": 2.91,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 249411,
+      "rank": 90,
+      "name": "쿠스코",
+      "englishName": "Cuzco",
+      "imageUrl": "https://cf.geekdo-images.com/XFN0Xykb4R1l_8FleeOS1w__original/img/sg35o3lGndfxCgyQ17wub-SdLsE=/0x0/filters:format(jpeg)/pic4019762.jpg",
+      "thumbnailUrl": "/images/games/249411.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Michael Kiesling",
+        "Wolfgang Kramer"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "도시 건설"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 90,
+      "playTimeMax": 90,
+      "minAge": 12,
+      "rating": 7.4,
+      "weight": 2.59,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 276107,
+      "rank": 91,
+      "name": "제네시아",
+      "englishName": "Genesia",
+      "imageUrl": "https://cf.geekdo-images.com/vtDK1rJBJxHDdnylE8NPDQ__original/img/oa-_qHlhwvCTuhYM-7-byneA2ac=/0x0/filters:format(jpeg)/pic5692511.jpg",
+      "thumbnailUrl": "/images/games/276107.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Eric Labouze"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "전투"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 5,
+      "bestPlayers": "3-5",
+      "playTimeMin": 40,
+      "playTimeMax": 100,
+      "minAge": 12,
+      "rating": 6.4,
+      "weight": 2.14,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 230244,
+      "rank": 92,
+      "name": "블랙 엔젤",
+      "englishName": "Black Angel",
+      "imageUrl": "https://cf.geekdo-images.com/UsG5d8U0wGFJLKctASkWTQ__original/img/S3zJjTPUEcFv3gSXnWU8JfUcaCw=/0x0/filters:format(jpeg)/pic4830520.jpg",
+      "thumbnailUrl": "/images/games/230244.webp",
+      "yearReleased": 2019,
+      "designers": [
+        "Sébastien Dujardin",
+        "Xavier Georges",
+        "Alain Orban"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "SF",
+        "우주 탐사"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 7.3,
+      "weight": 3.85,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 254018,
+      "rank": 93,
+      "name": "솔레니아",
+      "englishName": "Solenia",
+      "imageUrl": "https://cf.geekdo-images.com/lFUcRqTNwRpeGE5DFJocTg__original/img/AHfIcBhKrKd1lgBgtxwx7XGgDX4=/0x0/filters:format(jpeg)/pic4244955.jpg",
+      "thumbnailUrl": "/images/games/254018.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Sébastien Dujardin"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "카드 게임",
+        "탐사",
+        "판타지"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 30,
+      "playTimeMax": 45,
+      "minAge": 10,
+      "rating": 7,
+      "weight": 2.16,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 273910,
+      "rank": 94,
+      "name": "아카리오스의 별",
+      "englishName": "Stars of Akarios",
+      "imageUrl": "https://cf.geekdo-images.com/pncC3ETZ4_Li5TFu8Iveww__original/img/tUAaVtbN38h5S1XS0znXofQPsZM=/0x0/filters:format(png)/pic5506076.png",
+      "thumbnailUrl": "/images/games/273910.webp",
+      "yearReleased": 2022,
+      "designers": [
+        "Brendan McCaskell",
+        "Jonathan Thwaites"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "미니어처",
+        "SF",
+        "우주 탐사"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "1",
+      "playTimeMin": 30,
+      "playTimeMax": 120,
+      "minAge": 13,
+      "rating": 8.1,
+      "weight": 2.88,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 304531,
+      "rank": 95,
+      "name": "어센션 택틱스: 미니어처 덱빌딩 게임",
+      "englishName": "Ascension Tactics: Miniatures Deckbuilding Game",
+      "imageUrl": "https://cf.geekdo-images.com/891ZOmibeW3iRhEcdN0B5w__original/img/KQojWcEDJSItT4irky_t5Ut8kNI=/0x0/filters:format(png)/pic7364675.png",
+      "thumbnailUrl": "/images/games/304531.webp",
+      "yearReleased": 2022,
+      "designers": [
+        "Justin Gary",
+        "Ryan Sutherland"
+      ],
+      "categories": [
+        "thematic",
+        "strategy"
+      ],
+      "tags": [
+        "판타지",
+        "미니어처"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 45,
+      "playTimeMax": 90,
+      "minAge": 10,
+      "rating": 8,
+      "weight": 2.5,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 322588,
+      "rank": 96,
+      "name": "오리진스: 최초의 건축가들",
+      "englishName": "Origins: First Builders",
+      "imageUrl": "https://cf.geekdo-images.com/U838tX7bb7tJfrBKGOkSzQ__original/img/It9rMH1wdbhsMCUrfGtWWFWst1I=/0x0/filters:format(jpeg)/pic5735711.jpg",
+      "thumbnailUrl": "/images/games/322588.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Adam Kwapiński"
+      ],
+      "categories": [
+        "strategy"
+      ],
+      "tags": [
+        "도시 건설",
+        "주사위",
+        "신화"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 60,
+      "playTimeMax": 120,
+      "minAge": 14,
+      "rating": 7.1,
+      "weight": 3.31,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 320718,
+      "rank": 97,
+      "name": "히든 리더스",
+      "englishName": "Hidden Leaders",
+      "imageUrl": "https://cf.geekdo-images.com/vDu0Zb4ooGEOF29ZaRQ3EQ__original/img/SP1CFuPlOKKOVtz66o1nKQwBS3o=/0x0/filters:format(jpeg)/pic5845169.jpg",
+      "thumbnailUrl": "/images/games/320718.webp",
+      "yearReleased": 2022,
+      "designers": [
+        "Andreas Müller",
+        "Markus Müller",
+        "Raphael Stocker"
+      ],
+      "categories": [
+        "family"
+      ],
+      "tags": [
+        "블러핑",
+        "카드 게임",
+        "추론",
+        "판타지",
+        "파티 게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "bestPlayers": "4",
+      "playTimeMin": 20,
+      "playTimeMax": 40,
+      "minAge": 10,
+      "rating": 6.9,
+      "weight": 1.78,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 159109,
+      "rank": 98,
+      "name": "제노시프트: 온슬롯",
+      "englishName": "XenoShyft: Onslaught",
+      "imageUrl": "https://cf.geekdo-images.com/P07I6V-nHDqYAYqDLKvpYw__original/img/hDQZFm4Ill9IFJGpmYR_Q06tA3Q=/0x0/filters:format(jpeg)/pic2015174.jpg",
+      "thumbnailUrl": "/images/games/159109.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Keren Philosophales",
+        "Michael Shinall"
+      ],
+      "categories": [
+        "strategy",
+        "thematic"
+      ],
+      "tags": [
+        "카드 게임",
+        "호러",
+        "SF"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 60,
+      "minAge": 13,
+      "rating": 6.9,
+      "weight": 2.63,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 312484,
+      "rank": 99,
+      "name": "아르낙의 잊혀진 유적",
+      "englishName": "Lost Ruins of Arnak",
+      "imageUrl": "https://cf.geekdo-images.com/6GqH14TJJhza86BX5HCLEQ__original/img/CXqwimJPonWy1oyXEMgPN_ZVmUI=/0x0/filters:format(jpeg)/pic5674958.jpg",
+      "thumbnailUrl": "/images/games/312484.webp",
+      "yearReleased": 2020,
+      "designers": [
+        "Elwen",
+        "Mín"
+      ],
+      "categories": [
+        "family",
+        "strategy"
+      ],
+      "tags": [
+        "모험",
+        "고대",
+        "탐사",
+        "여행"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "3",
+      "playTimeMin": 30,
+      "playTimeMax": 120,
+      "minAge": 12,
+      "rating": 8.1,
+      "weight": 2.91,
+      "difficulty": "normal",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 255984,
+      "rank": 100,
+      "name": "슬리핑 갓즈",
+      "englishName": "Sleeping Gods",
+      "imageUrl": "https://cf.geekdo-images.com/Zdt8l4oTBpFICsMyNof7Jg__original/img/-okZ810RkA8fKKhIeZyX4cnqmbE=/0x0/filters:format(png)/pic5975244.png",
+      "thumbnailUrl": "/images/games/255984.webp",
+      "yearReleased": 2021,
+      "designers": [
+        "Ryan Laukat"
+      ],
+      "categories": [
+        "thematic"
+      ],
+      "tags": [
+        "모험",
+        "탐사",
+        "판타지",
+        "해상"
+      ],
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 60,
+      "playTimeMax": 1200,
+      "minAge": 13,
+      "rating": 8.3,
+      "weight": 3.24,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 115746,
+      "rank": 101,
+      "name": "반지 전쟁: 2판",
+      "englishName": "War of the Ring: Second Edition",
+      "imageUrl": "https://cf.geekdo-images.com/ImPgGag98W6gpV1KV812aA__original/img/38jB7fN07DwlrGKYAf-J0vsNdgs=/0x0/filters:format(jpeg)/pic1215633.jpg",
+      "thumbnailUrl": "/images/games/115746.webp",
+      "yearReleased": 2011,
+      "designers": [
+        "Roberto Di Meglio",
+        "Marco Maggi",
+        "Francesco Nepitello"
+      ],
+      "categories": [
+        "thematic",
+        "wargame"
+      ],
+      "tags": [
+        "판타지",
+        "전투",
+        "미니어처",
+        "소설 기반",
+        "영토 건설",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "2",
+      "playTimeMin": 150,
+      "playTimeMax": 180,
+      "minAge": 13,
+      "rating": 8.5,
+      "weight": 4.21,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 237182,
+      "rank": 102,
+      "name": "루트",
+      "englishName": "Root",
+      "imageUrl": "https://cf.geekdo-images.com/JUAUWaVUzeBgzirhZNmHHw__original/img/E0s2LvtFA1L5YKk-_44D4u2VD2s=/0x0/filters:format(jpeg)/pic4254509.jpg",
+      "thumbnailUrl": "/images/games/237182.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "Cole Wehrle"
+      ],
+      "categories": [
+        "strategy",
+        "wargame"
+      ],
+      "tags": [
+        "동물",
+        "판타지",
+        "영토 건설",
+        "워게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 4,
+      "bestPlayers": "4",
+      "playTimeMin": 60,
+      "playTimeMax": 90,
+      "minAge": 10,
+      "rating": 8.1,
+      "weight": 3.79,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 124742,
+      "rank": 103,
+      "name": "안드로이드: 넷러너",
+      "englishName": "Android: Netrunner",
+      "imageUrl": "https://cf.geekdo-images.com/2ewHIIG_TRq8bYlqk0jIMw__original/img/cassW39WF2QrPImJF59efADAmM0=/0x0/filters:format(jpeg)/pic3738560.jpg",
+      "thumbnailUrl": "/images/games/124742.webp",
+      "yearReleased": 2012,
+      "designers": [
+        "Richard Garfield",
+        "Lukas Litzsinger"
+      ],
+      "categories": [
+        "customizable"
+      ],
+      "tags": [
+        "블러핑",
+        "카드 게임",
+        "수집 컴포넌트",
+        "SF"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 45,
+      "playTimeMax": 45,
+      "minAge": 14,
+      "rating": 7.9,
+      "weight": 3.4,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 369646,
+      "rank": 104,
+      "name": "디즈니 로카나",
+      "englishName": "Disney Lorcana",
+      "imageUrl": "https://cf.geekdo-images.com/yATIBXRz67ltSBxHwZLosg__original/img/c6DGzaqwqLN3Bb5mRXAXSckVngo=/0x0/filters:format(png)/pic7036897.png",
+      "thumbnailUrl": "/images/games/369646.webp",
+      "yearReleased": 2023,
+      "designers": [
+        "Ryan Miller, Steve Warner"
+      ],
+      "categories": [
+        "customizable"
+      ],
+      "tags": [
+        "카드 게임",
+        "수집 컴포넌트"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 6,
+      "bestPlayers": "2",
+      "playTimeMin": 30,
+      "playTimeMax": 60,
+      "minAge": 8,
+      "rating": 7.4,
+      "weight": 2.11,
+      "difficulty": "normal",
+      "koreanEdition": false
+    },
+    {
+      "bggId": 304042,
+      "rank": 105,
+      "name": "벚꽃 내리는 시대에 결투를",
+      "englishName": "A Duel for Falling Cherry Blossoms",
+      "imageUrl": "https://cf.geekdo-images.com/tYtdWYChJUVBpMkKeUVitQ__original/img/X0u6nhlLLJnWWN4m92-RbLEPZw0=/0x0/filters:format(png)/pic5335557.png",
+      "thumbnailUrl": "/images/games/304042.webp",
+      "yearReleased": 2018,
+      "designers": [
+        "BakaFire"
+      ],
+      "categories": [
+        "customizable"
+      ],
+      "tags": [
+        "카드 게임",
+        "전투"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 20,
+      "playTimeMax": 20,
+      "minAge": 8,
+      "rating": 8.2,
+      "weight": 3.38,
+      "difficulty": "hard",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 163412,
+      "rank": 106,
+      "name": "패치워크",
+      "englishName": "Patchwork",
+      "imageUrl": "https://cf.geekdo-images.com/wLW7pFn0--20lEizEz5p3A__original/img/B1j7R-slq8wxgC71Sg1F7S1s7Kg=/0x0/filters:format(jpeg)/pic2270442.jpg",
+      "thumbnailUrl": "/images/games/163412.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Uwe Rosenberg"
+      ],
+      "categories": [
+        "abstract",
+        "family"
+      ],
+      "tags": [
+        "추상 전략",
+        "경제",
+        "퍼즐"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 2,
+      "bestPlayers": "2",
+      "playTimeMin": 15,
+      "playTimeMax": 30,
+      "minAge": 8,
+      "rating": 7.6,
+      "weight": 1.6,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 178900,
+      "rank": 107,
+      "name": "코드네임",
+      "englishName": "Codenames",
+      "imageUrl": "https://cf.geekdo-images.com/F_KDEu0GjdClml8N7c8Imw__original/img/gcX_EfjsRpB5fI4Ug4XV73G4jGI=/0x0/filters:format(jpeg)/pic2582929.jpg",
+      "thumbnailUrl": "/images/games/178900.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Vlaada Chvátil"
+      ],
+      "categories": [
+        "party"
+      ],
+      "tags": [
+        "카드 게임",
+        "추론",
+        "파티 게임",
+        "스파이 / 비밀요원",
+        "단어 게임"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 8,
+      "bestPlayers": "6, 8",
+      "playTimeMin": 15,
+      "playTimeMax": 15,
+      "minAge": 14,
+      "rating": 7.5,
+      "weight": 1.26,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 174090,
+      "rank": 108,
+      "name": "딕싯: 메모리즈",
+      "englishName": "Dixit: Memories",
+      "imageUrl": "https://cf.geekdo-images.com/d8osiON-t6LvPBbibc4v7w__original/img/JmCYczKGg8AOkt7eXkmxpHNQjxg=/0x0/filters:format(jpeg)/pic2468176.jpg",
+      "thumbnailUrl": "/images/games/174090.webp",
+      "yearReleased": 2015,
+      "designers": [
+        "Jean-Louis Roubira"
+      ],
+      "categories": [
+        "party"
+      ],
+      "tags": [
+        "블러핑",
+        "카드 게임",
+        "유머",
+        "파티 게임"
+      ],
+      "minPlayers": 3,
+      "maxPlayers": 6,
+      "bestPlayers": "6",
+      "playTimeMin": 30,
+      "playTimeMax": 30,
+      "minAge": 6,
+      "rating": 7.9,
+      "weight": 1.18,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 147949,
+      "rank": 109,
+      "name": "한밤의 늑대인간",
+      "englishName": "One Night Ultimate Werewolf",
+      "imageUrl": "https://cf.geekdo-images.com/KLDb0vR3w8mfaHgIGF0gHw__original/img/9YTYFSMwiRA01ZRNG0R5e9Rq01E=/0x0/filters:format(jpeg)/pic1809823.jpg",
+      "thumbnailUrl": "/images/games/147949.webp",
+      "yearReleased": 2014,
+      "designers": [
+        "Ted Alspach",
+        "Akihisa Okui"
+      ],
+      "categories": [
+        "party"
+      ],
+      "tags": [
+        "블러핑",
+        "카드 게임",
+        "추론",
+        "공포",
+        "파티 게임"
+      ],
+      "minPlayers": 3,
+      "maxPlayers": 10,
+      "bestPlayers": "6-8",
+      "playTimeMin": 10,
+      "playTimeMax": 10,
+      "minAge": 8,
+      "rating": 7.1,
+      "weight": 1.37,
+      "difficulty": "easy",
+      "koreanEdition": true
+    },
+    {
+      "bggId": 171131,
+      "rank": 110,
+      "name": "캡틴 소나",
+      "englishName": "Captain Sonar",
+      "imageUrl": "https://cf.geekdo-images.com/Dpu5nFJu4UUJ4Y50WyKueg__original/img/feQTYcCwgIg4LneCYIoaWz12Z24=/0x0/filters:format(jpeg)/pic7069368.jpg",
+      "thumbnailUrl": "/images/games/171131.webp",
+      "yearReleased": 2016,
+      "designers": [
+        "Roberto Fraga",
+        "Yohan Lemonnier"
+      ],
+      "categories": [
+        "party",
+        "thematic"
+      ],
+      "tags": [
+        "추론",
+        "전투",
+        "현대전",
+        "해양",
+        "실시간"
+      ],
+      "minPlayers": 2,
+      "maxPlayers": 8,
+      "bestPlayers": "8",
+      "playTimeMin": 45,
+      "playTimeMax": 60,
+      "minAge": 14,
+      "rating": 7.5,
+      "weight": 2.19,
+      "difficulty": "normal",
+      "koreanEdition": true
+    }
+  ]
+}

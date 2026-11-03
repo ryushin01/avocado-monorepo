@@ -1,0 +1,9 @@
+{
+  "extends": "@avocado/config/tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@avocado/ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

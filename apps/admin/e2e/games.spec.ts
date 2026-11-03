@@ -1,0 +1,207 @@
+import { expect, test, type Page } from "@playwright/test";
+
+import {
+  listItems,
+  loginAs,
+  rowOf,
+  scrollToEnd,
+  totalFrom,
+  USERS,
+  waitForMobileList,
+} from "./helpers";
+
+/** 테스트끼리 데이터가 섞이지 않도록 고유한 게임을 새로 등록한다. */
+async function createGame(page: Page, name: string) {
+  await page.goto("/games");
+  await page.getByRole("button", { name: "게임 등록" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("게임 이름").fill(name);
+  await dialog.getByRole("checkbox", { name: "파티 게임", exact: true }).check();
+  await dialog.getByRole("button", { name: "등록" }).click();
+  await expect(dialog).toBeHidden();
+  // 이름순 정렬이라 첫 페이지에 없을 수 있으므로 검색해서 연다.
+  await page.goto(`/games?q=${encodeURIComponent(name)}`);
+  await expect(rowOf(page, name)).toBeVisible();
+}
+
+test.describe("보드게임 카탈로그", () => {
+  test("avocado 데이터, 유형 분류, 매장 보유 현황을 보여준다", async ({ page }) => {
+    await page.goto("/games?q=gloom");
+    const row = rowOf(page, "글룸헤이븐");
+    await expect(row).toContainText("Gloomhaven");
+    await expect(row).toContainText("전략 게임");
+    await expect(row).toContainText("테마 게임");
+    await expect(row).toContainText("60–120분");
+    await expect(row).toContainText(/\d+개 매장 · \d+개|보유 매장 없음/);
+    // 썸네일은 avocado 원본 이미지로 미리 만든 작은 로컬 webp를 쓴다.
+    await expect(row.locator("img")).toHaveAttribute("src", "/images/games/174430.webp");
+  });
+
+  test("한글·영문 이름으로 검색하고 카테고리로 거른다", async ({ page }) => {
+    await page.goto("/games");
+    const search = page.getByLabel("게임 이름 검색");
+    await search.fill("gloom");
+    await search.press("Enter");
+    await expect(page).toHaveURL(/q=gloom/);
+    await expect(page.locator("tbody tr")).toHaveCount(1);
+
+    await page.goto("/games");
+    await page.getByRole("combobox", { name: "카테고리" }).click();
+    await page.getByRole("option", { name: "워게임" }).click();
+    await expect(page).toHaveURL(/category=wargame/);
+    for (const row of await page.locator("tbody tr").all()) {
+      await expect(row).toContainText("워게임");
+    }
+  });
+
+  test("결과가 없으면 빈 상태를 보여준다", async ({ page }) => {
+    await page.goto("/games?q=존재하지않는게임");
+    await expect(page.getByText("검색 결과가 없습니다")).toBeVisible();
+  });
+});
+
+test.describe("카탈로그 등록·수정 (관리자)", () => {
+  test("등록: 입력 오류를 보여주고, 고치면 등록된다", async ({ page }) => {
+    const name = `등록 테스트 ${Date.now()}`;
+    await page.goto("/games");
+    await page.getByRole("button", { name: "게임 등록" }).click();
+    const dialog = page.getByRole("dialog");
+
+    await dialog.getByRole("button", { name: "등록" }).click();
+    await expect(dialog.getByText("게임 이름을 입력해주세요.")).toBeVisible();
+    await expect(dialog.getByText("카테고리를 하나 이상 선택해주세요.")).toBeVisible();
+
+    await dialog.getByLabel("게임 이름").fill(name);
+    await dialog.getByRole("checkbox", { name: "가족 게임", exact: true }).check();
+    await dialog.getByRole("checkbox", { name: "파티 게임", exact: true }).check();
+    await dialog.getByLabel("최소 인원").fill("2");
+    await dialog.getByLabel("최대 인원").fill("5");
+    await dialog.getByRole("button", { name: "등록" }).click();
+
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText(`'${name}'을(를) 등록했습니다.`)).toBeVisible();
+    await page.goto(`/games?q=${encodeURIComponent(name)}`);
+    const row = rowOf(page, name);
+    await expect(row).toContainText("가족 게임");
+    await expect(row).toContainText("2–5명");
+    await expect(row).toContainText("보유 매장 없음");
+  });
+
+  test("수정: 기존 값이 채워져 있고, 저장하면 목록에 반영된다", async ({ page }) => {
+    const name = `수정 테스트 ${Date.now()}`;
+    await createGame(page, name);
+
+    await page.getByRole("button", { name: `${name} 수정` }).click();
+    const dialog = page.getByRole("dialog", { name: "보드게임 수정" });
+    await expect(dialog.getByLabel("게임 이름")).toHaveValue(name);
+    await expect(
+      dialog.getByRole("checkbox", { name: "파티 게임", exact: true }),
+    ).toBeChecked();
+
+    // 잘못된 값은 거부하고 입력값을 유지한다.
+    await dialog.getByLabel("최소 플레이 시간(분)").fill("90");
+    await dialog.getByLabel("최대 플레이 시간(분)").fill("45");
+    await dialog.getByRole("button", { name: "저장" }).click();
+    await expect(
+      dialog.getByText("최대 플레이 시간은 최소 플레이 시간 이상이어야 합니다."),
+    ).toBeVisible();
+    await expect(dialog.getByLabel("최소 플레이 시간(분)")).toHaveValue("90");
+
+    const renamed = `${name} (개정판)`;
+    await dialog.getByLabel("게임 이름").fill(renamed);
+    await dialog.getByLabel("최대 플레이 시간(분)").fill("120");
+    await dialog.getByRole("checkbox", { name: "파티 게임", exact: true }).uncheck();
+    await dialog.getByRole("checkbox", { name: "전략 게임", exact: true }).check();
+    await dialog.getByRole("button", { name: "저장" }).click();
+
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText(`'${renamed}'을(를) 수정했습니다.`)).toBeVisible();
+    const row = rowOf(page, renamed);
+    await expect(row).toContainText("전략 게임");
+    await expect(row).not.toContainText("파티 게임");
+    await expect(row).toContainText("90–120분");
+  });
+});
+
+test.describe("카탈로그 권한 (스태프)", () => {
+  test.beforeEach(async ({ context }) => loginAs(context, USERS.hongdaeStaff));
+
+  test("스태프는 카탈로그를 볼 수만 있다", async ({ page }) => {
+    await page.goto("/games");
+    await expect(page.locator("tbody tr").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "게임 등록" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: / 수정$/ })).toHaveCount(0);
+  });
+});
+
+test.describe("데스크톱 페이지네이션", () => {
+  test("페이지 번호로 이동하고, 필터를 유지한다", async ({ page }) => {
+    await page.goto("/games?category=strategy");
+    const rows = page.locator("tbody tr");
+    await expect(rows).toHaveCount(20);
+    const firstOnPage1 = await rows.first().textContent();
+    const pager = page.getByRole("navigation", { name: "페이지 이동" });
+    await expect(pager.getByRole("link", { name: "1페이지" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(pager.getByRole("link", { name: "이전 페이지" })).toHaveCount(0);
+
+    await pager.getByRole("link", { name: "2페이지" }).click();
+    await expect(page).toHaveURL(/category=strategy&page=2/);
+    await expect(pager.getByRole("link", { name: "2페이지" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(rows.first()).not.toHaveText(firstOnPage1 ?? "");
+    for (const row of await rows.all()) {
+      await expect(row).toContainText("전략 게임");
+    }
+
+    await pager.getByRole("link", { name: "이전 페이지" }).click();
+    await expect(page).toHaveURL(/\/games\?category=strategy$/);
+  });
+
+  test("필터를 바꾸면 1페이지로 돌아간다", async ({ page }) => {
+    await page.goto("/games?page=3");
+    await page.getByRole("combobox", { name: "카테고리" }).click();
+    await page.getByRole("option", { name: "테마 게임" }).click();
+    await expect(page).toHaveURL(/category=thematic/);
+    await expect(page).not.toHaveURL(/page=/);
+  });
+
+  test("범위를 벗어난 페이지는 마지막 페이지로 보여준다", async ({ page }) => {
+    await page.goto("/games?page=999");
+    const pager = page.getByRole("navigation", { name: "페이지 이동" });
+    await expect(pager.locator('[aria-current="page"]')).toBeVisible();
+    await expect(pager.getByRole("link", { name: "다음 페이지" })).toHaveCount(0);
+    await expect(page.locator("tbody tr")).not.toHaveCount(0);
+  });
+});
+
+test.describe("모바일 무한 스크롤 (카탈로그)", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("표 대신 목록을 보여주고, 끝까지 스크롤하면 모두 불러온다", async ({ page }) => {
+    await page.goto("/games?page=3");
+    await waitForMobileList(page);
+    await expect(page.locator("table")).toBeHidden();
+    await expect(page.getByRole("navigation", { name: "페이지 이동" })).toBeHidden();
+    // page 파라미터와 관계없이 첫 묶음부터 시작한다.
+    await expect(listItems(page)).toHaveCount(20);
+
+    await scrollToEnd(page);
+    await expect(listItems(page)).toHaveCount(await totalFrom(page, /^총 \d+개$/));
+  });
+
+  test("검색 결과도 이어서 불러온다", async ({ page }) => {
+    await page.goto("/games?category=strategy");
+    await waitForMobileList(page);
+    await expect(listItems(page)).toHaveCount(20);
+    await scrollToEnd(page);
+    expect(await listItems(page).count()).toBeGreaterThan(20);
+    for (const item of await listItems(page).all()) {
+      await expect(item).toContainText("전략 게임");
+    }
+  });
+});

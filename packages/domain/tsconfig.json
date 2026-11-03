@@ -1,0 +1,4 @@
+{
+  "extends": "@avocado/config/tsconfig.base.json",
+  "include": ["src", "data"]
+}

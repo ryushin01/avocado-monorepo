@@ -14,6 +14,8 @@
 | `@avocado/domain` | `packages/domain` | 게임 카탈로그(avocado 변환 데이터·썸네일), 유형·난이도, 백오피스↔런처 API 타입 |
 | `@avocado/config` | `packages/config` | 공통 tsconfig, ESLint 설정 |
 
+저장소: [github.com/ryushin01/avocado-monorepo](https://github.com/ryushin01/avocado-monorepo) (로컬 폴더 이름은 `avocado`). 원래 avocado 프로젝트(`ryushin01/avocado`)와는 별도 저장소입니다.
+
 > 아직 백엔드와 인증이 없습니다. 백오피스 데이터는 서버 메모리의 목 데이터라 서버를 다시 켜면 처음 상태로 돌아갑니다. 런처는 백오피스의 조회 API를 읽으므로 백오피스가 켜져 있어야 합니다.
 
 ## 시작하기
@@ -100,4 +102,4 @@ docs/
 
 - 백엔드 API와 실제 인증 (런처 조회 API도 아직 인증 없음)
 - 예약·대기: 백오피스 관리 화면, 런처의 예약 확인·대기 등록
-- 런처·사이트의 E2E 테스트
+- 런처·홈페이지의 E2E 테스트

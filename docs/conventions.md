@@ -30,18 +30,26 @@
 
 - **Recharts를 shadcn `chart` 컴포넌트(`ChartContainer`, `ChartTooltip`)로 감싸 씁니다.**
 - **형태는 데이터가 하는 일로 정합니다.**
-  - 숫자 하나는 요약 칸(`StatTile`)으로 보여줍니다.
+  - 숫자 하나는 요약 칸(`StatTile`)으로 보여줍니다. 기간을 비교하는 화면에서는 지난 기간 대비 증감과 작은 추이선을 붙인 `KpiTile`(통계)을 씁니다.
+  - 시간에 따른 변화는 선 그래프로 그립니다. 비교 기간은 같은 축에 회색 점선으로 겹칩니다(강조할 하나만 색, 나머지는 회색).
+  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`components/stats/usage-heatmap.tsx`).
+  - 표 안에서 크기를 비교할 때는 칸 안에 가로 막대를 함께 둡니다. 막대 길이의 기준(최댓값)은 같은 화면에서 맞춥니다.
   - 크기 비교·순위는 막대로 그립니다. 이름이 길면 가로 막대가 낫습니다.
   - 구성 비교는 누적 막대로, 수치 여러 개는 표로 보여줍니다.
 - **색**
   - **계열이 하나인 차트:** 파랑 하나만 씁니다(라이트 `#2a78d6`, 다크 `#3987e5`).
   - **상태(이용 가능·점검 중):** 상태 색(good `#0ca30c`, warning `#fab219`)을 씁니다. 폐기는 중립 회색(`#898781`)입니다.
   - **상태 색:** 색만으로 구분하지 않도록 범례에 아이콘과 이름을 함께 둡니다.
+  - **비교 기간(지난 기간):** 회색 `#898781` 점선. 회색이라 색만으로 구분하지 않도록 점선과 범례를 함께 둡니다.
+  - **히트맵:** 파랑 한 가지 색의 6단계(`--heat-1`~`--heat-6`, `apps/admin/src/app/globals.css`). 다크 모드는 바탕에 가까운 쪽이 '적음'이 되도록 순서를 뒤집은 값을 씁니다. 0은 `bg-muted`.
+  - **증감:** 늘면 좋은 값은 증가 `--delta-up`(라이트 `#006300`, 다크 `#0ca30c`), 감소 `--delta-down`(`#d03b3b`). 화살표 아이콘과 부호(+/-)를 함께 써서 색만으로 구분하지 않습니다. 좋고 나쁨이 없는 값은 회색입니다.
   - **새 색 조합:** 데이터 시각화 가이드의 검증 스크립트로 대비·색각 이상 구분을 확인합니다.
 - **표시 규칙**
   - 막대는 24px 이하 두께로, 값 끝만 4px 둥글게 처리합니다.
   - 값은 막대 끝에 적고, 마우스를 올리면 툴팁을 보여줍니다.
   - **차트마다 같은 데이터의 `sr-only` 표**를 함께 둡니다. 화면 낭독기와 E2E 테스트가 이 표를 읽습니다.
+  - 표만 확인하면 차트가 그려지지 않아도 테스트가 통과합니다. 차트가 실제로 그려졌는지는 대시보드 E2E가 `svg.recharts-surface`로 확인합니다.
+  - 작은 추이선(`Sparkline`)은 숫자를 옆 글자가 전하므로 화면 낭독기에서 숨깁니다. 여러 줄을 나란히 비교할 때는 `max`로 세로 축을 맞춥니다.
 - **스크린샷 주의:** Playwright `fullPage` 스크린샷은 창 크기를 바꿔 차트가 처음부터 다시 그려지는 순간을 찍습니다. 빈 차트처럼 나오므로 키가 큰 창으로 찍으세요.
 
 ## 폼
@@ -76,6 +84,7 @@
 | dev 경고 "encountered URL data during prerendering" | 동적 경로에서 `params`를 Suspense 밖에서 `await` (Partial Prefetching 사용 중) | `generateStaticParams`가 있어도 `params`는 Suspense 안의 자식 컴포넌트에서 읽는다 |
 | `pnpm install`이 "within the minimumReleaseAge cutoff"로 멈춤 | pnpm 12는 공개 하루 안 된 버전을 거부함. npm 잠금 파일을 그대로 가져오면 걸리기 쉬움 | 잠금 파일을 지우지 말고 먼저 하루 기다리거나, 필요하면 `pnpm clean --lockfile` 뒤 다시 설치 (더 오래된 버전이 없는 것만 `minimumReleaseAgeExclude`에 자동 추가됨) |
 | `pnpm -v`가 9 등 낮은 버전 | 오래된 pnpm은 `packageManager` 버전으로 자동 전환하지 않음 | `npm install -g pnpm@12.16.1` |
+| 차트 칸은 있는데 그래프가 비어 있음 (SVG 없음, 오류도 없음) | `recharts`가 두 벌 설치됨. 공통 UI 패키지의 `ChartContainer`와 앱의 차트가 서로 다른 recharts를 써서 연결되지 않음. pnpm에서 recharts의 peer `react-is`가 패키지마다 다른 버전으로 잡혀 생김 | recharts를 쓰는 패키지(`packages/ui`, `apps/admin`)에 같은 `react-is`(React와 같은 버전)를 직접 선언. 확인: `readlink -f packages/ui/node_modules/recharts apps/admin/node_modules/recharts`가 같아야 함 |
 | lint `react-hooks/refs`: Cannot access refs during render | 렌더링 중에 `useRef().current`를 읽음 (예: 캐러셀 플러그인) | 한 번만 만들 값은 `useState(() => ...)`로 만든다 |
 | 새 앱에서 공통 컴포넌트 스타일이 빠짐 | Tailwind가 `node_modules` 너머의 `packages/ui`를 찾지 않음 | 앱 `globals.css`에 `@source "../../../../packages/ui/src";` |
 | 이미지가 안 보임 (썸네일·자리표시) | 카탈로그 이미지는 `packages/domain/assets`에만 있고 앱 `public`에는 복사본이 들어감 | 앱 `package.json`의 `dev`·`build` 맨 앞에 `copy-catalog-assets public &&` (pre 스크립트 대신 한 줄에 써서 실행 순서가 보이게 함) |

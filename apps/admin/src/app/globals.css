@@ -2,3 +2,32 @@
 
 /* 공통 UI 패키지의 클래스도 Tailwind가 찾도록 소스 위치를 알려준다. */
 @source "../../../../packages/ui/src";
+
+/*
+ * 통계 화면 색 (데이터 시각화 가이드의 검증 스크립트로 확인한 값)
+ * - heat-1~6: 히트맵 순차 색. 한 색상(파랑)으로 적음→많음. 다크 모드는 바탕에 가까운 쪽이 적음이 되도록 뒤집는다.
+ * - delta-up/down: 지난 기간 대비 증가(좋음)·감소(나쁨) 글자색. 화살표 아이콘과 함께 쓴다(색만으로 구분하지 않음).
+ * - trend-previous: 지난 기간 선 (강조하지 않는 회색)
+ */
+:root {
+  --heat-1: #cde2fb;
+  --heat-2: #9ec5f4;
+  --heat-3: #6da7ec;
+  --heat-4: #3987e5;
+  --heat-5: #256abf;
+  --heat-6: #184f95;
+  --delta-up: #006300;
+  --delta-down: #d03b3b;
+  --trend-previous: #898781;
+}
+.dark {
+  --heat-1: #104281;
+  --heat-2: #1c5cab;
+  --heat-3: #2a78d6;
+  --heat-4: #5598e7;
+  --heat-5: #86b6ef;
+  --heat-6: #cde2fb;
+  --delta-up: #0ca30c;
+  --delta-down: #d03b3b;
+  --trend-previous: #898781;
+}

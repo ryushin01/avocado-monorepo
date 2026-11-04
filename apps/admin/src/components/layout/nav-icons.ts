@@ -1,5 +1,6 @@
 import {
   Boxes,
+  ChartLine,
   Dices,
   LayoutDashboard,
   Store,
@@ -12,6 +13,7 @@ import type { NavIcon } from "@/lib/navigation";
 
 export const NAV_ICONS: Record<NavIcon, LucideIcon> = {
   dashboard: LayoutDashboard,
+  stats: ChartLine,
   games: Dices,
   inventory: Boxes,
   plays: Timer,

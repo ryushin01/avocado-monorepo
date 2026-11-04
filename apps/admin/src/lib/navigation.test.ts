@@ -6,6 +6,7 @@ describe("getNavItemsFor", () => {
   it("관리자는 모든 메뉴를 본다", () => {
     expect(getNavItemsFor({ role: "admin" }).map((i) => i.href)).toEqual([
       "/",
+      "/stats",
       "/games",
       "/inventory",
       "/plays",
@@ -17,6 +18,7 @@ describe("getNavItemsFor", () => {
   it("스태프는 관리자 전용 메뉴를 보지 못한다", () => {
     expect(getNavItemsFor({ role: "staff" }).map((i) => i.href)).toEqual([
       "/",
+      "/stats",
       "/games",
       "/inventory",
       "/plays",

@@ -13,6 +13,10 @@ test.describe("대시보드 (관리자)", () => {
     await expect(tile(page, "운영 매장")).toContainText(/\d+개/);
     await expect(tile(page, "보유 게임")).toContainText(/\d+종/);
 
+    // 표만 확인하면 차트가 그려지지 않아도 통과하므로, 실제로 그려진 SVG도 확인한다
+    // (recharts가 두 벌 설치되면 표는 있어도 차트가 비어 보인다).
+    await expect(page.locator("[data-slot=chart] svg.recharts-surface").first()).toBeVisible();
+
     // 차트는 화면 낭독기용 표로도 제공된다.
     const chartTable = page.getByRole("table", { name: "유형별 보유 현황" });
     await expect(chartTable.getByRole("row")).toHaveCount(8); // 헤더 + 7개 유형

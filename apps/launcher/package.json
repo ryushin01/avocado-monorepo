@@ -8,10 +8,12 @@
     "start": "next start --port 3001",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@avocado/domain": "workspace:*",
+    "@avocado/logger": "workspace:*",
     "@avocado/ui": "workspace:*",
     "lucide-react": "^1.67.0",
     "next": "16.4.5",
@@ -25,6 +27,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "5.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "tailwindcss": "^4.3.4",

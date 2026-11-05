@@ -3,12 +3,16 @@ import { z } from "zod";
 
 import type { KioskWaitlistJoinResult, KioskWaitlistStatus } from "@avocado/domain/kiosk";
 
-import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/lib/kiosk/auth";
-import { findOpenCafe } from "@/lib/kiosk/open-cafe";
-import { toKioskWaitlistEntry } from "@/lib/kiosk/to-kiosk-guest";
-import { addToWaitlist, countActiveWaitlist, findWaitlistForKiosk } from "@/lib/reservations/data";
-import { phoneLast4Schema } from "@/lib/reservations/schema";
-import { waitlistInputSchema } from "@/lib/waitlist/schema";
+import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/server/kiosk/auth";
+import { findOpenCafe } from "@/server/kiosk/open-cafe";
+import { toKioskWaitlistEntry } from "@/server/kiosk/to-kiosk-guest";
+import {
+  addToWaitlist,
+  countActiveWaitlist,
+  findWaitlistForKiosk,
+} from "@/server/reservations/data";
+import { phoneLast4Schema } from "@/entities/reservation/schema";
+import { waitlistInputSchema } from "@/entities/waitlist/schema";
 
 /** 지금 대기 팀 수, phone4를 주면 내 대기 순서 */
 export async function GET(request: Request, ctx: RouteContext<"/api/kiosk/cafes/[cafeId]/waitlist">) {

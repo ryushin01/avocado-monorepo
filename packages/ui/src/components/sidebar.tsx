@@ -25,12 +25,76 @@ import {
 } from "./tooltip"
 import { PanelLeftIcon } from "lucide-react"
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+const SIDEBAR_WIDTH_STORAGE_KEY = "sidebar_width"
+const SIDEBAR_OPEN_STORAGE_KEY = "sidebar_open"
+const SIDEBAR_WIDTH_SAVED_VAR = "--sidebar-width-saved"
+const SIDEBAR_WIDTH_DEFAULT_PX = 256
+const SIDEBAR_WIDTH_MIN = 192
+const SIDEBAR_WIDTH_MAX = 384
+const SIDEBAR_WIDTH_KEYBOARD_STEP = 16
+/** 이만큼 움직여야 드래그로 본다. 그보다 적으면 클릭(접기·펼치기)이다. */
+const SIDEBAR_DRAG_THRESHOLD = 3
+
+const clampSidebarWidth = (width: number) =>
+  Math.round(Math.min(SIDEBAR_WIDTH_MAX, Math.max(SIDEBAR_WIDTH_MIN, width)))
+
+const sidebarStoreListeners = new Set<() => void>()
+
+function subscribeSidebarStore(listener: () => void) {
+  sidebarStoreListeners.add(listener)
+  return () => {
+    sidebarStoreListeners.delete(listener)
+  }
+}
+
+function writeSidebarStore(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // 저장하지 못해도 이번 화면에서는 Provider의 상태로 유지된다.
+  }
+  sidebarStoreListeners.forEach((listener) => listener())
+}
+
+function readSidebarWidth(): number | null {
+  try {
+    const saved = Number(localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY))
+    return saved > 0 ? clampSidebarWidth(saved) : null
+  } catch {
+    return null
+  }
+}
+
+function readSidebarOpen(): boolean | null {
+  try {
+    const saved = localStorage.getItem(SIDEBAR_OPEN_STORAGE_KEY)
+    return saved === null ? null : saved === "true"
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 저장한 사이드바 너비를 하이드레이션 전에 적용해 새로고침할 때 너비가 튀지 않게 한다.
+ * 다시 그려지지 않는 루트 레이아웃의 body 맨 앞에 한 번만 둔다.
+ */
+function SidebarWidthScript() {
+  const script = `try{var w=Number(localStorage.getItem(${JSON.stringify(SIDEBAR_WIDTH_STORAGE_KEY)}));if(w>0){var s=document.createElement("style");s.textContent=":root{${SIDEBAR_WIDTH_SAVED_VAR}:"+Math.min(${SIDEBAR_WIDTH_MAX},Math.max(${SIDEBAR_WIDTH_MIN},w))+"px}";document.head.appendChild(s)}}catch(e){}`
+  return <script dangerouslySetInnerHTML={{ __html: script }} />
+}
+
+/**
+ * 접어 둔 사이드바를 하이드레이션 전에 접힌 모양으로 바꿔 새로고침할 때 펼쳐졌다 접히지 않게 한다.
+ * 사이드바 뒤에서 실행되어야 하므로 루트 레이아웃의 children 바로 다음에 둔다.
+ */
+function SidebarStateScript() {
+  const script = `try{if(localStorage.getItem(${JSON.stringify(SIDEBAR_OPEN_STORAGE_KEY)})==="false"){var e=document.querySelector('[data-slot="sidebar"]');if(e){e.setAttribute("data-state","collapsed");e.setAttribute("data-collapsible",e.getAttribute("data-collapsible-mode"))}}}catch(e){}`
+  return <script dangerouslySetInnerHTML={{ __html: script }} />
+}
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -40,6 +104,11 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  /** 사용자가 정한 너비(px). 정한 적이 없으면 null */
+  width: number | null
+  /** 드래그 중인 너비를 보여 준다. null이면 드래그가 끝난 것이다. */
+  previewWidth: (width: number | null) => void
+  commitWidth: (width: number) => void
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
@@ -69,21 +138,37 @@ function SidebarProvider({
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
-  // This is the internal state of the sidebar.
-  // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
+  // 서버 HTML은 항상 defaultOpen으로 그리고, 저장한 값은 하이드레이션 뒤에 적용한다.
+  // 저장소를 쓸 수 없는 환경에서도 이번 화면에서는 동작하도록 Provider에도 값을 둔다.
+  const savedOpen = React.useSyncExternalStore(
+    subscribeSidebarStore,
+    readSidebarOpen,
+    () => null
+  )
+  const [localOpen, setLocalOpen] = React.useState<boolean | null>(null)
+  const open = openProp ?? localOpen ?? savedOpen ?? defaultOpen
+  const savedWidth = React.useSyncExternalStore(
+    subscribeSidebarStore,
+    readSidebarWidth,
+    () => null
+  )
+  const [localWidth, setLocalWidth] = React.useState<number | null>(null)
+  const [draggedWidth, setDraggedWidth] = React.useState<number | null>(null)
+  const width = draggedWidth ?? localWidth ?? savedWidth
+  const commitWidth = React.useCallback((value: number) => {
+    const next = clampSidebarWidth(value)
+    setLocalWidth(next)
+    writeSidebarStore(SIDEBAR_WIDTH_STORAGE_KEY, String(next))
+  }, [])
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === "function" ? value(open) : value
       if (setOpenProp) {
         setOpenProp(openState)
       } else {
-        _setOpen(openState)
+        setLocalOpen(openState)
       }
-
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      writeSidebarStore(SIDEBAR_OPEN_STORAGE_KEY, String(openState))
     },
     [setOpenProp, open]
   )
@@ -122,17 +207,34 @@ function SidebarProvider({
       openMobile,
       setOpenMobile,
       toggleSidebar,
+      width,
+      previewWidth: setDraggedWidth,
+      commitWidth,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+    [
+      state,
+      open,
+      setOpen,
+      isMobile,
+      openMobile,
+      setOpenMobile,
+      toggleSidebar,
+      width,
+      commitWidth,
+    ]
   )
 
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
         data-slot="sidebar-wrapper"
+        data-resizing={draggedWidth !== null ? "true" : undefined}
         style={
           {
-            "--sidebar-width": SIDEBAR_WIDTH,
+            "--sidebar-width":
+              width !== null
+                ? `${width}px`
+                : `var(${SIDEBAR_WIDTH_SAVED_VAR}, ${SIDEBAR_WIDTH})`,
             "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
             ...style,
           } as React.CSSProperties
@@ -208,8 +310,11 @@ function Sidebar({
   return (
     <div
       className="group peer hidden text-sidebar-foreground md:block"
+      // SidebarStateScript가 하이드레이션 전에 이 속성들을 바꿀 수 있다.
+      suppressHydrationWarning
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
+      data-collapsible-mode={collapsible}
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
@@ -218,7 +323,7 @@ function Sidebar({
       <div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
+          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear in-data-[resizing=true]:transition-none",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -230,7 +335,7 @@ function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear in-data-[resizing=true]:transition-none data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
@@ -277,20 +382,130 @@ function SidebarTrigger({
   )
 }
 
-function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
-  const { toggleSidebar } = useSidebar()
+/**
+ * 사이드바 가장자리의 핸들. 드래그하면 너비가 바뀌고, 클릭하면 접거나 펼친다.
+ * 키보드는 창 분할기 패턴을 따른다: 좌우 화살표·Home·End로 너비, Enter로 접기·펼치기.
+ */
+function SidebarRail({
+  className,
+  onClick,
+  onKeyDown,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
+  ...props
+}: React.ComponentProps<"button">) {
+  const { state, width, previewWidth, commitWidth, toggleSidebar } =
+    useSidebar()
+  const expanded = state === "expanded"
+  const dragRef = React.useRef<{
+    startX: number
+    startWidth: number
+    direction: 1 | -1
+    moved: boolean
+  } | null>(null)
+  // 드래그가 끝나면 브라우저가 click도 보내므로 그 한 번은 접기·펼치기로 치지 않는다.
+  const skipClickRef = React.useRef(false)
+
+  const dragWidth = (clientX: number) => {
+    const drag = dragRef.current
+    if (!drag) return null
+    return clampSidebarWidth(
+      drag.startWidth + (clientX - drag.startX) * drag.direction
+    )
+  }
 
   return (
     <button
+      type="button"
       data-sidebar="rail"
       data-slot="sidebar-rail"
-      aria-label="Toggle Sidebar"
-      tabIndex={-1}
-      onClick={toggleSidebar}
-      title="Toggle Sidebar"
+      role={expanded ? "separator" : undefined}
+      aria-orientation={expanded ? "vertical" : undefined}
+      aria-valuemin={expanded ? SIDEBAR_WIDTH_MIN : undefined}
+      aria-valuemax={expanded ? SIDEBAR_WIDTH_MAX : undefined}
+      aria-valuenow={expanded ? (width ?? SIDEBAR_WIDTH_DEFAULT_PX) : undefined}
+      aria-label={expanded ? "사이드바 너비 조절" : "사이드바 펼치기"}
+      title={
+        expanded ? "드래그: 너비 조절, 클릭: 접기" : "클릭: 사이드바 펼치기"
+      }
+      onClick={(event) => {
+        onClick?.(event)
+        if (skipClickRef.current) {
+          skipClickRef.current = false
+          return
+        }
+        toggleSidebar()
+      }}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        if (!expanded) return
+        const container = event.currentTarget.closest<HTMLElement>(
+          '[data-slot="sidebar-container"]'
+        )
+        const current = width ?? container?.offsetWidth
+        if (current === undefined) return
+        const direction = container?.dataset.side === "right" ? -1 : 1
+        const next = {
+          ArrowLeft: current - SIDEBAR_WIDTH_KEYBOARD_STEP * direction,
+          ArrowRight: current + SIDEBAR_WIDTH_KEYBOARD_STEP * direction,
+          Home: SIDEBAR_WIDTH_MIN,
+          End: SIDEBAR_WIDTH_MAX,
+        }[event.key]
+        if (next === undefined) return
+        event.preventDefault()
+        commitWidth(next)
+      }}
+      onPointerDown={(event) => {
+        onPointerDown?.(event)
+        skipClickRef.current = false
+        if (!expanded || event.button !== 0) return
+        const container = event.currentTarget.closest<HTMLElement>(
+          '[data-slot="sidebar-container"]'
+        )
+        if (!container) return
+        event.currentTarget.setPointerCapture(event.pointerId)
+        dragRef.current = {
+          startX: event.clientX,
+          startWidth: container.offsetWidth,
+          direction: container.dataset.side === "right" ? -1 : 1,
+          moved: false,
+        }
+      }}
+      onPointerMove={(event) => {
+        onPointerMove?.(event)
+        const drag = dragRef.current
+        if (!drag) return
+        if (
+          !drag.moved &&
+          Math.abs(event.clientX - drag.startX) < SIDEBAR_DRAG_THRESHOLD
+        ) {
+          return
+        }
+        drag.moved = true
+        previewWidth(dragWidth(event.clientX))
+      }}
+      onPointerUp={(event) => {
+        onPointerUp?.(event)
+        const drag = dragRef.current
+        if (!drag) return
+        if (drag.moved) {
+          skipClickRef.current = true
+          const next = dragWidth(event.clientX)
+          if (next !== null) commitWidth(next)
+        }
+        dragRef.current = null
+        previewWidth(null)
+      }}
+      onPointerCancel={(event) => {
+        onPointerCancel?.(event)
+        dragRef.current = null
+        previewWidth(null)
+      }}
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
-        "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
+        "absolute inset-y-0 z-20 hidden w-4 touch-none transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] hover:after:bg-sidebar-border focus-visible:outline-none focus-visible:after:bg-sidebar-ring sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
+        "cursor-col-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full hover:group-data-[collapsible=offcanvas]:bg-sidebar",
         "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
@@ -307,7 +522,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "relative flex w-full flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        "relative flex w-full min-w-0 flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className
       )}
       {...props}
@@ -719,5 +934,7 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  SidebarStateScript,
+  SidebarWidthScript,
   useSidebar,
 }

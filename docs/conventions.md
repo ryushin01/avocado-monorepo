@@ -2,6 +2,28 @@
 
 모든 앱(`apps/*`)과 공통 패키지(`packages/*`)에 함께 적용합니다. 앱별 설계는 각 앱의 `docs/`나 README를 보세요.
 
+## 프론트엔드 구조 (Feature-Sliced Design)
+
+세 앱의 화면 코드는 `src` 아래 레이어로 나눕니다. **위 레이어는 아래 레이어만 가져옵니다.** `packages/config/eslint-fsd.mjs`가 `pnpm lint`에서 강제합니다.
+
+| 레이어 | 내용 |
+|---|---|
+| `app` | Next.js 라우트, 루트·공통 레이아웃, Route Handler. `page.tsx`는 `export { GamesPage as default } from "@/views/games"`처럼 다시 내보내기만 합니다 |
+| `views` | 화면 한 장. 데이터를 읽어 아래 조각을 조합합니다. FSD의 `pages`인데, `src/pages`는 Next.js가 Pages Router로 읽어서 이름을 바꿨습니다 |
+| `widgets` | 큰 화면 영역 (사이드바, 대시보드 차트 묶음, 목록 표) |
+| `features` | 사용자 동작 하나 (대화상자 + 서버 액션 `api/actions.ts`) |
+| `entities` | 도메인 개념: `model`(타입·규칙·검증), `ui`(배지처럼 표시만 하는 조각) |
+| `shared` | 도메인을 모르는 공통 코드: `lib`, `ui`, `api`, `config`. 슬라이스가 없어 파일 경로로 바로 가져옵니다 |
+
+- **같은 레이어의 다른 슬라이스는 가져오지 않습니다.** 둘을 함께 쓰려면 위 레이어에서 조합합니다. 엔티티끼리 꼭 필요하면 `entities/<대상>/@x/<소비자>.ts`로 내보냅니다.
+- **슬라이스 밖에서는 공개 API로만 가져옵니다.** 안에서는 상대 경로를 씁니다. `features`·`widgets`·`views`는 `@/features/<이름>`, `entities`는 아래 셋입니다.
+  - `@/entities/<이름>`: 타입·상수·규칙. React와 zod가 없어 서버·스크립트·브라우저 어디서나 씁니다.
+  - `@/entities/<이름>/ui`: 표시 컴포넌트.
+  - `@/entities/<이름>/schema`: zod 검증. 서버 코드(서버 액션, 페이지의 URL 파싱)에서 씁니다.
+- **`index.ts`에서는 이름을 하나씩 내보냅니다.** `"use client"` 모듈은 `export *`로 내보낼 수 없습니다.
+- **백오피스의 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.** `views`, `app`, `features/*/api`만 가져오고, 서버 코드는 `entities`의 model·schema와 `shared/lib`만 가져옵니다. 나머지 화면 조각은 props로 데이터를 받습니다.
+- **새 슬라이스는 처음부터 만들지 않아도 됩니다.** 한 화면에서만 쓰면 그 `views` 안에 두고, 여러 곳에서 쓰게 될 때 내립니다.
+
 ## UI
 
 - **모든 컴포넌트는 shadcn/ui로 만듭니다.**
@@ -24,6 +46,7 @@
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석
+  - `components/sidebar.tsx`: `SidebarRail`을 드래그해 너비 조절(192~384px, 클릭은 접기·펼치기, 키보드는 좌우 화살표·Home·End). 너비와 접힘 상태는 쿠키 대신 `localStorage`에 저장합니다(레이아웃이 정적이라 서버에서 쿠키를 읽을 수 없음). 사이드바를 쓰는 앱의 루트 레이아웃에 `SidebarWidthScript`(body 맨 앞)와 `SidebarStateScript`(children 바로 뒤)를 두어 새로고침 때 모양이 튀지 않게 합니다. `SidebarInset`의 `min-w-0`은 넓은 사이드바에서 표가 페이지를 밀어내지 않게 합니다
 - **문구는 한국어 존댓말**로 씁니다. 개수 단위는 게임 종류 "종", 박스 "개", 매장 "개"입니다.
 
 ## 차트
@@ -32,7 +55,7 @@
 - **형태는 데이터가 하는 일로 정합니다.**
   - 숫자 하나는 요약 칸(`StatTile`)으로 보여줍니다. 기간을 비교하는 화면에서는 지난 기간 대비 증감과 작은 추이선을 붙인 `KpiTile`(통계)을 씁니다.
   - 시간에 따른 변화는 선 그래프로 그립니다. 비교 기간은 같은 축에 회색 점선으로 겹칩니다(강조할 하나만 색, 나머지는 회색).
-  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`components/stats/usage-heatmap.tsx`).
+  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`widgets/stats/ui/usage-heatmap.tsx`).
     - 히트맵은 격자 자체가 접근 가능한 표(`role="grid"`, 칸마다 "월요일 14시 12회" 같은 이름)라서 따로 `sr-only` 표를 두지 않습니다.
     - 키보드는 Tab으로 한 번만 들어오고 안에서는 화살표·Home·End로 움직입니다(칸이 많은 위젯은 모두 이 방식).
     - `aria-hidden` 안에 초점을 받을 수 있는 요소를 두지 않습니다.
@@ -57,17 +80,19 @@
 
 ## 폼
 
-- **서버 액션이 `FormState`를 돌려줍니다**(`src/lib/form.ts`).
+- **서버 액션이 `FormState`를 돌려줍니다**(`src/shared/lib/form.ts`).
   - 성공하면 `message`, 실패하면 필드별 오류와 입력값을 돌려줍니다.
   - 권한·없는 데이터처럼 필드와 무관한 오류는 `formError(values, "메시지")`로 만듭니다.
-- **대화상자 폼은 `useDialogForm`**(`components/form/use-dialog-form.ts`)으로 만듭니다.
+- **대화상자 폼은 `useDialogForm`**(`shared/lib/use-dialog-form.ts`)으로 만듭니다.
   - 성공하면 창을 닫고 알림을 띄웁니다. 실패하면 입력값을 복원합니다.
   - `<form key={form.formKey}>`를 꼭 붙이세요. 다시 마운트해야 `defaultValue`가 복원됩니다.
 - **검증은 zod 스키마 하나로 서버에서 합니다.** 폼에는 `noValidate`를 붙여 브라우저 기본 검증을 끄고, 서버 오류 메시지를 일관되게 보여줍니다.
 
 ## 테스트
 
-- **단위 테스트(Vitest):** `src/**/*.test.ts`에 둡니다. repository·schema·권한·목록 계산처럼 화면과 무관한 규칙을 검증합니다.
+- **단위 테스트(Vitest):** `src/**/*.test.ts`에 둡니다. repository·schema·권한·목록 계산처럼 화면과 무관한 규칙을 검증합니다. Jest는 쓰지 않습니다. Vitest가 같은 API에 ESM·TypeScript를 설정 없이 지원하고, 두 러너를 함께 두면 설정만 늘어납니다.
+- **컴포넌트 테스트(Vitest + Testing Library):** 백오피스에서 `*.test.tsx`로 대상 옆에 둡니다. 서버 컴포넌트와 화면 흐름은 E2E로 확인하고, 여기서는 조건에 따라 달라지는 표시 조각만 봅니다.
+- **커버리지:** `pnpm test:coverage`. CI가 결과를 7일간 보관합니다. 기준선은 아직 정하지 않았습니다.
   - 백오피스 저장소 테스트는 `createTestDb({...})`로 테스트마다 새 메모리 PGlite를 만듭니다. 외래 키가 있으므로 기록이 가리키는 매장·게임도 함께 넣고, 날짜는 빈 문자열 대신 실제 날짜를 씁니다.
 - **E2E(Playwright):** `apps/admin/e2e/`에 있습니다. 백오피스(3100)와 키오스크 테스트용 런처(3101, 둔산점·개발용 기기 토큰)를 함께 띄웁니다. 두 앱 모두 **프로덕션 빌드**(`next build` → `next start`)로 띄우므로 E2E 시작 전에 빌드가 한 번 돕니다. 화면 대기 시간은 10초입니다.
   - 테스트는 병렬로 돕니다. **데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다.**
@@ -80,14 +105,30 @@
   - 테스트는 기본으로 관리자로 로그인한 상태입니다. `e2e/auth.setup.ts`가 먼저 실제 로그인 화면으로 로그인해 세션을 저장합니다. 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
   - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작하고, 프로덕션 모드라 `SEED_DEMO=1`로 개발용 시드를 넣습니다. 로그인 화면에 개발용 계정 안내가 나오지 않으므로 테스트는 `e2e/helpers.ts`의 계정을 씁니다.
   - 모바일 목록은 `waitForMobileList()`로 목록이 실제로 보일 때까지 기다린 뒤 다룹니다. Suspense 스트리밍 중에는 숨은 영역에 먼저 그려졌다가 옮겨지기 때문입니다.
-- **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다. E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
+- **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다(단위 테스트는 커버리지와 함께). E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
 - **작업을 마치면** 저장소 루트에서 `pnpm typecheck && pnpm lint && pnpm test && pnpm e2e && pnpm build`를 모두 통과시킵니다. Turborepo가 모든 앱·패키지에서 같은 이름의 스크립트를 실행합니다. `cacheComponents` 규칙 위반은 `build`에서만 드러나는 경우가 있습니다.
+
+## 오류 처리와 로그
+
+- **화면:** 앱마다 `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`가 있고 표시는 `shared/ui/error-notice.tsx`입니다. 백오피스는 `(backoffice)/error.tsx`도 두어 오류가 나도 사이드바가 남습니다. 런처의 오류·없는 화면은 손님이 떠나도 30초 뒤 처음 화면으로 돌아갑니다.
+- **Next.js 16의 오류 화면 prop은 `reset`이 아니라 `retry`입니다.** `error`는 `unknown`이라 `instanceof Error`로 좁힌 뒤 읽습니다.
+- **로그:** 서버 오류는 `@avocado/logger`가 한 줄 JSON으로 표준 오류에 남깁니다. 각 앱의 `src/instrumentation.ts`가 `onRequestError`로 넘기고, 백오피스 화면의 오류 번호는 로그의 `digest`와 같습니다.
+- **로그에 개인정보를 남기지 않습니다.** 요청 헤더와 쿼리 문자열(`phone4` 등)은 기록하지 않습니다. 직접 로그를 남길 때는 `logError`에 전화번호·이름·토큰을 넘기지 않습니다.
+- **잡아서 삼키는 오류는 로그를 남깁니다.** 손님 화면에 연결 문제로만 보이는 런처의 백오피스 호출 실패가 그 예입니다(`shared/api/backoffice.ts`).
+
+## 코드 리뷰
+
+CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`이고, 이 문서의 규칙을 경로별 지침으로 넣어 두었습니다. 규칙을 바꾸면 그 파일도 함께 고칩니다.
 
 ## 알려진 함정
 
 | 증상 | 원인 | 해결 |
 |---|---|---|
+| 서버 로그에 손님 전화번호가 찍힘 | Drizzle 오류 메시지에 쿼리 값(`params:`)이 들어 있고 Next.js가 이를 그대로 출력함 | 백오피스 `instrumentation.ts`의 `register`에서 `redactConsoleErrors()`로 가림 |
+| 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
+| 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
+| `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
 | 모바일에서 하이드레이션 불일치 | 사이드바 틀을 Suspense 안에 두면, 바깥이 먼저 하이드레이션되며 `useIsMobile`이 바뀐 뒤 사이드바가 하이드레이션됨 | 틀은 Suspense 밖, 사용자별 영역만 슬롯으로 Suspense |
 | 빌드 실패: `Math.random()` in a Client Component | shadcn `SidebarMenuSkeleton`이 무작위 너비를 씀 | 고정 너비로 `Skeleton`을 직접 그림 |
 | Base UI "default value of an uncontrolled Select changed" 경고 | `await` 뒤 `setState`가 액션 결과와 따로 커밋됨 | 다시 마운트용 카운터를 액션 상태 안에 둠 (`useDialogForm`) |

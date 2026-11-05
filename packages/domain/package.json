@@ -13,11 +13,13 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "import:avocado": "node scripts/import-avocado.mjs",
     "import:avocado-images": "node scripts/import-avocado-images.mjs"
   },
   "devDependencies": {
     "@avocado/config": "workspace:*",
+    "@vitest/coverage-v8": "5.1.0",
     "sharp": "^0.35.5",
     "typescript": "^5",
     "vitest": "^5.1.0"

@@ -97,3 +97,11 @@ test("키오스크 게임 둘러보기: 인원·이용 가능으로 거르고 �
   // 스트리밍 중에는 숨은 영역에 같은 글자가 잠깐 하나 더 있으므로 화면에 보이는 제목으로 찾는다.
   await expect(kiosk.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
 });
+
+test("키오스크의 없는 주소는 안내 화면에서 처음 화면으로 돌아간다", async ({ page }) => {
+  const response = await page.goto(`${LAUNCHER_URL}/없는-화면`);
+  expect(response?.status()).toBe(404);
+  await expect(page.getByText("화면을 찾을 수 없습니다")).toBeVisible();
+  await page.getByRole("link", { name: "처음 화면으로" }).click();
+  await expect(page).toHaveURL(`${LAUNCHER_URL}/`);
+});

@@ -91,7 +91,8 @@ packages/
 ├─ domain/       카탈로그 데이터·썸네일, 공통 타입, avocado 변환 스크립트
 └─ config/       tsconfig, ESLint
 docs/
-└─ conventions.md  모든 앱 공통 작성 규칙
+├─ conventions.md  모든 앱 공통 작성 규칙
+└─ deployment.md   배포 전 점검
 ```
 
 ## 문서
@@ -100,10 +101,11 @@ docs/
 - [apps/admin/docs/architecture.md](apps/admin/docs/architecture.md): 도메인 모델, 권한, 키오스크 API, Next.js 16 렌더링 규칙
 - [apps/launcher/README.md](apps/launcher/README.md), [apps/web/README.md](apps/web/README.md)
 - [docs/conventions.md](docs/conventions.md): UI·폼·테스트 규칙과 알려진 함정
+- [docs/deployment.md](docs/deployment.md): 배포 전 점검 (환경 변수, 첫 관리자, 마이그레이션, 보안)
 
 ## 아직 하지 않은 것
 
-- 배포 설정 (운영 PostgreSQL, 비밀 값 관리)
+- 배포 설정 (배포할 곳 미정, 점검 목록은 `docs/deployment.md`). 운영 첫 관리자 계정을 만드는 방법이 아직 없음
 - 예약: 손님이 직접 하는 온라인 예약, 정원·테이블 배정, 문자 알림(대기 호출 등)
 - 홈페이지 E2E 테스트 (런처는 키오스크 흐름만 백오피스 E2E에서 확인)
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

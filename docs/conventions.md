@@ -106,4 +106,5 @@
 | lint `react-hooks/purity`: Cannot call impure function during render | 서버 컴포넌트에서 `Date.now()` 호출 | `data.ts`에서 조회 시각을 데이터와 함께 돌려줌 |
 | 게임 썸네일이 원형으로 잘림 | shadcn `Avatar`의 이미지·테두리(`after:`)가 기본 `rounded-full` | `GameThumbnail`에서 `after:rounded-md`, 이미지 `rounded-md` |
 | 루트 `pnpm e2e`에서만 가끔 `ERR_CONNECTION_REFUSED`와 함께 방금 만든 데이터가 사라짐 | 개발 서버(`next dev`)는 메모리가 한도의 80%를 넘으면 스스로 다시 켜짐(`devMemoryThresholdRestart`). 메모리 DB가 초기화되고 잠깐 접속이 끊김 | E2E는 프로덕션 빌드로 돌린다 (`playwright.config.ts`의 `webServer`) |
+| CI에서만 저장소 단위 테스트가 "Test timed out in 5000ms" | 테스트마다 새 PGlite를 열고 마이그레이션을 적용해 느린 컴퓨터에서는 5초를 넘김 | 백오피스 Vitest 설정의 `testTimeout: 30_000` |
 | 비활성 Select 값이 제출되지 않음 | 비활성 폼 컨트롤은 값을 보내지 않음 | 숨은 `<input>`으로 같은 값을 보냄 (직원 수정의 역할) |

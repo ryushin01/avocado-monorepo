@@ -125,7 +125,7 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 
 | 증상 | 원인 | 해결 |
 |---|---|---|
-| 서버 로그에 손님 전화번호가 찍힘 | Drizzle 오류 메시지에 쿼리 값(`params:`)이 들어 있고 Next.js가 이를 그대로 출력함 | 백오피스 `instrumentation.ts`의 `register`에서 `redactConsoleErrors()`로 가림 |
+| 서버 로그에 손님 전화번호가 찍힘 | Drizzle 오류 메시지에 쿼리 값(`params:`)이 들어 있고 Next.js가 이를 그대로 출력함 | 백오피스 `instrumentation.ts`의 `register`에서 `redactConsoleErrors()`로 가림. `server/log-redaction.test.ts`가 실제 DB 오류로 확인하므로 Drizzle을 올려 형식이 바뀌면 이 테스트가 실패함 |
 | 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
 | 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
 | `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |

@@ -20,8 +20,10 @@
 - **목록 화면:** 검색·카테고리·상태 필터가 URL에 남아 공유하거나 새로고침해도 유지됩니다.
   - 데스크톱(768px 이상): 표 + 페이지 번호(20개씩)
   - 모바일: 카드 목록 + 무한 스크롤
+- **사이드바:** 가장자리 핸들을 드래그하거나 키보드로 너비를 조절하고, 클릭하면 접습니다. 너비와 접힘 상태는 브라우저에 저장됩니다.
+- **오류:** 오류 화면에 오류 번호가 나오고, 같은 번호(`digest`)로 서버 로그를 찾습니다.
 - **권한:** 화면에서 버튼을 숨기는 것과 별도로, 모든 서버 액션이 서버에서 권한을 다시 확인합니다. 스태프가 주소에 다른 매장을 넣어도 소속 매장만 보입니다.
-- **게임 데이터:** [avocado](../avocado-master) 프로젝트의 보드게임 110개와 유형 분류(전략·테마·가족·파티·추상 전략·워게임·컬렉터블 게임)를 씁니다.
+- **게임 데이터:** [avocado](https://github.com/ryushin01/avocado) 프로젝트의 보드게임 110개와 유형 분류(전략·테마·가족·파티·추상 전략·워게임·컬렉터블 게임)를 씁니다.
 - **인기 순위:** 최근 7일(주간)·30일(월간)의 이용 시작 횟수로 매깁니다. 이용 기록 화면에서 입력한 기록이 바로 반영되고, 서버를 켤 때 매장별 60일치 목 기록이 함께 만들어집니다.
 - **대여·반납:** 이용 가능 상태이고 남은 박스가 있는 게임만 빌려줄 수 있습니다. 이용 중인 박스가 있으면 재고에서 제외하거나 그보다 적게 줄일 수 없습니다.
 - **폐점:** 폐점한 매장은 대시보드 집계와 재고·이용 기록의 매장 선택에서 빠지고, 재고·기록은 남습니다. 이용 중인 게임이 있으면 폐점할 수 없습니다.
@@ -99,11 +101,12 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 
 ```
 src/
+├─ instrumentation.ts        서버 오류 로그, 쿼리 값 가리기
 ├─ app/                      Next.js 라우트. page.tsx는 views를 다시 내보내기만 함
 │  ├─ (backoffice)/          사이드바가 있는 화면들 (layout.tsx)
 │  ├─ login/ password/       로그인, 비밀번호 변경
 │  ├─ api/kiosk/             가맹점 런처(키오스크)용 API, api/auth/ Auth.js
-│  └─ forbidden.tsx          403 화면
+│  └─ forbidden.tsx, error.tsx, global-error.tsx, not-found.tsx   403·오류·404 화면
 ├─ views/                    화면 한 장: 데이터를 읽어 아래 조각을 조합 (dashboard, stats, games, inventory, plays, reservations, cafes, staff, login, password)
 ├─ widgets/                  큰 화면 영역: app-shell(사이드바·헤더), dashboard, stats, catalog-list, inventory-list, play-list, reservation-board, cafe-list, staff-list
 ├─ features/                 사용자 동작(대화상자 + 서버 액션 api/actions.ts): auth, manage-game, manage-inventory, manage-cafe, manage-staff, manage-reservation, record-play, filter-list, filter-stats

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { logError } from "@avocado/logger";
 import type {
   KioskApiError,
   KioskCafeGames,
@@ -42,8 +43,13 @@ async function call<T>(path: string, init?: { method: "POST"; body: unknown }): 
     if (res.status >= 400 && res.status < 500 && res.status !== 401) {
       return { ok: false, reason: "rejected", error };
     }
+    // 토큰이 틀렸거나 백오피스가 고장난 경우. 손님 화면에는 연결 문제로만 보이므로 원인은 로그로 남긴다.
+    logError("launcher", "backoffice_error", { path: url.pathname, status: res.status });
     return { ok: false, reason: "unreachable", error };
-  } catch {
+  } catch (cause) {
+    // 프리렌더링이 끝나 Next.js가 요청을 끊은 것은 장애가 아니다.
+    const interrupted = cause instanceof Error && cause.message.startsWith("During prerendering");
+    if (!interrupted) logError("launcher", "backoffice_unreachable", { path: url.pathname, error: cause });
     return { ok: false, reason: "unreachable" };
   }
 }

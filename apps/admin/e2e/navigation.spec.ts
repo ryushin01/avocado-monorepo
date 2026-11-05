@@ -73,3 +73,38 @@ test("사이드바 핸들을 드래그해 너비를 바꾸고, 새로고침해�
   await expect(page.locator('[data-slot="sidebar"]')).toHaveAttribute("data-state", "expanded");
   await expect.poll(widthOf).toBe(384);
 });
+
+test("접어 둔 사이드바는 새로고침해도 접혀 있고, 화면 스크립트가 돌기 전에도 접힌 모양이다", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const sidebar = page.locator('[data-slot="sidebar"]');
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+
+  await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+  await page.reload();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+  await expect(page.locator('[data-slot="sidebar-container"]')).toHaveCSS("width", "48px");
+
+  // 번들을 막아 하이드레이션 없이 서버 HTML과 인라인 스크립트만으로 접힌 모양인지 본다.
+  await page.route("**/_next/static/**/*.js", (route) => route.abort());
+  await page.reload();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+  await expect(sidebar).toHaveAttribute("data-collapsible", "icon");
+  await page.unroute("**/_next/static/**/*.js");
+
+  await page.reload();
+  await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await page.reload();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+});
+
+test("없는 주소는 안내 화면을 보여 주고 대시보드로 돌아간다", async ({ page }) => {
+  const response = await page.goto("/없는-페이지");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();
+  await page.getByRole("link", { name: "대시보드로 이동" }).click();
+  await expect(page).toHaveURL("/");
+});

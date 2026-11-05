@@ -28,6 +28,10 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 
 | 명령 | 설명 |
 |---|---|
+| `pnpm dev` | 세 앱을 모두 띄움 (DB 설치 불필요, 처음 실행 때 시드 데이터를 넣음) |
+| `pnpm dev:admin` | 백오피스만 |
+| `pnpm dev:launcher` | 런처와 런처가 읽는 백오피스 |
+| `pnpm dev:web` | 홍보 사이트만 |
 | `pnpm build` | 모든 앱 프로덕션 빌드 |
 | `pnpm typecheck` | 모든 앱·패키지 타입 검사 |
 | `pnpm lint` | ESLint |
@@ -38,7 +42,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·아이콘을 홍보 사이트용 webp로 다시 생성 (`apps/web/public/images`) |
 
-푸시와 PR마다 GitHub Actions가 검사를 모두 실행합니다(`.github/workflows/ci.yml`). PR 리뷰는 CodeRabbit이 합니다(`.coderabbit.yaml`, GitHub에 앱 설치 필요).
+`main` 푸시와 PR마다 GitHub Actions가 검사를 모두 실행합니다(`.github/workflows/ci.yml`). PR 리뷰는 CodeRabbit이 합니다(`.coderabbit.yaml`, GitHub에 앱 설치 필요).
 
 avocado 데이터가 바뀌면 `import:avocado-images` → `import:avocado` 순서로 실행합니다. 둘 다 기본으로 이 저장소 옆의 `../avocado-master`를 읽고, 다른 위치라면 경로를 인자로 넘기세요.
 

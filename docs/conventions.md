@@ -119,7 +119,7 @@
 
 ## 보안 헤더와 요청 제한
 
-- **헤더:** 세 앱의 `next.config.ts`가 `@avocado/config/security-headers`를 씁니다. 다른 주소의 이미지를 새로 쓰면 `imgSrc`에 추가합니다. 외부 스크립트는 막혀 있습니다.
+- **헤더:** 세 앱의 `next.config.ts`가 `@avocado/config/security-headers`를 씁니다. 백오피스와 런처는 관리자가 입력한 게임 이미지 때문에 `http:`, `https:` 이미지를 허용합니다. 다른 앱에서 외부 이미지를 새로 쓰면 `imgSrc`에 추가합니다. 외부 스크립트는 막혀 있습니다.
 - **`script-src`의 `unsafe-inline`:** nonce 방식은 Partial Prefetching과 함께 쓸 수 없어 남겨 두었습니다. 인라인 스크립트 삽입 공격까지 막아 주지는 않으니, HTML을 직접 넣는 코드를 쓰지 않습니다.
 - **요청 제한:** 손님 정보를 다루는 키오스크 API는 인증 뒤 `rejectOverKioskLimit`을 부릅니다(기기별 분당 30번, 넘으면 429). 새 API도 같습니다.
 

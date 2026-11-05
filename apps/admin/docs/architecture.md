@@ -17,6 +17,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 | `Reservation` | `src/entities/reservation/model/types.ts` | 예약. 이름·휴대전화·인원·방문 시각·메모, 상태 `pending`(가예약)·`confirmed`(확정)·`seated`(입장)·`cancelled`(취소)·`no_show`(노쇼), 키오스크 도착 시각 `arrivedAt` |
 | `WaitlistEntry` | `src/entities/waitlist/model/types.ts` | 현장 대기. 그날 매장별 번호, 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
 | `User` | `src/entities/user/model/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 로그인 계정이며 비밀번호는 bcrypt 해시로 `users.password_hash`에 둔다. |
+| `AuditEntry` | `src/entities/audit/model/types.ts` | 관리 작업 한 건. 시각·직원(그때 이름)·작업·대상 이름·매장·내용. 추가만 하고 고치거나 지우지 않는다. |
 
 정해 둔 것:
 
@@ -59,6 +60,12 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
   - 폐점한 매장은 `visibleCafes`에서 빠지므로 대시보드 집계, 재고·이용 기록의 매장 선택, 카탈로그의 보유 현황에 나오지 않습니다. 재고와 이용 기록은 지우지 않습니다.
   - 이용 중인 게임이 있으면 폐점할 수 없습니다. 운영 재개는 언제든 할 수 있습니다.
   - 폐점 매장의 스태프는 재고·이용 기록에서 '매장 없음'을 봅니다. 직원 관리에서 다른 매장으로 옮깁니다.
+- **변경 이력** (`server/audit/`, 화면 `/audit`)
+  - **남기는 작업:** 재고 추가·수정·상태 변경·제외, 게임 등록·수정, 매장 등록·수정·폐점·운영 재개, 직원 등록·수정·퇴사·복직, 키오스크 토큰 발급·폐기. 서버 액션이 변경에 성공한 뒤 `recordAudit`을 부릅니다.
+  - **남기지 않는 작업:** 예약·대기(손님 정보)와 이용 기록(횟수가 많고 그 자체가 기록). 본인 비밀번호 변경과 로그인도 남기지 않습니다.
+  - **내용에 넣지 않는 값:** 비밀번호, 토큰 원문(앞부분만), 손님 정보.
+  - **한계:** 변경과 한 트랜잭션이 아닙니다. 기록에 실패하면 변경은 그대로 두고 `audit_write_failed` 로그를 남기므로, 이때는 이력 한 건이 빠질 수 있습니다. DB에 직접 손댄 변경도 남지 않습니다.
+  - 보관 기간은 아직 정하지 않았습니다. 지금은 지우지 않습니다.
 - **직원 규칙** (`server/users/repository.ts`)
   - 이메일은 겹칠 수 없습니다(대소문자 무시). 스태프의 소속 매장은 운영 중이어야 하고, 관리자는 소속 매장이 없습니다.
   - 자기 역할은 바꿀 수 없고 자신을 퇴사 처리할 수 없습니다. 재직 중인 관리자가 한 명은 남아야 합니다.
@@ -75,7 +82,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 | 재고·이용 기록은 관리자는 모든 매장, 스태프는 소속 매장만 | `canManageInventory`, `canRecordPlays` |
 | 매장·직원 관리는 관리자만 | `canManageOrganization` |
 | 화면에 보여줄 매장: 운영 중인 매장 중에서, 스태프는 요청과 관계없이 소속 매장, 관리자는 요청한 매장(잘못되면 첫 매장) | `resolveCafe`, `visibleCafes` |
-| 페이지 단위 역할 제한 (`/cafes`, `/staff`) | `requireRole` (`server/auth/guard.ts`, 권한 없으면 `forbidden()` → 403) |
+| 페이지 단위 역할 제한 (`/cafes`, `/staff`, `/audit`) | `requireRole` (`server/auth/guard.ts`, 권한 없으면 `forbidden()` → 403) |
 
 화면에서 버튼을 숨기는 것은 편의일 뿐입니다. **모든 서버 액션은 시작할 때 `getCurrentUser()`로 권한을 다시 확인합니다.** 새 액션을 만들 때도 같은 규칙을 지키세요.
 

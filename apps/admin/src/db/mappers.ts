@@ -1,3 +1,4 @@
+import type { AuditEntry } from "@/entities/audit";
 import type { User } from "@/entities/user";
 import type { Cafe } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
@@ -135,4 +136,16 @@ export const fromWaitlistEntry = (e: WaitlistEntry): Insert<typeof schema.waitli
   createdAt: new Date(e.createdAt),
   calledAt: date(e.calledAt),
   closedAt: date(e.closedAt),
+});
+
+export const toAuditEntry = (r: Row<typeof schema.auditLogs>, cafeName: string | null): AuditEntry => ({
+  id: r.id,
+  at: r.at.toISOString(),
+  actorId: r.actorId,
+  actorName: r.actorName,
+  action: r.action,
+  targetName: r.targetName,
+  cafeId: opt(r.cafeId),
+  cafeName: opt(cafeName),
+  detail: opt(r.detail),
 });

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { recordAudit } from "@/server/audit/data";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { canManageInventory } from "@/entities/user";
 import {
@@ -23,6 +24,8 @@ import {
 import { INVENTORY_STATUS_LABELS, type InventoryEntry, type InventoryFilter, type InventoryStatus } from "@/entities/inventory";
 import { inventoryAddSchema, inventoryEditSchema, inventoryFilterSchema, inventoryStatusSchema } from "@/entities/inventory/schema";
 import type { ListResult } from "@/shared/lib/list";
+
+import { describeInventoryChange } from "../model/describe-change";
 
 const FORBIDDEN = "이 매장의 재고를 관리할 권한이 없습니다.";
 const NOT_FOUND = "재고를 찾을 수 없습니다. 목록을 새로고침해주세요.";
@@ -46,7 +49,8 @@ export async function addInventoryAction(
   formData: FormData,
 ): Promise<FormState> {
   const values = formDataToObject(formData);
-  if (!(await hasAccess(cafeId))) return formError(values, FORBIDDEN);
+  const actor = await getCurrentUser();
+  if (!canManageInventory(actor, cafeId)) return formError(values, FORBIDDEN);
 
   const parsed = inventoryAddSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
@@ -54,6 +58,12 @@ export async function addInventoryAction(
   const entry = await addInventory(cafeId, parsed.data.gameId, parsed.data.quantity);
   if (!entry) return formError(values, "이미 보유 중이거나 없는 게임입니다.");
 
+  await recordAudit(actor, {
+    action: "inventory.add",
+    targetName: entry.game.name,
+    cafeId,
+    detail: `수량 ${entry.quantity}개`,
+  });
   revalidate();
   return { status: "success", message: `'${entry.game.name}'을(를) 재고에 추가했습니다.` };
 }
@@ -65,11 +75,13 @@ export async function editInventoryAction(
   formData: FormData,
 ): Promise<FormState> {
   const values = formDataToObject(formData);
-  if (!(await hasAccess(cafeId))) return formError(values, FORBIDDEN);
+  const actor = await getCurrentUser();
+  if (!canManageInventory(actor, cafeId)) return formError(values, FORBIDDEN);
 
   const parsed = inventoryEditSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
 
+  const before = await getInventory(cafeId, gameId);
   const entry = await updateInventory(cafeId, gameId, parsed.data);
   if (entry === "not-found") return formError(values, NOT_FOUND);
   if (entry === "in-use") {
@@ -83,6 +95,12 @@ export async function editInventoryAction(
     };
   }
 
+  await recordAudit(actor, {
+    action: "inventory.update",
+    targetName: entry.game.name,
+    cafeId,
+    detail: describeInventoryChange(before, entry),
+  });
   revalidate();
   return { status: "success", message: `'${entry.game.name}' 재고를 수정했습니다.` };
 }
@@ -92,13 +110,21 @@ export async function changeInventoryStatusAction(
   gameId: string,
   status: InventoryStatus,
 ): Promise<ActionResult> {
-  if (!(await hasAccess(cafeId))) return { ok: false, message: FORBIDDEN };
+  const actor = await getCurrentUser();
+  if (!canManageInventory(actor, cafeId)) return { ok: false, message: FORBIDDEN };
   const parsed = inventoryStatusSchema.safeParse(status);
   if (!parsed.success) return { ok: false, message: "알 수 없는 상태입니다." };
 
+  const before = await getInventory(cafeId, gameId);
   const entry = await updateInventory(cafeId, gameId, { status: parsed.data });
   if (typeof entry === "string") return { ok: false, message: NOT_FOUND };
 
+  await recordAudit(actor, {
+    action: "inventory.status",
+    targetName: entry.game.name,
+    cafeId,
+    detail: describeInventoryChange(before, entry),
+  });
   revalidate();
   return {
     ok: true,
@@ -111,10 +137,12 @@ export async function removeInventoryAction(
   gameId: string,
   gameName: string,
 ): Promise<ActionResult> {
-  if (!(await hasAccess(cafeId))) return { ok: false, message: FORBIDDEN };
+  const actor = await getCurrentUser();
+  if (!canManageInventory(actor, cafeId)) return { ok: false, message: FORBIDDEN };
   const result = await removeInventory(cafeId, gameId);
   if (result === "not-found") return { ok: false, message: NOT_FOUND };
   if (result === "in-use") return { ok: false, message: IN_USE_REMOVE };
+  await recordAudit(actor, { action: "inventory.remove", targetName: gameName, cafeId });
   revalidate();
   return { ok: true, message: `'${gameName}'을(를) 재고에서 제외했습니다.` };
 }

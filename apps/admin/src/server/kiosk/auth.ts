@@ -1,10 +1,19 @@
 import "server-only";
 
 import type { KioskApiError } from "@avocado/domain/kiosk";
+import { logError } from "@avocado/logger";
 
 import { getDb } from "@/db/server";
 
-import { createKioskDeviceRepository, type KioskVerifyResult } from "./devices";
+import { createRateLimiter } from "../rate-limit/repository";
+import { createKioskDeviceRepository, hashKioskToken, type KioskVerifyResult } from "./devices";
+
+/**
+ * 전화번호 뒷자리로 손님을 찾거나 대기를 등록하는 요청의 기기별 제한.
+ * 뒷자리는 1만 가지뿐이라, 토큰이 유출돼도 빠르게 훑어보지 못하게 한다.
+ * 분당 30번이면 1만 가지를 다 시도하는 데 5시간 넘게 걸리고, 손님 사용에는 부족하지 않다.
+ */
+export const KIOSK_GUEST_LIMIT = { limit: 30, windowMs: 60_000 };
 
 /**
  * 키오스크 API 접근 규칙 (DB와 무관한 순수 함수).
@@ -36,6 +45,19 @@ export async function rejectUnauthorizedKiosk(request: Request, cafeId: string):
     process.env.NODE_ENV === "production",
   );
   return denied ? kioskError(denied.status, denied.message) : null;
+}
+
+/** 손님 정보를 다루는 요청에서 인증 뒤에 부른다. 넘으면 보낼 응답, 괜찮으면 null */
+export async function rejectOverKioskLimit(request: Request, cafeId: string): Promise<Response | null> {
+  const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
+  // 토큰 원문은 저장하지 않는다. 토큰 없는 요청은 개발 중에만 여기까지 온다.
+  const key = token ? `kiosk:${hashKioskToken(token)}` : `kiosk:no-token:${cafeId}`;
+  const result = await createRateLimiter(await getDb()).consume(key, KIOSK_GUEST_LIMIT, new Date());
+  if (result.allowed) return null;
+  logError("admin", "kiosk_rate_limited", { cafeId });
+  const response = kioskError(429, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+  response.headers.set("Retry-After", String(result.retryAfterSeconds));
+  return response;
 }
 
 export const kioskError = (status: number, message: string, fieldErrors?: KioskApiError["fieldErrors"]) =>

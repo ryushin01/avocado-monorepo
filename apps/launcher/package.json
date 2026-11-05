@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@avocado/config": "workspace:*",
     "@avocado/domain": "workspace:*",
     "@avocado/logger": "workspace:*",
     "@avocado/ui": "workspace:*",
@@ -22,7 +23,6 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
-    "@avocado/config": "workspace:*",
     "@tailwindcss/turbopack": "^4.3.4",
     "@types/node": "^24.19.2",
     "@types/react": "^19",

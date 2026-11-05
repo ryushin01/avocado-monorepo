@@ -1,6 +1,6 @@
 import type { KioskReservationLookup } from "@avocado/domain/kiosk";
 
-import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/server/kiosk/auth";
+import { kioskError, kioskJson, rejectOverKioskLimit, rejectUnauthorizedKiosk } from "@/server/kiosk/auth";
 import { findOpenCafe } from "@/server/kiosk/open-cafe";
 import { toKioskReservation } from "@/server/kiosk/to-kiosk-guest";
 import { findReservationsForKiosk } from "@/server/reservations/data";
@@ -11,6 +11,8 @@ export async function GET(request: Request, ctx: RouteContext<"/api/kiosk/cafes/
   const { cafeId } = await ctx.params;
   const denied = await rejectUnauthorizedKiosk(request, cafeId);
   if (denied) return denied;
+  const limited = await rejectOverKioskLimit(request, cafeId);
+  if (limited) return limited;
   const cafe = await findOpenCafe(cafeId);
   if (!cafe) return kioskError(404, "운영 중인 매장이 아닙니다.");
   const phone4 = phoneLast4Schema.safeParse(new URL(request.url).searchParams.get("phone4"));

@@ -1,6 +1,14 @@
 import { hasRole, type Role, type User } from "@/lib/auth/roles";
 
-export type NavIcon = "dashboard" | "stats" | "cafes" | "games" | "inventory" | "plays" | "staff";
+export type NavIcon =
+  | "dashboard"
+  | "stats"
+  | "cafes"
+  | "games"
+  | "inventory"
+  | "plays"
+  | "reservations"
+  | "staff";
 
 export type NavItem = {
   title: string;
@@ -20,6 +28,12 @@ export const NAV_ITEMS: readonly NavItem[] = [
     roles: ["admin", "staff"],
   },
   { title: "이용 기록", href: "/plays", icon: "plays", roles: ["admin", "staff"] },
+  {
+    title: "예약·대기",
+    href: "/reservations",
+    icon: "reservations",
+    roles: ["admin", "staff"],
+  },
   { title: "매장 관리", href: "/cafes", icon: "cafes", roles: ["admin"] },
   { title: "직원 관리", href: "/staff", icon: "staff", roles: ["admin"] },
 ];

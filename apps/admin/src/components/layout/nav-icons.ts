@@ -1,5 +1,6 @@
 import {
   Boxes,
+  CalendarClock,
   ChartLine,
   Dices,
   LayoutDashboard,
@@ -17,6 +18,7 @@ export const NAV_ICONS: Record<NavIcon, LucideIcon> = {
   games: Dices,
   inventory: Boxes,
   plays: Timer,
+  reservations: CalendarClock,
   cafes: Store,
   staff: Users,
 };

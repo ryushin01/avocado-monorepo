@@ -8,6 +8,9 @@ import { createSeedInventory } from "@/lib/inventory/seed";
 import type { InventoryItem } from "@/lib/inventory/types";
 import { createSeedPlays } from "@/lib/plays/seed";
 import type { PlaySession } from "@/lib/plays/types";
+import { createSeedReservations, createSeedWaitlist } from "@/lib/reservations/seed";
+import type { Reservation } from "@/lib/reservations/types";
+import type { WaitlistEntry } from "@/lib/waitlist/types";
 
 /**
  * 백엔드가 정해지기 전까지 쓰는 인메모리 저장소.
@@ -21,13 +24,19 @@ export type MockDb = {
   plays: PlaySession[];
   /** 직원 (개발용 계정 전환 목록이기도 하다) */
   users: User[];
+  /** 예약 */
+  reservations: Reservation[];
+  /** 현장 대기 */
+  waitlist: WaitlistEntry[];
   nextGameId: number;
   nextCafeId: number;
   nextUserId: number;
   nextPlayId: number;
+  nextReservationId: number;
+  nextWaitlistId: number;
 };
 
-type Collections = "cafes" | "games" | "inventory" | "plays" | "users";
+type Collections = "cafes" | "games" | "inventory" | "plays" | "users" | "reservations" | "waitlist";
 
 export function createMockDb(
   init: Partial<Pick<MockDb, Collections>> = {},
@@ -38,15 +47,21 @@ export function createMockDb(
   const inventory = init.inventory ?? createSeedInventory(cafes, games);
   const plays = init.plays ?? createSeedPlays(cafes, games, inventory, now);
   const users = init.users ?? SEED_USERS.map((u) => ({ ...u }));
+  const reservations = init.reservations ?? createSeedReservations(cafes, now);
+  const waitlist = init.waitlist ?? createSeedWaitlist(cafes, now);
   return {
     cafes,
     games,
     inventory,
     plays,
     users,
+    reservations,
+    waitlist,
     nextGameId: games.length + 1,
     nextCafeId: cafes.length + 1,
     nextUserId: users.length + 1,
     nextPlayId: plays.length + 1,
+    nextReservationId: reservations.length + 1,
+    nextWaitlistId: waitlist.length + 1,
   };
 }

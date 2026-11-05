@@ -14,6 +14,8 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 | `Cafe` | `src/lib/cafes/types.ts` | 프랜차이즈 매장 (시드는 가상의 5개 매장). 상태는 `open`(운영 중)·`closed`(폐점) |
 | `InventoryItem` | `src/lib/inventory/types.ts` | 매장 하나가 보유한 게임 하나. `(cafeId, gameId)`가 키. 보유 수량과 상태 하나(`available`·`maintenance`·`retired`) |
 | `PlaySession` | `src/lib/plays/types.ts` | 게임 한 번 대여. `startedAt`(이용 시작), `returnedAt`(반납, 없으면 이용 중), `playerCount`, `table`. 인기 순위를 계산한다. |
+| `Reservation` | `src/lib/reservations/types.ts` | 예약. 이름·휴대전화·인원·방문 시각·메모, 상태 `pending`(가예약)·`confirmed`(확정)·`seated`(입장)·`cancelled`(취소)·`no_show`(노쇼), 키오스크 도착 시각 `arrivedAt` |
+| `WaitlistEntry` | `src/lib/waitlist/types.ts` | 현장 대기. 그날 매장별 번호, 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
 | `User` | `src/lib/auth/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 목 DB `users`에 있고 개발용 계정 전환 목록이기도 하다. |
 
 정해 둔 것:
@@ -33,6 +35,17 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
   - **요약 수치:** 이용 횟수·하루 평균(늘면 좋음, 초록·빨강으로 표시), 평균 이용 시간·평균 인원(좋고 나쁨이 없어 회색). 평균 이용 시간은 반납한 기록만으로 계산합니다.
   - **요일·시간대:** 한국 시간 기준 이용 시작 횟수. 시간 범위는 기록이 있는 시간대(지금은 12~23시)입니다.
   - **박스당 이용(회전율):** 기간 이용 횟수 ÷ 범위 안 매장의 보유 박스(폐기 제외, 점검 중 포함). 많이 이용된 10개는 박스를 늘릴 후보, 적게 이용된 10개는 진열을 바꾸거나 옮길 후보입니다.
+- **예약 규칙** (`reservations/repository.ts`)
+  - 직원이 전화 등으로 받아 등록합니다(손님이 직접 예약하는 화면은 아직 없음). 기본 상태는 확정이고, 가예약으로 받을 수도 있습니다.
+  - 상태는 가예약 → 확정 → 입장, 또는 취소·노쇼로 끝납니다. 끝난 예약은 고치거나 상태를 바꿀 수 없고, 확정을 가예약으로 되돌리지 않습니다.
+  - 지난 시각으로 등록할 수 없습니다(수정할 때는 시각을 바꿀 때만 확인). 노쇼는 예약 시각이 지나야 처리할 수 있습니다.
+  - 정원·테이블 배정·중복 예약 제한은 아직 없습니다.
+- **현장 대기 규칙** (`waitlist/repository.ts`)
+  - 번호는 매장별로 한국 날짜마다 1번부터 매깁니다. 같은 휴대전화 번호는 한 번만 줄에 설 수 있습니다.
+  - 대기 중 → 호출 → 입장, 또는 이탈(호출 후 오지 않음·손님 취소). '앞에 남은 팀'은 줄에 있는(대기 중·호출) 팀 중 먼저 온 팀 수입니다.
+- **손님 정보 보호** (`guests/contact.ts`, `kiosk/to-kiosk-guest.ts`)
+  - 전화번호는 숫자만 저장하고 휴대전화(010~019)만 받습니다.
+  - 키오스크 응답에는 전화번호를 넣지 않고, 이름은 가려서(김*수) 보냅니다. 손님은 전화번호 뒷자리 4자리로만 찾습니다.
 - **인기 순위:** 지금 시각 기준 최근 7일(주간)·30일(월간)의 이용 시작 횟수로 매깁니다(이용 중인 기록 포함, 취소한 기록 제외). 횟수가 같으면 이름순이고, 1~10위만 보여줍니다.
   - 이용 기록 목 데이터(`plays/seed.ts`)는 서버를 켤 때 그 시각 기준 60일치를 만듭니다. 지난 기록은 모두 반납돼 있고, 매장마다 3~5개가 지금 이용 중입니다.
   - 매장이 보유한(폐기 제외) 게임만 이용됩니다. 게임별 인기도가 날마다 오르내려서 주간과 월간 순위가 달라집니다.
@@ -89,10 +102,15 @@ lib/mock-db                      cafes · games · inventory · plays · users �
 가맹점 런처가 매장 보유 게임과 지금 빌릴 수 있는지를 읽습니다.
 
 - `GET /api/kiosk/cafes/{cafeId}/games` → `KioskCafeGames` (`@avocado/domain/kiosk`에 응답 타입이 있습니다)
+- `GET /api/kiosk/cafes/{cafeId}/reservations?phone4=1234` → 오늘 아직 끝나지 않은 내 예약
+- `POST /api/kiosk/cafes/{cafeId}/reservations/{id}/check-in` `{ phone4 }` → 도착 알림 (뒷자리를 한 번 더 확인)
+- `GET /api/kiosk/cafes/{cafeId}/waitlist[?phone4=1234]` → 줄에 있는 팀 수와 내 대기
+- `POST /api/kiosk/cafes/{cafeId}/waitlist` `{ name, phone, partySize }` → 대기 등록. 입력 오류 400(`fieldErrors`), 같은 번호 중복 409
 - 운영 중인 매장만 응답하고, 없거나 폐점한 매장은 404입니다. 폐기한 게임은 빠집니다.
 - 상태: 남은 박스가 있으면 `available`, 모두 이용 중이면 `in-use`, 점검 중이면 `unavailable`
 - 썸네일은 백오피스 주소를 붙인 절대 주소입니다(런처가 다른 포트에서 뜨기 때문).
-- **아직 인증이 없습니다.** 읽기 전용 정보만 주며, 인증이 정해지면 매장별 키오스크 토큰을 확인해야 합니다.
+- **토큰:** 백오피스에 `KIOSK_API_TOKEN`을 설정하면 `Authorization: Bearer <토큰>`이 맞는 요청만 받습니다(아니면 401). 런처도 같은 값을 설정합니다. 설정하지 않으면(개발) 모두 받습니다. 지금은 모든 매장이 토큰 하나를 같이 쓰므로, 로그인이 정해지면 매장별 토큰으로 바꿔 토큰으로 매장도 확인해야 합니다.
+- 상태를 바꾸는 요청(도착, 대기 등록)은 백오피스 `/reservations` 화면을 갱신합니다.
 
 ### 백엔드로 바꿀 때
 

@@ -12,6 +12,7 @@
 | 통계 | `/stats` | 전체 또는 매장 하나 | 소속 매장 | 기간 분석(최근 7·14·28일 vs 그 전 같은 기간): 지난 기간 대비 증감과 추이선이 붙은 요약 수치, 일별 이용 추이, 요일·시간대 히트맵, 많이·거의 이용되지 않은 게임(박스당 이용), 매장별 비교(관리자) |
 | 보드게임 | `/games` | 조회·등록·수정 | 조회 | 모든 매장이 함께 쓰는 게임 카탈로그와 매장 보유 현황 |
 | 재고 관리 | `/inventory` | 모든 매장 | 소속 매장 | 매장별 보유 게임 추가·제외, 수량·상태(이용 가능/점검 중/폐기) 변경, 이용 중인 박스 수 |
+| 예약·대기 | `/reservations` | 모든 매장 | 소속 매장 | 현장 대기(키오스크 등록분 포함) 호출·입장·이탈, 직접 대기 등록. 날짜별 예약 등록·수정·확정·입장·노쇼·취소, 손님의 키오스크 도착 알림 표시 |
 | 이용 기록 | `/plays` | 모든 매장 | 소속 매장 | 게임 대여(이용 시작)·반납, 지금 이용 중 목록(경과 시간 1분마다 갱신), 지난 기록 검색(게임 이름·날짜) |
 | 매장 관리 | `/cafes` | ✅ | ❌ | 매장 등록·수정, 폐점 처리·운영 재개 |
 | 직원 관리 | `/staff` | ✅ | ❌ | 직원 등록·수정(역할·소속 매장), 퇴사·복직 처리 |
@@ -80,16 +81,18 @@ src/
 │  │  ├─ games/              카탈로그 화면 + 서버 액션
 │  │  ├─ inventory/          재고 화면 + 서버 액션
 │  │  ├─ plays/              이용 기록(대여·반납) 화면 + 서버 액션
+│  │  ├─ reservations/       예약·현장 대기 화면 + 서버 액션
 │  │  ├─ cafes/ staff/       매장·직원 관리 화면 + 서버 액션 (관리자)
 │  │  └─ mock-auth-actions.ts 개발용 계정 전환
-│  ├─ api/kiosk/             가맹점 런처(키오스크)용 조회 API
+│  ├─ api/kiosk/             가맹점 런처(키오스크)용 API (게임 조회, 예약 확인·도착, 대기 등록·조회)
 │  └─ forbidden.tsx          403 화면
 ├─ components/
 │  ├─ list/                  목록 공통: 툴바, 페이지네이션, 무한 스크롤, 빈 상태
 │  ├─ form/                  대화상자 폼 공통 훅
-│  ├─ games/ inventory/ plays/ cafes/ staff/ dashboard/ stats/ layout/
+│  ├─ games/ inventory/ plays/ reservations/ cafes/ staff/ dashboard/ stats/ layout/
 ├─ lib/
-│  ├─ games/ inventory/ cafes/ plays/ users/   도메인별 types · schema · repository · data(서버 전용) · seed
+│  ├─ games/ inventory/ cafes/ plays/ users/ reservations/ waitlist/ stats/   도메인별 types · schema · repository · data(서버 전용) · seed
+│  ├─ guests/                손님 연락처: 전화번호 정리·검증, 키오스크용 이름 가리기
 │  ├─ mock-db/               인메모리 저장소
 │  ├─ kiosk/                 재고 → 키오스크 응답 변환
 │  ├─ auth/                  현재 사용자, 역할, 권한

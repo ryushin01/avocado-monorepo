@@ -10,6 +10,7 @@ describe("getNavItemsFor", () => {
       "/games",
       "/inventory",
       "/plays",
+      "/reservations",
       "/cafes",
       "/staff",
     ]);
@@ -22,6 +23,7 @@ describe("getNavItemsFor", () => {
       "/games",
       "/inventory",
       "/plays",
+      "/reservations",
     ]);
   });
 });

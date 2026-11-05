@@ -9,7 +9,7 @@ import {
 } from "@avocado/ui/components/empty";
 
 /** 백오피스에 연결할 수 없거나 매장 설정이 잘못됐을 때 손님에게 보여주는 안내 */
-export function ConnectionError({ reason }: { reason: "not-found" | "unreachable" }) {
+export function ConnectionError({ reason }: { reason: "not-found" | "unreachable" | "rejected" }) {
   return (
     <Empty className="border bg-background">
       <EmptyHeader>

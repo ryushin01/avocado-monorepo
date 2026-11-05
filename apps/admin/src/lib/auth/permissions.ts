@@ -18,6 +18,9 @@ export function canManageInventory(
 /** 이용 기록(대여·반납)도 재고와 같은 범위다. */
 export const canRecordPlays = canManageInventory;
 
+/** 예약·현장 대기도 재고와 같은 범위다. */
+export const canManageReservations = canManageInventory;
+
 /** 매장·직원 관리는 관리자만 한다. */
 export function canManageOrganization(user: Pick<User, "role">) {
   return user.role === "admin";

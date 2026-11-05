@@ -2,7 +2,6 @@ import { CalendarCheck, Dices, ListOrdered } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { Badge } from "@avocado/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@avocado/ui/components/card";
 import { Skeleton } from "@avocado/ui/components/skeleton";
 
@@ -18,19 +17,9 @@ export default function HomePage() {
       </Suspense>
 
       <nav aria-label="메뉴" className="grid gap-6 md:grid-cols-3">
-        <Link href="/games" className="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-          <Card className="h-full transition-colors hover:bg-accent">
-            <CardHeader className="gap-3 py-6">
-              <Dices className="size-10" />
-              <CardTitle className="text-2xl">게임 둘러보기</CardTitle>
-              <CardDescription className="text-base">
-                인원과 유형으로 지금 할 수 있는 게임을 찾아보세요.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
-        <ComingSoon icon={CalendarCheck} title="예약 확인" description="예약하신 이름이나 전화번호로 확인합니다." />
-        <ComingSoon icon={ListOrdered} title="대기 등록" description="자리가 나면 순서대로 안내해드립니다." />
+        <MenuCard href="/games" icon={Dices} title="게임 둘러보기" description="인원과 유형으로 지금 할 수 있는 게임을 찾아보세요." />
+        <MenuCard href="/reservation" icon={CalendarCheck} title="예약 확인" description="전화번호 뒷자리로 오늘 예약을 확인하고 도착을 알립니다." />
+        <MenuCard href="/waitlist" icon={ListOrdered} title="대기 등록" description="자리가 나면 순서대로 안내해드립니다. 내 순서도 확인할 수 있습니다." />
       </nav>
     </main>
   );
@@ -52,25 +41,26 @@ async function Welcome() {
   );
 }
 
-function ComingSoon({
+function MenuCard({
+  href,
   icon: Icon,
   title,
   description,
 }: {
+  href: string;
   icon: typeof Dices;
   title: string;
   description: string;
 }) {
   return (
-    <Card aria-disabled className="opacity-60">
-      <CardHeader className="gap-3 py-6">
-        <Icon className="size-10" />
-        <CardTitle className="flex items-center gap-2 text-2xl">
-          {title}
-          <Badge variant="secondary">준비 중</Badge>
-        </CardTitle>
-        <CardDescription className="text-base">{description}</CardDescription>
-      </CardHeader>
-    </Card>
+    <Link href={href} className="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+      <Card className="h-full transition-colors hover:bg-accent">
+        <CardHeader className="gap-3 py-6">
+          <Icon className="size-10" />
+          <CardTitle className="text-2xl">{title}</CardTitle>
+          <CardDescription className="text-base">{description}</CardDescription>
+        </CardHeader>
+      </Card>
+    </Link>
   );
 }

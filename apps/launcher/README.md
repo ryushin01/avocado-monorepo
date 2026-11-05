@@ -11,7 +11,7 @@
 
 - 백오피스에 연결할 수 없거나 매장이 없으면(폐점 포함) 손님에게 안내 문구를 보여줍니다.
 - 설정은 환경 변수 `BACKOFFICE_URL`, `LAUNCHER_CAFE_ID`, `KIOSK_API_TOKEN`입니다(`.env.example`). 토큰은 백오피스 매장 관리에서 그 매장·기기용으로 발급하며, 다른 매장 주소에는 쓸 수 없습니다.
-- 백오피스 주소·토큰은 서버에만 두고, 화면은 서버 액션(`src/app/actions.ts`)을 거쳐 백오피스 API를 부릅니다.
+- 백오피스 주소·토큰은 서버에만 두고, 화면은 서버 액션(`src/shared/api/kiosk-actions.ts`)을 거쳐 백오피스 API를 부릅니다.
 - 손님 화면이라 전화번호는 보여주지 않고, 이름은 가려서(김*수) 보여줍니다.
 - 화면은 손으로 누르기 쉽게 큰 버튼을 쓰고, 확대·글자 선택을 막아 둡니다.
 
@@ -20,3 +20,5 @@ pnpm dev:launcher   # 루트에서. 백오피스(3000)와 런처(3001)를 함께
 ```
 
 응답 형태는 `@avocado/domain/kiosk`, 응답을 만드는 쪽은 `apps/admin/src/app/api/kiosk`입니다.
+
+코드는 Feature-Sliced Design을 따릅니다([docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)): `views`(화면), `features`(예약 확인, 대기 등록, 게임 거르기), `entities/game`, `shared`(백오피스 API, 숫자 패드 등).

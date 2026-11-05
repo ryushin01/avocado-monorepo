@@ -100,7 +100,7 @@ docs/
 - [apps/admin/README.md](apps/admin/README.md): 백오피스 기능, 개발용 계정
 - [apps/admin/docs/architecture.md](apps/admin/docs/architecture.md): 도메인 모델, 권한, 키오스크 API, Next.js 16 렌더링 규칙
 - [apps/launcher/README.md](apps/launcher/README.md), [apps/web/README.md](apps/web/README.md)
-- [docs/conventions.md](docs/conventions.md): UI·폼·테스트 규칙과 알려진 함정
+- [docs/conventions.md](docs/conventions.md): 코드 구조(FSD)·UI·폼·테스트 규칙과 알려진 함정
 - [docs/deployment.md](docs/deployment.md): 배포 전 점검 (환경 변수, 첫 관리자 만들기, 마이그레이션, 보안)
 
 ## 아직 하지 않은 것

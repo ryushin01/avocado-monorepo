@@ -3,11 +3,11 @@ import { z } from "zod";
 
 import type { KioskCheckInResult } from "@avocado/domain/kiosk";
 
-import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/lib/kiosk/auth";
-import { findOpenCafe } from "@/lib/kiosk/open-cafe";
-import { toKioskReservation } from "@/lib/kiosk/to-kiosk-guest";
-import { checkInReservation } from "@/lib/reservations/data";
-import { phoneLast4Schema } from "@/lib/reservations/schema";
+import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/server/kiosk/auth";
+import { findOpenCafe } from "@/server/kiosk/open-cafe";
+import { toKioskReservation } from "@/server/kiosk/to-kiosk-guest";
+import { checkInReservation } from "@/server/reservations/data";
+import { phoneLast4Schema } from "@/entities/reservation/schema";
 
 const bodySchema = z.object({ phone4: phoneLast4Schema });
 

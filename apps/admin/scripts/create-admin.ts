@@ -11,8 +11,8 @@ import { parseArgs } from "node:util";
 
 import { hash } from "bcryptjs";
 
-import { type Database, openPglite, openPostgres } from "@/db";
-import { createFirstAdmin, generateTemporaryPassword } from "@/lib/users/first-admin";
+import { type Database, openPglite, openPostgres } from "@/db/index";
+import { createFirstAdmin, generateTemporaryPassword } from "@/server/users/first-admin";
 
 const MESSAGES = {
   "admin-exists": "재직 중인 관리자가 이미 있어 만들지 않았습니다. 다음 계정은 백오피스의 직원 관리에서 만드세요.",

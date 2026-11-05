@@ -2,7 +2,7 @@ import "server-only";
 
 import { hash } from "bcryptjs";
 
-import { DEV_PASSWORD } from "@/lib/auth/mock-users";
+import { DEV_PASSWORD } from "@/server/auth/mock-users";
 
 import { type Database, openPglite, openPostgres } from "./index";
 import { insertSeedData, isEmpty } from "./seed";

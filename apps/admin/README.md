@@ -94,33 +94,24 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 
 ## 폴더 구조
 
+화면 코드는 Feature-Sliced Design을 따릅니다(규칙은 [docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)). 위 레이어가 아래 레이어만 가져옵니다.
+
 ```
 src/
-├─ app/
-│  ├─ (backoffice)/          사이드바가 있는 화면들
-│  │  ├─ page.tsx            대시보드
-│  │  ├─ stats/              통계 화면
-│  │  ├─ games/              카탈로그 화면 + 서버 액션
-│  │  ├─ inventory/          재고 화면 + 서버 액션
-│  │  ├─ plays/              이용 기록(대여·반납) 화면 + 서버 액션
-│  │  ├─ reservations/       예약·현장 대기 화면 + 서버 액션
-│  │  ├─ cafes/ staff/       매장·직원 관리 화면 + 서버 액션 (관리자)
-│  ├─ login/ password/       로그인, 비밀번호 변경 화면
-│  ├─ api/kiosk/             가맹점 런처(키오스크)용 API (게임 조회, 예약 확인·도착, 대기 등록·조회)
+├─ app/                      Next.js 라우트. page.tsx는 views를 다시 내보내기만 함
+│  ├─ (backoffice)/          사이드바가 있는 화면들 (layout.tsx)
+│  ├─ login/ password/       로그인, 비밀번호 변경
+│  ├─ api/kiosk/             가맹점 런처(키오스크)용 API, api/auth/ Auth.js
 │  └─ forbidden.tsx          403 화면
-├─ components/
-│  ├─ list/                  목록 공통: 툴바, 페이지네이션, 무한 스크롤, 빈 상태
-│  ├─ form/                  대화상자 폼 공통 훅
-│  ├─ games/ inventory/ plays/ reservations/ cafes/ staff/ dashboard/ stats/ layout/
-├─ lib/
-│  ├─ games/ inventory/ cafes/ plays/ users/ reservations/ waitlist/ stats/   도메인별 types · schema · repository · data(서버 전용) · seed
-│  ├─ guests/                손님 연락처: 전화번호 정리·검증, 키오스크용 이름 가리기
-│  ├─ kiosk/                 재고 → 키오스크 응답 변환
-│  ├─ auth/                  현재 사용자, 역할, 권한
-│  ├─ list.ts                페이지 계산·URL 생성
-│  └─ form.ts                폼 결과 타입·변환
-src/db/                      DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)
-scripts/create-admin.ts      첫 관리자 만들기 (규칙은 src/lib/users/first-admin.ts)
+├─ views/                    화면 한 장: 데이터를 읽어 아래 조각을 조합 (dashboard, stats, games, inventory, plays, reservations, cafes, staff, login, password)
+├─ widgets/                  큰 화면 영역: app-shell(사이드바·헤더), dashboard, stats, catalog-list, inventory-list, play-list, reservation-board, cafe-list, staff-list
+├─ features/                 사용자 동작(대화상자 + 서버 액션 api/actions.ts): auth, manage-game, manage-inventory, manage-cafe, manage-staff, manage-reservation, record-play, filter-list, filter-stats
+├─ entities/                 도메인: game, cafe, inventory, play, reservation, waitlist, user, guest, stats, kiosk-device
+│                            model/(타입·규칙·검증), ui/(배지 등 표시)
+├─ shared/                   도메인을 모르는 공통: lib/(목록·폼·날짜 계산, 훅), ui/(목록 빈 상태, 페이지네이션, 무한 스크롤, 폼 오류)
+├─ server/                   서버 전용: <domain>/(repository·data·seed), auth/(세션·로그인 잠금), kiosk/(토큰·응답 변환)
+└─ db/                       DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)
+scripts/create-admin.ts      첫 관리자 만들기 (규칙은 src/server/users/first-admin.ts)
 e2e/                         Playwright 테스트 (auth.setup.ts가 먼저 실제로 로그인)
 public/images/games/         카탈로그 썸네일 복사본 (git 제외, dev·build 전에 자동 복사)
 docs/architecture.md         백오피스 설계 문서

@@ -2,6 +2,28 @@
 
 모든 앱(`apps/*`)과 공통 패키지(`packages/*`)에 함께 적용합니다. 앱별 설계는 각 앱의 `docs/`나 README를 보세요.
 
+## 프론트엔드 구조 (Feature-Sliced Design)
+
+세 앱의 화면 코드는 `src` 아래 레이어로 나눕니다. **위 레이어는 아래 레이어만 가져옵니다.** `packages/config/eslint-fsd.mjs`가 `pnpm lint`에서 강제합니다.
+
+| 레이어 | 내용 |
+|---|---|
+| `app` | Next.js 라우트, 루트·공통 레이아웃, Route Handler. `page.tsx`는 `export { GamesPage as default } from "@/views/games"`처럼 다시 내보내기만 합니다 |
+| `views` | 화면 한 장. 데이터를 읽어 아래 조각을 조합합니다. FSD의 `pages`인데, `src/pages`는 Next.js가 Pages Router로 읽어서 이름을 바꿨습니다 |
+| `widgets` | 큰 화면 영역 (사이드바, 대시보드 차트 묶음, 목록 표) |
+| `features` | 사용자 동작 하나 (대화상자 + 서버 액션 `api/actions.ts`) |
+| `entities` | 도메인 개념: `model`(타입·규칙·검증), `ui`(배지처럼 표시만 하는 조각) |
+| `shared` | 도메인을 모르는 공통 코드: `lib`, `ui`, `api`, `config`. 슬라이스가 없어 파일 경로로 바로 가져옵니다 |
+
+- **같은 레이어의 다른 슬라이스는 가져오지 않습니다.** 둘을 함께 쓰려면 위 레이어에서 조합합니다. 엔티티끼리 꼭 필요하면 `entities/<대상>/@x/<소비자>.ts`로 내보냅니다.
+- **슬라이스 밖에서는 공개 API로만 가져옵니다.** 안에서는 상대 경로를 씁니다. `features`·`widgets`·`views`는 `@/features/<이름>`, `entities`는 아래 셋입니다.
+  - `@/entities/<이름>`: 타입·상수·규칙. React와 zod가 없어 서버·스크립트·브라우저 어디서나 씁니다.
+  - `@/entities/<이름>/ui`: 표시 컴포넌트.
+  - `@/entities/<이름>/schema`: zod 검증. 서버 코드(서버 액션, 페이지의 URL 파싱)에서 씁니다.
+- **`index.ts`에서는 이름을 하나씩 내보냅니다.** `"use client"` 모듈은 `export *`로 내보낼 수 없습니다.
+- **백오피스의 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.** `views`, `app`, `features/*/api`만 가져오고, 서버 코드는 `entities`의 model·schema와 `shared/lib`만 가져옵니다. 나머지 화면 조각은 props로 데이터를 받습니다.
+- **새 슬라이스는 처음부터 만들지 않아도 됩니다.** 한 화면에서만 쓰면 그 `views` 안에 두고, 여러 곳에서 쓰게 될 때 내립니다.
+
 ## UI
 
 - **모든 컴포넌트는 shadcn/ui로 만듭니다.**
@@ -33,7 +55,7 @@
 - **형태는 데이터가 하는 일로 정합니다.**
   - 숫자 하나는 요약 칸(`StatTile`)으로 보여줍니다. 기간을 비교하는 화면에서는 지난 기간 대비 증감과 작은 추이선을 붙인 `KpiTile`(통계)을 씁니다.
   - 시간에 따른 변화는 선 그래프로 그립니다. 비교 기간은 같은 축에 회색 점선으로 겹칩니다(강조할 하나만 색, 나머지는 회색).
-  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`components/stats/usage-heatmap.tsx`).
+  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`widgets/stats/ui/usage-heatmap.tsx`).
     - 히트맵은 격자 자체가 접근 가능한 표(`role="grid"`, 칸마다 "월요일 14시 12회" 같은 이름)라서 따로 `sr-only` 표를 두지 않습니다.
     - 키보드는 Tab으로 한 번만 들어오고 안에서는 화살표·Home·End로 움직입니다(칸이 많은 위젯은 모두 이 방식).
     - `aria-hidden` 안에 초점을 받을 수 있는 요소를 두지 않습니다.
@@ -58,10 +80,10 @@
 
 ## 폼
 
-- **서버 액션이 `FormState`를 돌려줍니다**(`src/lib/form.ts`).
+- **서버 액션이 `FormState`를 돌려줍니다**(`src/shared/lib/form.ts`).
   - 성공하면 `message`, 실패하면 필드별 오류와 입력값을 돌려줍니다.
   - 권한·없는 데이터처럼 필드와 무관한 오류는 `formError(values, "메시지")`로 만듭니다.
-- **대화상자 폼은 `useDialogForm`**(`components/form/use-dialog-form.ts`)으로 만듭니다.
+- **대화상자 폼은 `useDialogForm`**(`shared/lib/use-dialog-form.ts`)으로 만듭니다.
   - 성공하면 창을 닫고 알림을 띄웁니다. 실패하면 입력값을 복원합니다.
   - `<form key={form.formKey}>`를 꼭 붙이세요. 다시 마운트해야 `defaultValue`가 복원됩니다.
 - **검증은 zod 스키마 하나로 서버에서 합니다.** 폼에는 `noValidate`를 붙여 브라우저 기본 검증을 끄고, 서버 오류 메시지를 일관되게 보여줍니다.
@@ -89,6 +111,8 @@
 
 | 증상 | 원인 | 해결 |
 |---|---|---|
+| 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
+| `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
 | 모바일에서 하이드레이션 불일치 | 사이드바 틀을 Suspense 안에 두면, 바깥이 먼저 하이드레이션되며 `useIsMobile`이 바뀐 뒤 사이드바가 하이드레이션됨 | 틀은 Suspense 밖, 사용자별 영역만 슬롯으로 Suspense |
 | 빌드 실패: `Math.random()` in a Client Component | shadcn `SidebarMenuSkeleton`이 무작위 너비를 씀 | 고정 너비로 `Skeleton`을 직접 그림 |
 | Base UI "default value of an uncontrolled Select changed" 경고 | `await` 뒤 `setState`가 액션 결과와 따로 커밋됨 | 다시 마운트용 카운터를 액션 상태 안에 둠 (`useDialogForm`) |

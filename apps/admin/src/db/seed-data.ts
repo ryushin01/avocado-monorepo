@@ -1,16 +1,16 @@
-import { SEED_USERS } from "@/lib/auth/mock-users";
-import type { User } from "@/lib/auth/roles";
-import { SEED_CAFES } from "@/lib/cafes/seed";
-import type { Cafe } from "@/lib/cafes/types";
-import { createSeedGames } from "@/lib/games/seed";
-import type { BoardGame } from "@/lib/games/types";
-import { createSeedInventory } from "@/lib/inventory/seed";
-import type { InventoryItem } from "@/lib/inventory/types";
-import { createSeedPlays } from "@/lib/plays/seed";
-import type { PlaySession } from "@/lib/plays/types";
-import { createSeedReservations, createSeedWaitlist } from "@/lib/reservations/seed";
-import type { Reservation } from "@/lib/reservations/types";
-import type { WaitlistEntry } from "@/lib/waitlist/types";
+import { SEED_USERS } from "@/server/auth/mock-users";
+import type { User } from "@/entities/user";
+import { SEED_CAFES } from "@/server/cafes/seed";
+import type { Cafe } from "@/entities/cafe";
+import { createSeedGames } from "@/server/games/seed";
+import type { BoardGame } from "@/entities/game";
+import { createSeedInventory } from "@/server/inventory/seed";
+import type { InventoryItem } from "@/entities/inventory";
+import { createSeedPlays } from "@/server/plays/seed";
+import type { PlaySession } from "@/entities/play";
+import { createSeedReservations, createSeedWaitlist } from "@/server/reservations/seed";
+import type { Reservation } from "@/entities/reservation";
+import type { WaitlistEntry } from "@/entities/waitlist";
 
 export type SeedData = {
   cafes: Cafe[];

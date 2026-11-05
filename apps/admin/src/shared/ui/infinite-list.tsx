@@ -1,12 +1,17 @@
 "use client";
 
+import { defaultRangeExtractor, useWindowVirtualizer } from "@tanstack/react-virtual";
 import { RotateCw } from "lucide-react";
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@avocado/ui/components/button";
 import { ItemGroup } from "@avocado/ui/components/item";
 import { Spinner } from "@avocado/ui/components/spinner";
 import { LIST_PAGE_SIZE, type ListResult } from "@/shared/lib/list";
+
+/** 실제 높이는 그린 뒤에 다시 잰다. */
+const ESTIMATED_ITEM_HEIGHT = 112;
+const ITEM_GAP = 8;
 
 type ListState<T> = {
   /** 서버가 렌더링한 첫 묶음. 바뀌면(수정·등록 후 갱신) 이후 묶음도 다시 불러온다. */
@@ -19,6 +24,7 @@ type ListState<T> = {
 
 /**
  * 모바일 무한 스크롤 목록. 끝에 닿으면 다음 묶음을 불러온다.
+ * 이용 기록처럼 끝없이 늘어나는 목록도 가볍도록, 화면 근처의 항목만 그린다(가상화).
  * 조건이 바뀌면 부모가 key를 바꿔 처음부터 다시 시작한다.
  *
  * fetchMore는 조건이 같으면 같은 함수여야 한다(useCallback).
@@ -38,6 +44,9 @@ export function InfiniteList<T>({
   renderItem: (item: T) => ReactNode;
   label: string;
 }) {
+  // TanStack Virtual은 내부 값을 직접 바꾸므로 React Compiler의 자동 메모이제이션에서 뺀다.
+  "use no memo";
+
   const [state, setState] = useState<ListState<T>>({
     firstPage,
     more: [],
@@ -87,6 +96,34 @@ export function InfiniteList<T>({
   const loadedCount = state.firstPage.length + state.more.length;
   const hasMore = loadedCount < state.total;
 
+  const listRef = useRef<HTMLDivElement>(null);
+  const focusedIndex = useRef<number | null>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  useLayoutEffect(() => {
+    const top = listRef.current?.getBoundingClientRect().top ?? 0;
+    setScrollMargin(top + window.scrollY);
+    // 위쪽 영역의 높이는 데이터와 함께 바뀔 수 있어 불러올 때마다 다시 잰다.
+  }, [items.length]);
+
+  const virtualizer = useWindowVirtualizer({
+    count: items.length,
+    estimateSize: () => ESTIMATED_ITEM_HEIGHT,
+    gap: ITEM_GAP,
+    overscan: 6,
+    scrollMargin,
+    // 서버는 창 크기를 모르므로 모바일 크기로 가정해, 첫 항목들을 처음 HTML에 넣는다.
+    initialRect: { width: 390, height: 844 },
+    getItemKey: (index) => getKey(items[index]),
+    // 초점이 있는 항목은 화면 밖으로 나가도 지우지 않는다. 지우면 키보드 초점이 페이지 처음으로 튕긴다.
+    rangeExtractor: (range) => {
+      const indexes = defaultRangeExtractor(range);
+      const focused = focusedIndex.current;
+      return focused === null || focused >= range.count || indexes.includes(focused)
+        ? indexes
+        : [...indexes, focused].sort((a, b) => a - b);
+    },
+  });
+
   async function loadMore() {
     if (loadingRef.current) return;
     loadingRef.current = true;
@@ -127,11 +164,35 @@ export function InfiniteList<T>({
 
   return (
     <div className="flex flex-col gap-3">
-      <ItemGroup className="gap-2" aria-label={label}>
-        {items.map((item) => (
-          <Fragment key={getKey(item)}>{renderItem(item)}</Fragment>
-        ))}
-      </ItemGroup>
+      <div ref={listRef}>
+        <ItemGroup
+          className="relative block"
+          style={{ height: virtualizer.getTotalSize() }}
+          aria-label={label}
+        >
+          {virtualizer.getVirtualItems().map((row) => (
+            <div
+              key={row.key}
+              ref={virtualizer.measureElement}
+              role="listitem"
+              // 화면에 일부만 있어도 스크린 리더가 전체 개수와 위치를 알 수 있게 한다.
+              aria-setsize={hasMore ? state.total : items.length}
+              aria-posinset={row.index + 1}
+              data-index={row.index}
+              className="absolute top-0 left-0 w-full"
+              style={{ transform: `translateY(${row.start - scrollMargin}px)` }}
+              onFocusCapture={() => {
+                focusedIndex.current = row.index;
+              }}
+              onBlurCapture={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) focusedIndex.current = null;
+              }}
+            >
+              {renderItem(items[row.index])}
+            </div>
+          ))}
+        </ItemGroup>
+      </div>
 
       <div
         ref={sentinelRef}

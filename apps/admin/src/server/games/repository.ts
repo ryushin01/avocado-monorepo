@@ -1,3 +1,4 @@
+import { compareCatalog } from "@/entities/game";
 import { count, eq, sum } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
@@ -62,8 +63,8 @@ export function createGameRepository(db: Database): GameRepository {
       const entries = rows
         .map(toGame)
         .filter((g) => matchesGame(g, filter))
-        .sort(byGameName)
-        .map((g) => ({ ...g, holding: map.get(g.id) ?? { cafeCount: 0, quantity: 0 } }));
+        .map((g) => ({ ...g, holding: map.get(g.id) ?? { cafeCount: 0, quantity: 0 } }))
+        .sort(compareCatalog(filter?.sort, filter?.order));
       return slice(entries, range);
     },
 

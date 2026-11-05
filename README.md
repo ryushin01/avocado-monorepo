@@ -91,6 +91,7 @@ flowchart LR
 | 테스트 | Vitest 5, Testing Library, Playwright | 규칙은 단위 테스트로, 화면 흐름은 프로덕션 빌드 대상 E2E로 확인합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
 | 배포 | Vercel(홍보 사이트) | `main`에 머지하면 자동 배포되고, PR마다 미리보기 주소가 생깁니다 |
+| 모니터링 | Sentry(홍보 사이트) | 브라우저와 서버 오류를 모읍니다. 개인정보는 모으지 않고, DSN이 없으면 동작하지 않습니다 |
 
 ## 설계에서 신경 쓴 점
 

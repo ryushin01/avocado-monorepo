@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import path from "node:path";
 
 import { PGlite } from "@electric-sql/pglite";
@@ -21,6 +22,8 @@ const MIGRATIONS = path.join(process.cwd(), "src/db/migrations");
  * dataDir: 폴더 경로면 파일로 남고, "memory://"면 메모리에만 둔다(프로세스가 끝나면 사라짐).
  */
 export async function openPglite(dataDir = "memory://"): Promise<Database> {
+  // PGlite는 상위 폴더까지 만들어 주지 않아, 처음 내려받은 저장소에서 .data/pglite를 열면 실패한다.
+  if (!dataDir.includes("://")) mkdirSync(dataDir, { recursive: true });
   const db = drizzlePglite({ client: new PGlite(dataDir), schema });
   await migratePglite(db, { migrationsFolder: MIGRATIONS });
   return db as unknown as Database;

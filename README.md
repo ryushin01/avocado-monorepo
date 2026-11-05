@@ -90,6 +90,7 @@ flowchart LR
 | 인증·검증 | Auth.js 4, zod 4 | 이메일·비밀번호 로그인과 서버 쪽 입력 검증을 씁니다 |
 | 테스트 | Vitest 5, Testing Library, Playwright | 규칙은 단위 테스트로, 화면 흐름은 프로덕션 빌드 대상 E2E로 확인합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
+| 배포 | GitHub Pages(홍보 사이트 정적 빌드), GitHub Actions | 서버가 필요 없는 홍보 사이트만 공개 데모로 올립니다 |
 
 ## 설계에서 신경 쓴 점
 

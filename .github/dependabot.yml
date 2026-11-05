@@ -18,6 +18,12 @@ updates:
       # eslint-config-next의 플러그인이 9까지만 지원한다(README).
       - dependency-name: eslint
         update-types: [version-update:semver-major]
+      # CI는 PGlite만 써서 실제 PostgreSQL 드라이버의 메이저 변경을 검증하지 못한다.
+      - dependency-name: postgres
+        update-types: [version-update:semver-major]
+      # 타입은 프로젝트 기준 Node 버전(.node-version)에 맞춘다.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:

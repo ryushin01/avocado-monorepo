@@ -97,6 +97,6 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 - [ ] 시각은 DB에 UTC로 저장하고 화면은 한국 시각으로 보여 줍니다. 서버 시간대 설정과 상관없습니다.
 - [ ] 첫 배포 뒤 매장·게임 카탈로그를 실제 데이터로 등록 (데모 시드 대신)
 
-## 홍보 사이트 데모 (GitHub Pages)
+## 홍보 사이트 데모 (Vercel)
 
-`apps/web`은 정적 페이지라 `main`에 머지하면 `.github/workflows/pages.yml`이 GitHub Pages에 올립니다. `STATIC_EXPORT=1`로 빌드하면 정적 내보내기와 저장소 하위 경로(`/avocado-monorepo`)를 쓰고, Cache Components, 보안 헤더, 이미지 최적화는 꺼집니다. Pages는 응답 헤더를 설정할 수 없어 CSP도 적용되지 않습니다. 백오피스와 키오스크는 서버와 DB가 필요해 이 방식으로 올릴 수 없습니다.
+`apps/web`은 Vercel 프로젝트 `avocado-web`(루트 폴더 `apps/web`)에 연결되어 있습니다. `main`에 푸시하면 자동으로 운영 배포되고, PR마다 미리보기가 만들어집니다. 환경 변수는 필요 없습니다. 백오피스와 키오스크는 서버와 DB가 필요해 배포하지 않습니다.

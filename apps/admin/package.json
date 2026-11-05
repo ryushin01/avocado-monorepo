@@ -17,6 +17,7 @@
     "db:reset": "node -e \"require('fs').rmSync('.data/pglite',{recursive:true,force:true})\" && echo \"개발 DB를 지웠습니다. 다음 실행 때 시드로 다시 만듭니다.\""
   },
   "dependencies": {
+    "@avocado/config": "workspace:*",
     "@avocado/domain": "workspace:*",
     "@avocado/logger": "workspace:*",
     "@avocado/ui": "workspace:*",
@@ -36,7 +37,6 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@avocado/config": "workspace:*",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4.3.4",
     "@testing-library/jest-dom": "^7.0.1",

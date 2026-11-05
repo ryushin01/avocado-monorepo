@@ -121,6 +121,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
 - `POST /api/kiosk/cafes/{cafeId}/reservations/{id}/check-in` `{ phone4 }` → 도착 알림 (뒷자리를 한 번 더 확인)
 - `GET /api/kiosk/cafes/{cafeId}/waitlist[?phone4=1234]` → 줄에 있는 팀 수와 내 대기
 - `POST /api/kiosk/cafes/{cafeId}/waitlist` `{ name, phone, partySize }` → 대기 등록. 입력 오류 400(`fieldErrors`), 같은 번호 중복 409
+- **요청 제한:** 전화번호 뒷자리 조회, 도착 알림, 대기 등록은 기기별로 분당 30번까지 받고 넘으면 429(`Retry-After`)입니다(`server/kiosk/auth.ts`, `server/rate-limit/repository.ts`). DB에 세므로 서버가 여러 대여도 이어집니다. 게임 조회와 대기 팀 수는 손님 정보가 아니라 제한하지 않습니다.
 - 운영 중인 매장만 응답하고, 없거나 폐점한 매장은 404입니다. 폐기한 게임은 빠집니다.
 - 상태: 남은 박스가 있으면 `available`, 모두 이용 중이면 `in-use`, 점검 중이면 `unavailable`
 - 썸네일은 백오피스 주소를 붙인 절대 주소입니다(런처가 다른 포트에서 뜨기 때문).

@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gte, inArray, or } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, max, or } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
@@ -47,6 +47,15 @@ export function createWaitlistRepository(db: Database): WaitlistRepository {
   const isActive = (status: WaitlistStatus) => ACTIVE_WAITLIST_STATUSES.includes(status);
   const activeIn = (cafeId: string) =>
     and(eq(waitlistEntries.cafeId, cafeId), inArray(waitlistEntries.status, [...ACTIVE_WAITLIST_STATUSES]));
+  /** 오늘 등록했거나 아직 줄에 남은 대기: 직원 화면에 함께 보이는 범위 */
+  const todaysBoard = (cafeId: string, now: Date) =>
+    and(
+      eq(waitlistEntries.cafeId, cafeId),
+      or(
+        gte(waitlistEntries.createdAt, new Date(startOfKstDay(now.getTime()))),
+        inArray(waitlistEntries.status, [...ACTIVE_WAITLIST_STATUSES]),
+      ),
+    );
   /** 줄에 있는 팀, 먼저 온 순 */
   const activeList = async (cafeId: string) =>
     (
@@ -63,16 +72,10 @@ export function createWaitlistRepository(db: Database): WaitlistRepository {
 
   return {
     async listToday(cafeId, now) {
-      const from = new Date(startOfKstDay(now.getTime()));
       const rows = await db
         .select()
         .from(waitlistEntries)
-        .where(
-          and(
-            eq(waitlistEntries.cafeId, cafeId),
-            or(gte(waitlistEntries.createdAt, from), inArray(waitlistEntries.status, [...ACTIVE_WAITLIST_STATUSES])),
-          ),
-        )
+        .where(todaysBoard(cafeId, now))
         .orderBy(asc(waitlistEntries.createdAt), asc(waitlistEntries.number));
       return rows.map(toWaitlistEntry);
     },
@@ -91,15 +94,14 @@ export function createWaitlistRepository(db: Database): WaitlistRepository {
           .from(waitlistEntries)
           .where(and(activeIn(cafeId), eq(waitlistEntries.phone, input.phone)));
         if (dup) return "duplicate" as const;
-        const [{ n }] = await tx
-          .select({ n: count() })
+        // 번호는 날마다 새로 시작하되, 자정을 넘겨 줄에 남은 손님과는 겹치지 않게 이어서 매긴다.
+        const [{ last }] = await tx
+          .select({ last: max(waitlistEntries.number) })
           .from(waitlistEntries)
-          .where(
-            and(eq(waitlistEntries.cafeId, cafeId), gte(waitlistEntries.createdAt, new Date(startOfKstDay(now.getTime())))),
-          );
+          .where(todaysBoard(cafeId, now));
         const [row] = await tx
           .insert(waitlistEntries)
-          .values({ ...input, id: newId("w"), cafeId, number: n + 1, createdAt: now, status: "waiting" })
+          .values({ ...input, id: newId("w"), cafeId, number: (last ?? 0) + 1, createdAt: now, status: "waiting" })
           .returning();
         return toWaitlistEntry(row);
       });

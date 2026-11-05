@@ -117,15 +117,35 @@ describe("ReservationRepository", () => {
 describe("WaitlistRepository", () => {
   const guest = (phone: string, name = "김철수") => waitlistInputSchema.parse({ name, phone, partySize: "2" });
 
+  it("자정이 지나도 줄에 남은 손님과 번호가 겹치지 않는다", async () => {
+    const { waits } = await setup();
+    const beforeMidnight = new Date("2026-11-05T14:50:00.000Z"); // 한국 23:50
+    const afterMidnight = new Date("2026-11-05T15:10:00.000Z"); // 한국 00:10
+    await waits.add("a", guest("010-1111-2222"), beforeMidnight);
+    await waits.add("a", guest("010-3333-4444"), beforeMidnight);
+
+    expect(await waits.add("a", guest("010-5555-6666"), afterMidnight)).toMatchObject({ number: 3, ahead: 2 });
+    expect(await waits.add("a", guest("010-7777-8888"), afterMidnight)).toMatchObject({ number: 4, ahead: 3 });
+    // 다른 매장의 번호는 따로 셉니다.
+    expect(await waits.add("b", guest("010-9999-0000"), afterMidnight)).toMatchObject({ number: 1 });
+  });
+
+  it("줄이 비면 다음 날 번호는 1번부터 다시 시작한다", async () => {
+    const { waits } = await setup();
+    const before = new Date("2026-11-05T14:50:00.000Z");
+    const entry = await waits.add("a", guest("010-1111-2222"), before);
+    if (typeof entry === "string") throw new Error(entry);
+    await waits.setStatus("a", entry.id, "seated", before);
+
+    expect(await waits.add("a", guest("010-3333-4444"), new Date("2026-11-05T15:10:00.000Z"))).toMatchObject({ number: 1 });
+  });
+
   it("등록하면 그날 번호를 매기고 앞에 남은 팀 수를 알려주며, 같은 번호로 두 번은 못 선다", async () => {
     const { waits } = await setup();
     expect(await waits.add("a", guest("010-1111-2222"), now)).toMatchObject({ number: 1, ahead: 0 });
     expect(await waits.add("a", guest("010-3333-4444"), now)).toMatchObject({ number: 2, ahead: 1 });
     expect(await waits.add("a", guest("01011112222"), now)).toBe("duplicate");
     expect(await waits.add("z", guest("010-5555-6666"), now)).toBe("closed-cafe");
-    // 다음 날은 1번부터
-    const tomorrow = new Date(now.getTime() + 86_400_000);
-    expect(await waits.add("a", guest("010-7777-8888"), tomorrow)).toMatchObject({ number: 1 });
   });
 
   it("호출·입장·이탈 순서를 지키고, 줄에서 빠지면 뒤 팀의 순서가 당겨진다", async () => {

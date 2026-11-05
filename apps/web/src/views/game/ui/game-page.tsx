@@ -1,6 +1,5 @@
 import { Gauge, MapPin, Star, Trophy } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -23,6 +22,9 @@ import {
 } from "@avocado/ui/components/breadcrumb";
 import { Skeleton } from "@avocado/ui/components/skeleton";
 
+import { PageHeader } from "@/widgets/site-header";
+import { GameImage } from "@/entities/game/ui";
+
 export function generateStaticParams() {
   return CATALOG_GAMES.map((g) => ({ bggId: String(g.bggId) }));
 }
@@ -35,25 +37,71 @@ export async function generateMetadata({ params }: PageProps<"/game/[bggId]">): 
   return game ? { title: game.name, description: `${game.name} (${game.englishName}) 게임 정보` } : {};
 }
 
+const PANEL =
+  "flex flex-col gap-10 rounded-lg border border-page bg-card px-5 py-10 text-card-foreground lg:min-h-screen lg:px-[60px] lg:py-[100px]";
+
 const range = (min: number, max: number, unit: string) =>
   min === max ? `${min}${unit}` : `${min}–${max}${unit}`;
+
+const TITLE = "DETAIL";
 
 export default function GamePage({ params }: PageProps<"/game/[bggId]">) {
   // Partial Prefetching에서는 params도 Suspense 안에서 읽어야 바로 이동하는 틀이 만들어진다.
   // 불러오는 동안 바로가기로 들어와도 초점이 사라지지 않도록 main은 Suspense 밖에 둔다.
   return (
-    <main id="main" tabIndex={-1} className="scroll-mt-28 mx-auto max-w-7xl px-4 md:px-6">
-      <Suspense fallback={<Skeleton className="h-[640px] rounded-lg" />}>
-        <GameContent params={params} />
+    <div className="flex flex-1 flex-col lg:grid lg:grid-cols-8">
+      <Suspense fallback={<PageHeader title={TITLE} back={{ href: "/", label: "홈으로" }} />}>
+        <GameHeader params={params} />
       </Suspense>
-    </main>
+      <main id="main" tabIndex={-1} className="min-w-0 scroll-mt-14 lg:col-span-6 lg:scroll-mt-0">
+        <Suspense fallback={<GameSkeleton />}>
+          <GameContent params={params} />
+        </Suspense>
+      </main>
+    </div>
+  );
+}
+
+const mainCategoryOf = (game: NonNullable<ReturnType<typeof findCatalogGame>>) =>
+  CATEGORY_INFO.find((c) => c.key === game.categories[0])!;
+
+async function GameHeader({ params }: Pick<PageProps<"/game/[bggId]">, "params">) {
+  const game = await gameOf(params);
+  if (!game) notFound();
+  const category = mainCategoryOf(game);
+  return <PageHeader title={TITLE} back={{ href: `/games/${category.key}`, label: `${category.label} 목록으로` }} />;
+}
+
+/** 상세 화면과 같은 자리를 잡아 내용이 들어올 때 화면이 밀리지 않게 한다. */
+function GameSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="게임 정보를 불러오는 중입니다"
+      className={`${PANEL} motion-reduce:[&_*]:animate-none`}
+    >
+      <Skeleton className="h-5 w-48" />
+      <div className="flex flex-col gap-10 lg:flex-row">
+        <div className="flex flex-col gap-4 lg:w-2/5">
+          <Skeleton className="aspect-square rounded-lg" />
+          <Skeleton className="h-20 rounded-lg" />
+        </div>
+        <div className="flex flex-1 flex-col gap-4">
+          <Skeleton className="h-10 w-2/3" />
+          <Skeleton className="h-6 w-1/2" />
+          {Array.from({ length: 9 }, (_, i) => (
+            <Skeleton key={i} className="h-5 w-full" />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
 async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params">) {
   const game = await gameOf(params);
   if (!game) notFound();
-  const mainCategory = CATEGORY_INFO.find((c) => c.key === game.categories[0])!;
+  const mainCategory = mainCategoryOf(game);
 
   const info: [string, string][] = [
     ["게임명", `${game.name} (${game.englishName})`],
@@ -68,7 +116,7 @@ async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params"
   ];
 
   return (
-      <article className="flex flex-col gap-10 rounded-lg bg-card px-5 py-10 text-card-foreground md:px-12 md:py-16">
+      <article className={PANEL}>
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -90,12 +138,13 @@ async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params"
         <div className="flex flex-col gap-10 lg:flex-row">
           <div className="flex flex-col gap-4 lg:w-2/5">
             <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-              <Image
+              <GameImage
                 src={game.imageUrl}
                 alt={`${game.name} 표지`}
                 fill
                 priority
-                sizes="(min-width: 1024px) 40vw, 100vw"
+                sizes="(min-width: 1024px) 30vw, 100vw"
+                skeletonClassName="inset-6 rounded-md"
                 className="object-contain p-6"
               />
             </div>

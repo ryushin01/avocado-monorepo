@@ -1,33 +1,35 @@
-import Link from "next/link";
-
 import { CATEGORY_INFO } from "@avocado/domain/catalog";
-import { buttonVariants } from "@avocado/ui/components/button";
 
 import { CategorySection } from "@/widgets/category-section";
 import { HeroCarousel } from "@/widgets/hero-carousel";
+import { MainHeader, SiteMenu } from "@/widgets/site-header";
 import { BRAND } from "@/shared/config/site";
 
 export default function HomePage() {
   return (
-    <main id="main" tabIndex={-1} className="scroll-mt-28 mx-auto flex max-w-7xl flex-col gap-10 px-4 md:px-6">
-      <section className="relative overflow-hidden rounded-lg">
-        <HeroCarousel />
-        <div className="pointer-events-none absolute inset-0 flex flex-col justify-end gap-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-6 text-white md:p-12">
-          <h1 className="text-4xl font-bold md:text-6xl">{BRAND.tagline}</h1>
-          <p className="max-w-xl text-lg text-white/85">{BRAND.description}</p>
-          <div className="pointer-events-auto">
-            <Link href="#categories" className={buttonVariants({ size: "lg" })}>
-              게임 유형 둘러보기
-            </Link>
+    <>
+      <MainHeader menu={<SiteMenu />} />
+      <main id="main" tabIndex={-1} className="grid grid-cols-1 lg:grid-cols-6">
+        <section
+          id="hero"
+          aria-labelledby="hero-title"
+          className="relative h-[90svh] overflow-hidden rounded-lg border border-page lg:sticky lg:top-0 lg:col-span-2 lg:h-screen"
+        >
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end gap-3 bg-gradient-to-b from-black/60 via-black/10 via-30% to-black/85 px-5 pb-20 text-white lg:px-[60px] lg:pb-28">
+            <h1 id="hero-title" className="text-3xl font-bold tracking-tighter xl:text-4xl">
+              {BRAND.tagline}
+            </h1>
+            <p className="text-sm tracking-tighter text-white/90 xl:text-base">{BRAND.description}</p>
           </div>
-        </div>
-      </section>
+          <HeroCarousel />
+        </section>
 
-      <div id="categories" className="flex scroll-mt-28 flex-col gap-10">
-        {CATEGORY_INFO.map((category) => (
-          <CategorySection key={category.key} category={category} />
-        ))}
-      </div>
-    </main>
+        <div className="min-w-0 lg:col-span-4 lg:pt-20">
+          {CATEGORY_INFO.map((category) => (
+            <CategorySection key={category.key} category={category} />
+          ))}
+        </div>
+      </main>
+    </>
   );
 }

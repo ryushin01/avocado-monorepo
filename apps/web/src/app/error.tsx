@@ -3,6 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
+import { PageHeader } from "@/widgets/site-header";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 
 export default function Error({ error, retry }: { error: unknown; retry: () => void }) {
@@ -10,5 +11,10 @@ export default function Error({ error, retry }: { error: unknown; retry: () => v
     Sentry.captureException(error);
   }, [error]);
 
-  return <ErrorNotice error={error} retry={retry} />;
+  return (
+    <div className="flex flex-1 flex-col lg:grid lg:grid-cols-8">
+      <PageHeader title="ERROR" />
+      <ErrorNotice error={error} retry={retry} />
+    </div>
+  );
 }

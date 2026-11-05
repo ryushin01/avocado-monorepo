@@ -106,7 +106,7 @@ flowchart LR
 
 ## 시작하기
 
-Node.js 22 이상과 pnpm 12가 필요합니다. 명령은 모두 저장소 루트에서 실행합니다.
+Node.js 24 이상과 pnpm 12가 필요합니다(CI는 Node 24). 명령은 모두 저장소 루트에서 실행합니다.
 
 pnpm 버전은 루트 `package.json`의 `packageManager`(`pnpm@12.16.1`)로 고정되어 있습니다. `pnpm -v`가 12보다 낮으면 먼저 올려 주세요. pnpm 9는 이 버전으로 자동 전환하지 않습니다.
 

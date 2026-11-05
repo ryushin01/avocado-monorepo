@@ -26,10 +26,13 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # 운영 의존성의 높음 이상 취약점만 막는다. 개발 도구는 Dependabot으로 관리한다.
+      - run: pnpm audit --prod --audit-level high
 
       - run: pnpm typecheck
       - run: pnpm lint

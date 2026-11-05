@@ -14,16 +14,16 @@ updates:
     ignore:
       # 도구용 TypeScript는 6.0에 둔다(docs/conventions.md). 타입 검사용 7은 typescript-7이다.
       - dependency-name: typescript
-        update-types: [version-update:semver-major, version-update:semver-minor]
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       # eslint-config-next의 플러그인이 9까지만 지원한다(README).
       - dependency-name: eslint
-        update-types: [version-update:semver-major]
+        update-types: ["version-update:semver-major"]
       # CI는 PGlite만 써서 실제 PostgreSQL 드라이버의 메이저 변경을 검증하지 못한다.
       - dependency-name: postgres
-        update-types: [version-update:semver-major]
+        update-types: ["version-update:semver-major"]
       # 타입은 프로젝트 기준 Node 버전(.node-version)에 맞춘다.
       - dependency-name: "@types/node"
-        update-types: [version-update:semver-major]
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

@@ -30,7 +30,7 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry: () => voi
             화면을 불러오지 못했습니다
           </CardTitle>
           <CardDescription>
-            잠시 후 다시 시도해주세요. 계속되면 오류 번호를 본사에 알려주세요.
+            잠시 후 다시 시도해주세요. 계속되면 {digest ? "아래 오류 번호를 " : ""}본사에 알려주세요.
             {digest && <span className="mt-2 block font-mono text-xs">오류 번호: {digest}</span>}
           </CardDescription>
         </CardHeader>

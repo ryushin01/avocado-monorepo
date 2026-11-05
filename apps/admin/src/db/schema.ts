@@ -177,6 +177,13 @@ export const auditLogs = pgTable(
   (t) => [index("audit_logs_at_idx").on(t.at)],
 );
 
+/** 요청 제한 카운터. 키마다 한 줄이고 시간 구간이 지나면 다시 센다. */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  windowStartedAt: at("window_started_at").notNull(),
+});
+
 /** 로그인 연속 실패 기록 (이메일별). 성공하면 지운다. */
 export const loginAttempts = pgTable("login_attempts", {
   /** 소문자로 맞춘 이메일 */

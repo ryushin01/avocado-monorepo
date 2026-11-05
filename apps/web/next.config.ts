@@ -1,6 +1,12 @@
+import { securityHeaders } from "@avocado/config/security-headers";
 import type { NextConfig } from "next";
 
+// 게임 표지는 Next.js 이미지 최적화를 거쳐 같은 주소에서 나간다.
+const headers = securityHeaders();
+
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  headers: async () => [{ source: "/(.*)", headers }],
   cacheComponents: true,
   partialPrefetching: true,
   images: {

@@ -117,6 +117,12 @@
 - **로그에 개인정보를 남기지 않습니다.** 요청 헤더와 쿼리 문자열(`phone4` 등)은 기록하지 않습니다. 직접 로그를 남길 때는 `logError`에 전화번호·이름·토큰을 넘기지 않습니다.
 - **잡아서 삼키는 오류는 로그를 남깁니다.** 손님 화면에 연결 문제로만 보이는 런처의 백오피스 호출 실패가 그 예입니다(`shared/api/backoffice.ts`).
 
+## 보안 헤더와 요청 제한
+
+- **헤더:** 세 앱의 `next.config.ts`가 `@avocado/config/security-headers`를 씁니다. 백오피스와 런처는 관리자가 입력한 게임 이미지 때문에 `http:`, `https:` 이미지를 허용합니다. 다른 앱에서 외부 이미지를 새로 쓰면 `imgSrc`에 추가합니다. 외부 스크립트는 막혀 있습니다.
+- **`script-src`의 `unsafe-inline`:** nonce 방식은 Partial Prefetching과 함께 쓸 수 없어 남겨 두었습니다. 인라인 스크립트 삽입 공격까지 막아 주지는 않으니, HTML을 직접 넣는 코드를 쓰지 않습니다.
+- **요청 제한:** 손님 정보를 다루는 키오스크 API는 인증 뒤 `rejectOverKioskLimit`을 부릅니다(기기별 분당 30번, 넘으면 429). 새 API도 같습니다.
+
 ## 변경 이력
 
 매장 운영에 영향을 주는 관리 작업을 새로 만들면 서버 액션에서 변경에 성공한 뒤 `recordAudit`(`server/audit/data.ts`)을 부르고, `entities/audit`에 작업 이름을 추가합니다. `detail`에 비밀번호, 토큰 원문, 손님 정보를 넣지 않습니다. 기준은 [아키텍처 문서](../apps/admin/docs/architecture.md)에 있습니다.

@@ -6,6 +6,7 @@ const headers = securityHeaders();
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  reactCompiler: true,
   headers: async () => [{ source: "/(.*)", headers }],
   cacheComponents: true,
   partialPrefetching: true,

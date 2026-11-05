@@ -32,7 +32,7 @@
 
 ## 기술 스택
 
-- [Next.js](https://nextjs.org) 16 (App Router, `cacheComponents`), React 19, TypeScript
+- [Next.js](https://nextjs.org) 16 (App Router, Turbopack, `cacheComponents`), React 19 (React Compiler), TypeScript 7(타입 검사)·6(도구)
 - [shadcn/ui](https://ui.shadcn.com) (`base-nova` 스타일, [Base UI](https://base-ui.com) 기반), Tailwind CSS 4, [lucide](https://lucide.dev) 아이콘
 - [Recharts](https://recharts.org) (shadcn chart 컴포넌트로 사용), zod (입력 검증), sonner (알림)
 - PostgreSQL + [Drizzle ORM](https://orm.drizzle.team), 개발·테스트는 [PGlite](https://pglite.dev)

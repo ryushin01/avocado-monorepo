@@ -80,7 +80,7 @@ test("접어 둔 사이드바는 새로고침해도 접혀 있고, 화면 스크
   const sidebar = page.locator('[data-slot="sidebar"]');
   await expect(sidebar).toHaveAttribute("data-state", "expanded");
 
-  await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+  await page.getByRole("button", { name: "사이드바 접기·펼치기" }).click();
   await expect(sidebar).toHaveAttribute("data-state", "collapsed");
 
   await page.reload();
@@ -95,7 +95,7 @@ test("접어 둔 사이드바는 새로고침해도 접혀 있고, 화면 스크
   await page.unroute("**/_next/static/**/*.js");
 
   await page.reload();
-  await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+  await page.getByRole("button", { name: "사이드바 접기·펼치기" }).click();
   await expect(sidebar).toHaveAttribute("data-state", "expanded");
   await page.reload();
   await expect(sidebar).toHaveAttribute("data-state", "expanded");

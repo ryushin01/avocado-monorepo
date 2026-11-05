@@ -31,7 +31,8 @@ reviews:
     - path: "apps/admin/src/features/*/api/**"
       instructions: >-
         서버 액션은 시작할 때 getCurrentUser()로 권한을 다시 확인하고, zod로 입력을 검증하고,
-        바꾼 데이터를 보여 주는 경로를 revalidatePath로 갱신해야 합니다.
+        바꾼 데이터를 보여 주는 경로를 revalidatePath로 갱신해야 합니다. 매장 운영에 영향을 주는 관리 작업은 recordAudit으로
+        변경 이력을 남기고, detail에 비밀번호·토큰 원문·손님 정보를 넣지 않아야 합니다.
     - path: "apps/admin/src/{server,db}/**"
       instructions: >-
         상태 전이·규칙은 repository에 두고 단위 테스트로 검증합니다. 동시성이 필요한 곳은 트랜잭션과 잠금을

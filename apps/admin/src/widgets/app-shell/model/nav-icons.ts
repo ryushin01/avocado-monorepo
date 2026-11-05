@@ -3,6 +3,7 @@ import {
   CalendarClock,
   ChartLine,
   Dices,
+  History,
   LayoutDashboard,
   Store,
   Timer,
@@ -21,4 +22,5 @@ export const NAV_ICONS: Record<NavIcon, LucideIcon> = {
   reservations: CalendarClock,
   cafes: Store,
   staff: Users,
+  audit: History,
 };

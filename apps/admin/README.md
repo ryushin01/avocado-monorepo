@@ -16,6 +16,7 @@
 | 이용 기록 | `/plays` | 모든 매장 | 소속 매장 | 게임 대여(이용 시작)·반납, 지금 이용 중 목록(경과 시간 1분마다 갱신), 지난 기록 검색(게임 이름·날짜) |
 | 매장 관리 | `/cafes` | ✅ | ❌ | 매장 등록·수정, 폐점 처리·운영 재개, 키오스크 기기 토큰 발급·폐기 |
 | 직원 관리 | `/staff` | ✅ | ❌ | 직원 등록·수정(역할·소속 매장), 퇴사·복직 처리 |
+| 변경 이력 | `/audit` | ✅ | ❌ | 누가 언제 재고·게임·매장·직원·키오스크 토큰을 바꿨는지 조회 (고치거나 지울 수 없음) |
 
 - **목록 화면:** 검색·카테고리·상태 필터가 URL에 남아 공유하거나 새로고침해도 유지됩니다.
   - 데스크톱(768px 이상): 표 + 페이지 번호(20개씩)
@@ -107,13 +108,13 @@ src/
 │  ├─ login/ password/       로그인, 비밀번호 변경
 │  ├─ api/kiosk/             가맹점 런처(키오스크)용 API, api/auth/ Auth.js
 │  └─ forbidden.tsx, error.tsx, global-error.tsx, not-found.tsx   403·오류·404 화면
-├─ views/                    화면 한 장: 데이터를 읽어 아래 조각을 조합 (dashboard, stats, games, inventory, plays, reservations, cafes, staff, login, password)
-├─ widgets/                  큰 화면 영역: app-shell(사이드바·헤더), dashboard, stats, catalog-list, inventory-list, play-list, reservation-board, cafe-list, staff-list
+├─ views/                    화면 한 장: 데이터를 읽어 아래 조각을 조합 (dashboard, stats, games, inventory, plays, reservations, cafes, staff, audit, login, password)
+├─ widgets/                  큰 화면 영역: app-shell(사이드바·헤더), dashboard, stats, catalog-list, inventory-list, play-list, reservation-board, cafe-list, staff-list, audit-list
 ├─ features/                 사용자 동작(대화상자 + 서버 액션 api/actions.ts): auth, manage-game, manage-inventory, manage-cafe, manage-staff, manage-reservation, record-play, filter-list, filter-stats
-├─ entities/                 도메인: game, cafe, inventory, play, reservation, waitlist, user, guest, stats, kiosk-device
+├─ entities/                 도메인: game, cafe, inventory, play, reservation, waitlist, user, guest, stats, kiosk-device, audit
 │                            model/(타입·규칙·검증), ui/(배지 등 표시)
 ├─ shared/                   도메인을 모르는 공통: lib/(목록·폼·날짜 계산, 훅), ui/(목록 빈 상태, 페이지네이션, 무한 스크롤, 폼 오류)
-├─ server/                   서버 전용: <domain>/(repository·data·seed), auth/(세션·로그인 잠금), kiosk/(토큰·응답 변환)
+├─ server/                   서버 전용: <domain>/(repository·data·seed), auth/(세션·로그인 잠금), kiosk/(토큰·응답 변환), audit/(변경 이력)
 └─ db/                       DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)
 scripts/create-admin.ts      첫 관리자 만들기 (규칙은 src/server/users/first-admin.ts)
 e2e/                         Playwright 테스트 (auth.setup.ts가 먼저 실제로 로그인)

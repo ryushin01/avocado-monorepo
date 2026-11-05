@@ -68,18 +68,20 @@ flowchart LR
 - **런처는 DB에 직접 접근하지 않습니다.** 백오피스 주소와 토큰은 런처 서버에만 두고, 손님 화면은 서버 액션을 거쳐 API를 부릅니다.
 - **화면 코드는 Feature-Sliced Design으로 나눕니다.** `app → views → widgets → features → entities → shared` 순서로만 가져오며, 어기면 `pnpm lint`가 실패합니다. 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.
 
-## 기술 스택과 선택 이유
+## 기술 스택
+
+![Skills](https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,postgres,pnpm,vitest,githubactions)
 
 | 영역 | 기술 | 이유 |
 |---|---|---|
 | 프레임워크 | Next.js 16 (App Router, Turbopack), React 19 (React Compiler) | 서버 컴포넌트와 서버 액션으로 API 층 없이 화면과 데이터를 연결합니다 |
 | 언어 | TypeScript 7 (타입 검사), TypeScript 6 (도구) | `typescript-eslint`가 TS 7을 지원하지 않아 함께 씁니다. 백오피스 타입 검사가 약 3.9초에서 0.9초로 줄었습니다(1회 측정) |
-| 모노레포 | pnpm workspaces, Turborepo | 세 앱이 UI, 도메인 타입, 설정을 공유합니다 |
-| UI | shadcn/ui (Base UI), Tailwind CSS 4, Recharts | 컴포넌트를 저장소 안에서 직접 고칠 수 있습니다 |
+| 구조 | Feature-Sliced Design, pnpm 12 workspaces, Turborepo | 세 앱이 UI, 도메인 타입, 설정을 공유하고, 화면 코드의 의존 방향을 lint로 강제합니다 |
+| UI | shadcn/ui (Base UI), Tailwind CSS 4, lucide-react, Recharts, Embla Carousel, sonner | 컴포넌트를 저장소 안에서 직접 고칠 수 있습니다 |
 | 데이터 | PostgreSQL, Drizzle ORM, PGlite | 개발과 테스트는 설치 없이 PGlite로 돌고, 운영은 `DATABASE_URL`로 PostgreSQL에 붙습니다 |
 | 인증·검증 | Auth.js 4, zod 4 | 이메일·비밀번호 로그인과 서버 쪽 입력 검증을 씁니다 |
-| 테스트 | Vitest, Testing Library, Playwright | 규칙은 단위 테스트로, 화면 흐름은 프로덕션 빌드 대상 E2E로 확인합니다 |
-| 품질 | ESLint, GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
+| 테스트 | Vitest 5, Testing Library, Playwright | 규칙은 단위 테스트로, 화면 흐름은 프로덕션 빌드 대상 E2E로 확인합니다 |
+| 품질 | ESLint 9 (FSD 경계 규칙), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
 
 ## 설계에서 신경 쓴 점
 
@@ -101,19 +103,6 @@ flowchart LR
 저장소: [github.com/ryushin01/avocado-monorepo](https://github.com/ryushin01/avocado-monorepo). 원래 avocado 프로젝트(`ryushin01/avocado`)와는 별도 저장소입니다.
 
 > 백오피스 데이터는 PostgreSQL(Drizzle)에 저장합니다. 개발할 때는 설치 없이 Node 안에서 도는 PGlite를 쓰고(`apps/admin/.data`), 운영에서는 `DATABASE_URL`로 PostgreSQL에 붙습니다. 백오피스는 로그인(Auth.js 4, 이메일·비밀번호)이 필요하고, 개발용 계정은 [apps/admin/README.md](apps/admin/README.md)에 있습니다. 런처는 백오피스의 키오스크 API를 읽으므로 백오피스가 켜져 있어야 합니다.
-
-## 기술 스택
-
-![Skills](https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,postgres,pnpm,vitest,githubactions)
-
-| 구분 | 사용 기술 |
-|---|---|
-| 프레임워크 | Next.js 16, React 19, TypeScript |
-| UI | Tailwind CSS 4, shadcn/ui(Base UI), lucide-react, Recharts, Embla Carousel, sonner |
-| 데이터 | PostgreSQL(운영), PGlite(개발), Drizzle ORM, Zod 4 |
-| 인증 | Auth.js 4 (이메일·비밀번호) |
-| 구조 | Feature-Sliced Design, pnpm 12 workspaces, Turborepo |
-| 품질 | ESLint 9(FSD 경계 규칙), Vitest 5, Playwright, GitHub Actions, CodeRabbit |
 
 ## 시작하기
 
@@ -160,7 +149,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm lint` | ESLint |
 | `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
 | `pnpm test:coverage` | 단위 테스트 + 커버리지 (앱마다 `coverage/`) |
-| `pnpm e2e` | E2E 테스트 (백오피스와 키오스크용 런처를 함께 띄움) |
+| `pnpm e2e` | E2E 테스트 (백오피스, 키오스크용 런처, 홈페이지를 함께 띄움) |
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·아이콘을 홍보 사이트용 webp로 다시 생성 (`apps/web/public/images`) |

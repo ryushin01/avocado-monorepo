@@ -65,6 +65,13 @@ describe("백오피스 API 호출", () => {
     expect(JSON.stringify(log)).not.toContain("kio_secret_token");
   });
 
+  it("다른 매장의 토큰(403)도 설정 오류이므로 연결 문제로 안내하고 로그에 남긴다", async () => {
+    vi.stubGlobal("fetch", async () => json(403, { message: "이 매장의 키오스크가 아닙니다." }));
+
+    expect(await fetchCafeGames()).toMatchObject({ ok: false, reason: "unreachable" });
+    expect(logs()[0]).toMatchObject({ event: "backoffice_error", status: 403 });
+  });
+
   it("서버 오류(500)도 연결 문제로 다룬다", async () => {
     vi.stubGlobal("fetch", async () => new Response("oops", { status: 500 }));
 

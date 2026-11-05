@@ -49,7 +49,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `LAUNCHER_CAFE_ID` | 이 키오스크가 놓인 매장 id | |
 | `KIOSK_API_TOKEN` | 백오피스 **매장 관리 → 매장 메뉴 → 키오스크 토큰**에서 발급한 값 | 운영에서 없으면 401. 다른 매장의 토큰이면 403. 발급할 때 한 번만 보임 |
 
-세 변수는 빌드 때도 읽습니다. 값을 바꾸면 다시 빌드합니다.
+세 변수는 서버를 켤 때의 환경 변수를 읽습니다. 빌드 하나를 여러 매장에 쓸 수 있고, 값을 바꾸면 다시 시작만 하면 됩니다. 빌드할 때 없어도 됩니다(빌드 중 백오피스 호출은 끊겨도 결과에 남지 않습니다).
 
 ### 홈페이지 (`apps/web`)
 
@@ -63,7 +63,7 @@ pnpm --filter @avocado/admin build      # 런처·홈페이지도 같은 방식
 pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이지 3002)
 ```
 
-- Node 24를 씁니다(CI와 같음).
+- Node 24 이상을 씁니다(`.node-version`, CI와 같음).
 - `build`가 카탈로그 이미지를 `public/images`로 복사하므로 `packages/domain/assets`도 배포본에 있어야 합니다.
 - 배포 전에 CI의 다섯 가지 검사가 통과했는지 확인합니다.
 

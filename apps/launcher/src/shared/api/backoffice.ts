@@ -39,8 +39,8 @@ async function call<T>(path: string, init?: { method: "POST"; body: unknown }): 
     if (res.ok) return { ok: true, data: (await res.json()) as T };
     const error = (await res.json().catch(() => undefined)) as KioskApiError | undefined;
     if (res.status === 404) return { ok: false, reason: "not-found", error };
-    // 401(토큰 불일치)과 서버 오류는 손님이 고칠 수 없으니 연결 문제로 안내한다.
-    if (res.status >= 400 && res.status < 500 && res.status !== 401) {
+    // 토큰 오류(401), 다른 매장의 토큰(403), 서버 오류는 손님이 고칠 수 없으니 연결 문제로 안내한다.
+    if (res.status >= 400 && res.status < 500 && res.status !== 401 && res.status !== 403) {
       return { ok: false, reason: "rejected", error };
     }
     // 토큰이 틀렸거나 백오피스가 고장난 경우. 손님 화면에는 연결 문제로만 보이므로 원인은 로그로 남긴다.

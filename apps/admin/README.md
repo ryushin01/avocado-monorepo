@@ -87,6 +87,7 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 | `pnpm test` | 단위 테스트 (Vitest) |
 | `pnpm e2e` | E2E 테스트 (Playwright). 백오피스(3100, 메모리 DB)와 키오스크 테스트용 런처(3101)를 프로덕션 빌드로 직접 띄우고, 실제 로그인 화면으로 로그인 |
 | `pnpm db:generate` | `src/db/schema.ts`를 바꾼 뒤 마이그레이션 SQL 만들기 (`src/db/migrations`, git에 넣음) |
+| `pnpm create-admin --email <이메일> --name <이름>` | 운영 DB에 첫 관리자 만들기 (관리자가 없을 때만). 임시 비밀번호를 한 번 보여 줌 (`docs/deployment.md`) |
 | `pnpm db:reset` | 개발 DB(`.data/pglite`) 지우기. 다음 실행 때 시드로 다시 만듦 |
 
 게임 카탈로그와 썸네일은 공통 패키지 `packages/domain`에 있습니다. avocado 데이터에서 다시 만드는 방법은 루트 README를 보세요.
@@ -119,6 +120,7 @@ src/
 │  ├─ list.ts                페이지 계산·URL 생성
 │  └─ form.ts                폼 결과 타입·변환
 src/db/                      DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)
+scripts/create-admin.ts      첫 관리자 만들기 (규칙은 src/lib/users/first-admin.ts)
 e2e/                         Playwright 테스트 (auth.setup.ts가 먼저 실제로 로그인)
 public/images/games/         카탈로그 썸네일 복사본 (git 제외, dev·build 전에 자동 복사)
 docs/architecture.md         백오피스 설계 문서

@@ -95,6 +95,7 @@
 | PGlite: "path argument ... Received an instance of URL" 로 서버가 멈춤 | 번들러가 PGlite를 묶어 자기 WASM 파일 경로를 못 찾음 | `next.config.ts`의 `serverExternalPackages: ["@electric-sql/pglite"]` |
 | "encountered the unstable value randomBytes while prerendering" | Auth.js 4의 `getServerSession`이 안에서 난수를 씀 | 세션을 읽기 전에 `await connection()` (`current-user.ts`, 로그인 화면) |
 | 테스트에서 "DateTimeParseError" 또는 외래 키 오류 | 예전 메모리 저장소는 빈 날짜·없는 매장을 받아 줬지만 실제 DB는 거부함 | 픽스처에 실제 날짜와 참조하는 매장·게임을 넣음 |
+| CI에서만 `pnpm install`이 `ERR_PNPM_IGNORED_BUILDS`로 실패 | pnpm 12는 허락하지 않은 의존성의 설치 스크립트를 막고, CI에서는 오류로 멈춤 (내 컴퓨터에서는 그냥 넘어감) | 믿을 수 있는 패키지만 `pnpm install --allow-build <이름>`으로 `pnpm-workspace.yaml`의 `allowBuilds`에 추가 (지금은 esbuild) |
 | lint `react-hooks/refs`: Cannot access refs during render | 렌더링 중에 `useRef().current`를 읽음 (예: 캐러셀 플러그인) | 한 번만 만들 값은 `useState(() => ...)`로 만든다 |
 | 새 앱에서 공통 컴포넌트 스타일이 빠짐 | Tailwind가 `node_modules` 너머의 `packages/ui`를 찾지 않음 | 앱 `globals.css`에 `@source "../../../../packages/ui/src";` |
 | 이미지가 안 보임 (썸네일·자리표시) | 카탈로그 이미지는 `packages/domain/assets`에만 있고 앱 `public`에는 복사본이 들어감 | 앱 `package.json`의 `dev`·`build` 맨 앞에 `copy-catalog-assets public &&` (pre 스크립트 대신 한 줄에 써서 실행 순서가 보이게 함) |

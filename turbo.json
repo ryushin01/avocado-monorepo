@@ -15,11 +15,6 @@
       "outputs": [
         ".next/**",
         "!.next/cache/**"
-      ],
-      "env": [
-        "BACKOFFICE_URL",
-        "LAUNCHER_CAFE_ID",
-        "KIOSK_API_TOKEN"
       ]
     },
     "typecheck": {

@@ -4,8 +4,9 @@ import { LAUNCHER_PORT, WEB_PORT } from "./e2e/helpers";
 
 const PORT = 3100;
 
-// CI는 앞 단계의 pnpm build 결과를 그대로 쓴다. 런처는 매장·토큰을 빌드 때 읽으므로 항상 다시 빌드한다.
-const buildThen = (command: string) => (process.env.CI ? command : `pnpm build && ${command}`);
+// CI는 앞 단계의 pnpm build 결과를 그대로 쓴다.
+const buildThen = (command: string, dir = ".") =>
+  process.env.CI ? `pnpm --dir ${dir} ${command}` : `pnpm --dir ${dir} build && pnpm --dir ${dir} ${command}`;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -32,7 +33,7 @@ export default defineConfig({
   // (devMemoryThresholdRestart) 메모리 DB가 초기화되고 접속이 잠깐 끊겨, 테스트가 가끔 실패했다.
   webServer: [
     {
-      command: buildThen(`pnpm start --port ${PORT}`),
+      command: buildThen(`start --port ${PORT}`),
       url: `http://localhost:${PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
@@ -46,7 +47,7 @@ export default defineConfig({
     },
     {
       // 키오스크 테스트용 런처: 둔산점, 개발용 기기 토큰으로 위 백오피스를 읽는다(e2e/kiosk.spec.ts).
-      command: `pnpm --dir ../launcher build && pnpm --dir ../launcher start --port ${LAUNCHER_PORT}`,
+      command: buildThen(`start --port ${LAUNCHER_PORT}`, "../launcher"),
       url: `http://localhost:${LAUNCHER_PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
@@ -58,9 +59,7 @@ export default defineConfig({
     },
     {
       // 홈페이지는 백오피스를 읽지 않고, 환경 변수도 없다(e2e/web.spec.ts).
-      command: process.env.CI
-        ? `pnpm --dir ../web start --port ${WEB_PORT}`
-        : `pnpm --dir ../web build && pnpm --dir ../web start --port ${WEB_PORT}`,
+      command: buildThen(`start --port ${WEB_PORT}`, "../web"),
       url: `http://localhost:${WEB_PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,

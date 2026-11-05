@@ -12,7 +12,7 @@ export function GameTile({ game, sizes }: { game: CatalogGame; sizes: string }) 
     >
       <Image
         src={game.imageUrl}
-        alt={`${game.name} 표지`}
+        alt=""
         fill
         sizes={sizes}
         className="object-contain px-4 pt-4 pb-16 transition-transform duration-300 group-hover:scale-105"

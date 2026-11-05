@@ -61,7 +61,7 @@ export function ErrorNotice({
 
   if (insideMain) return <div className={LAYOUT}>{card}</div>;
   return (
-    <main id="main" tabIndex={-1} className={`${LAYOUT} outline-none`}>
+    <main id="main" tabIndex={-1} className={LAYOUT}>
       {card}
     </main>
   );

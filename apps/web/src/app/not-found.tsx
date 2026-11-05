@@ -13,7 +13,7 @@ import {
 
 export default function NotFound() {
   return (
-    <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center p-6 outline-none">
+    <main id="main" tabIndex={-1} className="scroll-mt-28 flex flex-1 items-center justify-center p-6">
       <Empty className="border bg-background">
         <EmptyHeader>
           <EmptyMedia variant="icon">

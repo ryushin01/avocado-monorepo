@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
+# CodeRabbit PR 리뷰 설정. GitHub에 CodeRabbit 앱을 설치해야 동작한다.
+language: ko-KR
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    - "!pnpm-lock.yaml"
+    - "!apps/admin/src/db/migrations/meta/**"
+    - "!packages/domain/data/**"
+    - "!packages/domain/assets/**"
+    - "!**/public/**"
+  path_instructions:
+    - path: "apps/*/src/{shared,entities,features,widgets,views}/**"
+      instructions: >-
+        Feature-Sliced Design(docs/conventions.md)을 따르는지 봅니다. 위 레이어는 아래 레이어만
+        가져오고, 같은 레이어의 다른 슬라이스는 가져오지 않으며, 슬라이스 밖에서는 공개 API로만 가져옵니다.
+        lint로 잡히지 않는 것(슬라이스를 잘못 나눈 경우, 여러 곳에서 쓰지 않는데 shared에 둔 경우)을 지적합니다.
+    - path: "apps/*/src/**/*.tsx"
+      instructions: >-
+        UI는 packages/ui의 shadcn/ui(base-nova, Base UI)만 씁니다. asChild가 아니라 render prop을 쓰고,
+        링크를 버튼처럼 보이게 할 때는 buttonVariants를 씁니다. 문구는 한국어 존댓말입니다.
+        접근성(이름, 키보드, 색만으로 구분하지 않기)을 함께 확인합니다.
+    - path: "apps/admin/src/features/*/api/**"
+      instructions: >-
+        서버 액션은 시작할 때 getCurrentUser()로 권한을 다시 확인하고, zod로 입력을 검증하고,
+        바꾼 데이터를 보여 주는 경로를 revalidatePath로 갱신해야 합니다.
+    - path: "apps/admin/src/{server,db}/**"
+      instructions: >-
+        상태 전이·규칙은 repository에 두고 단위 테스트로 검증합니다. 동시성이 필요한 곳은 트랜잭션과 잠금을
+        확인합니다. 스키마를 바꾸면 마이그레이션도 함께 커밋해야 합니다.
+    - path: "apps/admin/src/app/api/kiosk/**"
+      instructions: >-
+        키오스크 응답에 전화번호를 넣지 않고 이름은 가려서 보내야 합니다. 기기 토큰으로 매장 범위를 확인하는지
+        봅니다. 응답 형태를 바꾸면 @avocado/domain/kiosk와 런처도 함께 바꿔야 합니다.
+    - path: "**/*.test.{ts,tsx}"
+      instructions: 구현 세부가 아니라 규칙과 사용자에게 보이는 동작을 검증하는지 봅니다.
+    - path: "apps/admin/e2e/**"
+      instructions: >-
+        테스트는 병렬로 돕니다. 데이터를 바꾸는 테스트가 docs/conventions.md에 정한 매장을 지키고,
+        이름·번호가 겹치지 않는지 봅니다.
+chat:
+  auto_reply: true

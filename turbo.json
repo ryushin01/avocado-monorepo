@@ -9,6 +9,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.test.ts",
+        "!**/*.test.tsx",
         "!e2e/**"
       ],
       "outputs": [
@@ -28,6 +29,11 @@
     },
     "lint": {},
     "test": {},
+    "test:coverage": {
+      "outputs": [
+        "coverage/**"
+      ]
+    },
     "e2e": {
       "cache": false,
       "passThroughEnv": [

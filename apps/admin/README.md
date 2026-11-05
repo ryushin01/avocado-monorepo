@@ -84,7 +84,8 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 | `pnpm build` / `pnpm start` | 프로덕션 빌드 / 실행 |
 | `pnpm typecheck` | 라우트 타입 생성 후 타입 검사 |
 | `pnpm lint` | ESLint |
-| `pnpm test` | 단위 테스트 (Vitest) |
+| `pnpm test` | 단위·컴포넌트 테스트 (Vitest, Testing Library) |
+| `pnpm test:coverage` | 테스트 + 커버리지 (`coverage/`) |
 | `pnpm e2e` | E2E 테스트 (Playwright). 백오피스(3100, 메모리 DB)와 키오스크 테스트용 런처(3101)를 프로덕션 빌드로 직접 띄우고, 실제 로그인 화면으로 로그인 |
 | `pnpm db:generate` | `src/db/schema.ts`를 바꾼 뒤 마이그레이션 SQL 만들기 (`src/db/migrations`, git에 넣음) |
 | `pnpm create-admin --email <이메일> --name <이름>` | 운영 DB에 첫 관리자 만들기 (관리자가 없을 때만). 임시 비밀번호를 한 번 보여 줌 (`docs/deployment.md`) |

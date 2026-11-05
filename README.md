@@ -61,13 +61,15 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm build` | 모든 앱 프로덕션 빌드 |
 | `pnpm typecheck` | 모든 앱·패키지 타입 검사 |
 | `pnpm lint` | ESLint |
-| `pnpm test` | 단위 테스트 (Vitest) |
+| `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
+| `pnpm test:coverage` | 단위 테스트 + 커버리지 (앱마다 `coverage/`) |
 | `pnpm e2e` | E2E 테스트 (백오피스와 키오스크용 런처를 함께 띄움) |
 
-푸시와 PR마다 GitHub Actions가 위 검사를 모두 실행합니다(`.github/workflows/ci.yml`).
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·아이콘을 홍보 사이트용 webp로 다시 생성 (`apps/web/public/images`) |
+
+푸시와 PR마다 GitHub Actions가 검사를 모두 실행합니다(`.github/workflows/ci.yml`). PR 리뷰는 CodeRabbit이 합니다(`.coderabbit.yaml`, GitHub에 앱 설치 필요).
 
 avocado 데이터가 바뀌면 `import:avocado-images` → `import:avocado` 순서로 실행합니다. 둘 다 기본으로 이 저장소 옆의 `../avocado-master`를 읽고, 다른 위치라면 경로를 인자로 넘기세요.
 
@@ -105,7 +107,7 @@ docs/
 
 ## 아직 하지 않은 것
 
-- 배포 설정 (배포할 곳 미정, 점검 목록은 `docs/deployment.md`)
+- 배포 설정과 CD (배포할 곳 미정, 점검 목록은 `docs/deployment.md`)
 - 예약: 손님이 직접 하는 온라인 예약, 정원·테이블 배정, 문자 알림(대기 호출 등)
 - 홈페이지 E2E 테스트 (런처는 키오스크 흐름만 백오피스 E2E에서 확인)
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml)
 
-> **프로젝트 상태:** 개발 중인 포트폴리오 프로젝트이며 아직 배포하지 않았습니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
+> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 데모 사이트 없이 [로컬에서 실행](#시작하기)합니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
 
 본사와 매장 직원이 쓰는 백오피스, 매장 손님이 쓰는 태블릿 키오스크, 일반 방문자가 보는 홍보 사이트를 한 저장소에서 관리합니다. 재고, 대여·반납, 예약, 현장 대기가 백오피스와 키오스크 사이에서 이어집니다.
 
@@ -118,11 +118,19 @@ npm install -g pnpm@12.16.1
 pnpm install
 pnpm exec playwright install chromium   # E2E 테스트를 돌릴 때만
 
-pnpm dev                          # 세 앱을 모두 띄움
+pnpm dev                          # 세 앱을 모두 띄움 (DB 설치 불필요, 처음 실행 때 시드 데이터를 넣음)
 pnpm dev:admin               # 백오피스만
 pnpm dev:launcher                 # 런처 + 런처가 읽는 백오피스
 pnpm dev:web                     # 홍보 사이트만
 ```
+
+띄운 뒤에는 아래 주소로 들어갑니다. 백오피스는 `admin@example.com` / `avocado1234`로 로그인합니다(스태프 계정은 [apps/admin/README.md](apps/admin/README.md)).
+
+| 앱 | 주소 |
+|---|---|
+| 백오피스 | http://localhost:3000 |
+| 키오스크 | http://localhost:3001 |
+| 홍보 사이트 | http://localhost:3002 |
 
 특정 앱·패키지에서만 실행할 때는 `--filter`를 씁니다. 예: `pnpm --filter @avocado/admin test`
 
@@ -180,7 +188,7 @@ packages/
 └─ config/       tsconfig, ESLint
 docs/
 ├─ conventions.md  모든 앱 공통 작성 규칙
-├─ deployment.md   배포 전 점검
+├─ deployment.md   배포한다면 확인할 것
 └─ images/         README 화면 캡처
 ```
 
@@ -190,11 +198,11 @@ docs/
 - [apps/admin/docs/architecture.md](apps/admin/docs/architecture.md): 도메인 모델, 권한, 키오스크 API, Next.js 16 렌더링 규칙
 - [apps/launcher/README.md](apps/launcher/README.md), [apps/web/README.md](apps/web/README.md)
 - [docs/conventions.md](docs/conventions.md): 코드 구조(FSD)·UI·폼·테스트 규칙과 알려진 함정
-- [docs/deployment.md](docs/deployment.md): 배포 전 점검 (환경 변수, 첫 관리자 만들기, 마이그레이션, 보안)
+- [docs/deployment.md](docs/deployment.md): 배포한다면 확인할 것 (환경 변수, 첫 관리자 만들기, 마이그레이션, 보안)
 
 ## 아직 하지 않은 것
 
-- 배포 설정과 CD (배포할 곳 미정, 점검 목록은 `docs/deployment.md`)
+- 배포와 CD: 지금은 로컬에서만 실행합니다. 배포한다면 확인할 것은 `docs/deployment.md`에 있습니다
 - 외부 오류 모니터링과 알림 (지금은 표준 오류 로그까지, 붙일 곳은 각 앱의 `src/instrumentation.ts`)
 - 예약: 손님이 직접 하는 온라인 예약, 정원·테이블 배정, 문자 알림(대기 호출 등)
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

@@ -114,7 +114,7 @@ src/
 ├─ entities/                 도메인: game, cafe, inventory, play, reservation, waitlist, user, guest, stats, kiosk-device, audit
 │                            model/(타입·규칙·검증), ui/(배지 등 표시)
 ├─ shared/                   도메인을 모르는 공통: lib/(목록·폼·날짜 계산, 훅), ui/(목록 빈 상태, 페이지네이션, 무한 스크롤, 폼 오류)
-├─ server/                   서버 전용: <domain>/(repository·data·seed), auth/(세션·로그인 잠금), kiosk/(토큰·응답 변환), audit/(변경 이력)
+├─ server/                   서버 전용: <domain>/(repository·data·seed), auth/(세션·로그인 잠금), kiosk/(토큰·응답 변환), audit/(변경 이력), rate-limit/(요청 제한)
 └─ db/                       DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)
 scripts/create-admin.ts      첫 관리자 만들기 (규칙은 src/server/users/first-admin.ts)
 e2e/                         Playwright 테스트 (auth.setup.ts가 먼저 실제로 로그인)

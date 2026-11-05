@@ -9,7 +9,7 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 | 게임 상세 | `/game/[BGG ID]` | 상세: 순위·평점·난이도, 게임 정보. 구매처 목록 대신 매장 안내 |
 
 - avocado의 로그인·회원가입·게이트웨이 화면은 홍보 사이트에 필요 없어 옮기지 않았습니다.
-- 브랜드 이름·문구는 `src/lib/site.ts` 한 곳에 있습니다.
+- 브랜드 이름·문구는 `src/shared/config/site.ts` 한 곳에 있습니다.
 - 사진은 avocado 원본을 webp로 줄여 `public/images`에 넣었습니다(루트에서 `pnpm import:avocado-media`). 약 11MB → 1.2MB
 - 게임 표지는 BoardGameGeek 원본 주소를 Next.js 이미지 최적화로 줄여 보냅니다(`next.config.ts`의 `images.remotePatterns`).
 - avocado의 색(어두운 바탕, 흰 패널, 주황 강조색 `#ff5100`)을 `src/app/globals.css`에서 공통 테마 위에 덮어씁니다.
@@ -17,3 +17,5 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 ```bash
 pnpm dev:web   # 루트에서. http://localhost:3002
 ```
+
+코드는 Feature-Sliced Design을 따릅니다([docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)): `views`(화면), `widgets`(머리글·바닥글·캐러셀·유형 소개), `entities/game`, `shared/config`.

@@ -10,12 +10,12 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-import type { Role } from "@/lib/auth/roles";
-import type { CafeStatus } from "@/lib/cafes/types";
-import type { GameCategory, GameDifficulty } from "@/lib/games/types";
-import type { InventoryStatus } from "@/lib/inventory/types";
-import type { ReservationStatus } from "@/lib/reservations/types";
-import type { WaitlistStatus } from "@/lib/waitlist/types";
+import type { Role } from "@/entities/user";
+import type { CafeStatus } from "@/entities/cafe";
+import type { GameCategory, GameDifficulty } from "@/entities/game";
+import type { InventoryStatus } from "@/entities/inventory";
+import type { ReservationStatus } from "@/entities/reservation";
+import type { WaitlistStatus } from "@/entities/waitlist";
 
 // 시각은 모두 timestamptz로 저장하고, 도메인 타입(ISO 문자열)으로는 repository에서 바꾼다.
 const at = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });

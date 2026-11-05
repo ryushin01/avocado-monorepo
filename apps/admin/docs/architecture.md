@@ -10,13 +10,13 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 
 | 모델 | 위치 | 설명 |
 |---|---|---|
-| `BoardGame` | `src/lib/games/types.ts` | 본사 공통 카탈로그. 이름·영문명·이미지·유형(여러 개)·인원·플레이 시간·난이도. 매장 정보는 없다. |
-| `Cafe` | `src/lib/cafes/types.ts` | 프랜차이즈 매장 (시드는 가상의 5개 매장). 상태는 `open`(운영 중)·`closed`(폐점) |
-| `InventoryItem` | `src/lib/inventory/types.ts` | 매장 하나가 보유한 게임 하나. `(cafeId, gameId)`가 키. 보유 수량과 상태 하나(`available`·`maintenance`·`retired`) |
-| `PlaySession` | `src/lib/plays/types.ts` | 게임 한 번 대여. `startedAt`(이용 시작), `returnedAt`(반납, 없으면 이용 중), `playerCount`, `table`. 인기 순위를 계산한다. |
-| `Reservation` | `src/lib/reservations/types.ts` | 예약. 이름·휴대전화·인원·방문 시각·메모, 상태 `pending`(가예약)·`confirmed`(확정)·`seated`(입장)·`cancelled`(취소)·`no_show`(노쇼), 키오스크 도착 시각 `arrivedAt` |
-| `WaitlistEntry` | `src/lib/waitlist/types.ts` | 현장 대기. 그날 매장별 번호, 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
-| `User` | `src/lib/auth/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 로그인 계정이며 비밀번호는 bcrypt 해시로 `users.password_hash`에 둔다. |
+| `BoardGame` | `src/entities/game/model/types.ts` | 본사 공통 카탈로그. 이름·영문명·이미지·유형(여러 개)·인원·플레이 시간·난이도. 매장 정보는 없다. |
+| `Cafe` | `src/entities/cafe/model/types.ts` | 프랜차이즈 매장 (시드는 가상의 5개 매장). 상태는 `open`(운영 중)·`closed`(폐점) |
+| `InventoryItem` | `src/entities/inventory/model/types.ts` | 매장 하나가 보유한 게임 하나. `(cafeId, gameId)`가 키. 보유 수량과 상태 하나(`available`·`maintenance`·`retired`) |
+| `PlaySession` | `src/entities/play/model/types.ts` | 게임 한 번 대여. `startedAt`(이용 시작), `returnedAt`(반납, 없으면 이용 중), `playerCount`, `table`. 인기 순위를 계산한다. |
+| `Reservation` | `src/entities/reservation/model/types.ts` | 예약. 이름·휴대전화·인원·방문 시각·메모, 상태 `pending`(가예약)·`confirmed`(확정)·`seated`(입장)·`cancelled`(취소)·`no_show`(노쇼), 키오스크 도착 시각 `arrivedAt` |
+| `WaitlistEntry` | `src/entities/waitlist/model/types.ts` | 현장 대기. 그날 매장별 번호, 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
+| `User` | `src/entities/user/model/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 로그인 계정이며 비밀번호는 bcrypt 해시로 `users.password_hash`에 둔다. |
 
 정해 둔 것:
 
@@ -28,38 +28,38 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
   - **유형별 차트:** 여러 유형에 속한 게임은 각 유형에 모두 셉니다.
   - **인원수별 차트:** 최소~최대 인원 사이에 그 인원이 들어가는 게임을 셉니다. 마지막 구간은 "8명 이상"입니다.
   - **플레이 시간별 차트:** 최소 플레이 시간으로 나누고, 경계값은 아래 구간에 넣습니다(예: 30분은 "30분 이하").
-  - **이용 현황** (`plays/repository.ts`의 `usage`): 지금 이용 중(반납 전), 오늘 이용(한국 시간 0시부터 이용 시작한 횟수), 최근 7일 이용을 셉니다. 요약 칸은 전체, 관리자의 매장별 현황 표는 매장마다 보여줍니다.
-- **통계** (`lib/stats/repository.ts`, 화면 `/stats`)
+  - **이용 현황** (`server/plays/repository.ts`의 `usage`): 지금 이용 중(반납 전), 오늘 이용(한국 시간 0시부터 이용 시작한 횟수), 최근 7일 이용을 셉니다. 요약 칸은 전체, 관리자의 매장별 현황 표는 매장마다 보여줍니다.
+- **통계** (`server/stats/repository.ts`, 화면 `/stats`)
   - **기간:** 최근 7·14·28일(기본 28일). 오늘은 아직 끝나지 않아 빼고, **어제까지의 온전한 날**만 셉니다. 비교 대상은 바로 앞의 같은 길이 기간입니다. 28일이 최대인 것은 목 이용 기록이 60일치라 지난 기간까지 채울 수 있는 길이이기 때문입니다(4주라 요일도 고르게 들어감).
   - **범위:** 관리자는 전체 매장 또는 매장 하나(`?cafe=`), 스태프는 소속 매장만. 폐점 매장은 빠집니다.
   - **요약 수치:** 이용 횟수·하루 평균(늘면 좋음, 초록·빨강으로 표시), 평균 이용 시간·평균 인원(좋고 나쁨이 없어 회색). 평균 이용 시간은 반납한 기록만으로 계산합니다.
   - **요일·시간대:** 한국 시간 기준 이용 시작 횟수. 시간 범위는 기록이 있는 시간대(지금은 12~23시)입니다.
   - **박스당 이용(회전율):** 기간 이용 횟수 ÷ 범위 안 매장의 보유 박스(폐기 제외, 점검 중 포함). 많이 이용된 10개는 박스를 늘릴 후보, 적게 이용된 10개는 진열을 바꾸거나 옮길 후보입니다.
-- **예약 규칙** (`reservations/repository.ts`)
+- **예약 규칙** (`server/reservations/repository.ts`, 상태 전이 규칙은 `entities/reservation`)
   - 직원이 전화 등으로 받아 등록합니다(손님이 직접 예약하는 화면은 아직 없음). 기본 상태는 확정이고, 가예약으로 받을 수도 있습니다.
   - 상태는 가예약 → 확정 → 입장, 또는 취소·노쇼로 끝납니다. 끝난 예약은 고치거나 상태를 바꿀 수 없고, 확정을 가예약으로 되돌리지 않습니다.
   - 지난 시각으로 등록할 수 없습니다(수정할 때는 시각을 바꿀 때만 확인). 노쇼는 예약 시각이 지나야 처리할 수 있습니다.
   - 정원·테이블 배정·중복 예약 제한은 아직 없습니다.
-- **현장 대기 규칙** (`waitlist/repository.ts`)
+- **현장 대기 규칙** (`server/waitlist/repository.ts`, 상태 전이 규칙은 `entities/waitlist`)
   - 번호는 매장별로 한국 날짜마다 1번부터 매깁니다. 같은 휴대전화 번호는 한 번만 줄에 설 수 있습니다.
   - 대기 중 → 호출 → 입장, 또는 이탈(호출 후 오지 않음·손님 취소). '앞에 남은 팀'은 줄에 있는(대기 중·호출) 팀 중 먼저 온 팀 수입니다.
-- **손님 정보 보호** (`guests/contact.ts`, `kiosk/to-kiosk-guest.ts`)
+- **손님 정보 보호** (`entities/guest/model/contact.ts`, `server/kiosk/to-kiosk-guest.ts`)
   - 전화번호는 숫자만 저장하고 휴대전화(010~019)만 받습니다.
   - 키오스크 응답에는 전화번호를 넣지 않고, 이름은 가려서(김*수) 보냅니다. 손님은 전화번호 뒷자리 4자리로만 찾습니다.
 - **인기 순위:** 지금 시각 기준 최근 7일(주간)·30일(월간)의 이용 시작 횟수로 매깁니다(이용 중인 기록 포함, 취소한 기록 제외). 횟수가 같으면 이름순이고, 1~10위만 보여줍니다.
-  - 이용 기록 시드(`plays/seed.ts`)는 개발 DB를 처음 만들 때 그 시각 기준 60일치를 넣습니다(시간이 지나면 기록도 그만큼 오래된 것이 되므로, 새 시드가 필요하면 `db:reset`). 지난 기록은 모두 반납돼 있고, 매장마다 3~5개가 지금 이용 중입니다.
+  - 이용 기록 시드(`server/plays/seed.ts`)는 개발 DB를 처음 만들 때 그 시각 기준 60일치를 넣습니다(시간이 지나면 기록도 그만큼 오래된 것이 되므로, 새 시드가 필요하면 `db:reset`). 지난 기록은 모두 반납돼 있고, 매장마다 3~5개가 지금 이용 중입니다.
   - 매장이 보유한(폐기 제외) 게임만 이용됩니다. 게임별 인기도가 날마다 오르내려서 주간과 월간 순위가 달라집니다.
-- **대여·반납 규칙** (`plays/repository.ts`, `inventory/repository.ts`)
+- **대여·반납 규칙** (`server/plays/repository.ts`, `server/inventory/repository.ts`)
   - 빌려줄 수 있는 게임: 상태가 이용 가능이고 `보유 수량 − 이용 중` > 0. 폐점 매장에서는 시작할 수 없습니다.
   - 이용 중인 박스가 있으면 재고에서 제외할 수 없고, 수량을 이용 중인 수보다 적게 줄일 수 없습니다.
   - 상태(점검 중·폐기)는 이용 중이어도 바꿀 수 있습니다. 새로 빌려주지 않을 뿐, 지금 쓰는 박스는 반납받습니다.
   - 잘못 입력한 이용 중 기록은 '이용 취소'로 지웁니다. 반납한 기록은 고치거나 지우지 않습니다.
-  - 날짜 경계는 한국 시간(`plays/time.ts`)입니다. 지난 기록의 날짜 필터도 한국 날짜 기준입니다.
-- **폐점** (`cafes/repository.ts`)
+  - 날짜 경계는 한국 시간(`shared/lib/kst-time.ts`)입니다. 지난 기록의 날짜 필터도 한국 날짜 기준입니다.
+- **폐점** (`server/cafes/repository.ts`)
   - 폐점한 매장은 `visibleCafes`에서 빠지므로 대시보드 집계, 재고·이용 기록의 매장 선택, 카탈로그의 보유 현황에 나오지 않습니다. 재고와 이용 기록은 지우지 않습니다.
   - 이용 중인 게임이 있으면 폐점할 수 없습니다. 운영 재개는 언제든 할 수 있습니다.
   - 폐점 매장의 스태프는 재고·이용 기록에서 '매장 없음'을 봅니다. 직원 관리에서 다른 매장으로 옮깁니다.
-- **직원 규칙** (`users/repository.ts`)
+- **직원 규칙** (`server/users/repository.ts`)
   - 이메일은 겹칠 수 없습니다(대소문자 무시). 스태프의 소속 매장은 운영 중이어야 하고, 관리자는 소속 매장이 없습니다.
   - 자기 역할은 바꿀 수 없고 자신을 퇴사 처리할 수 없습니다. 재직 중인 관리자가 한 명은 남아야 합니다.
   - 퇴사한 직원의 쿠키로 들어오면 재직 중인 첫 관리자로 봅니다(`findActiveUser`).
@@ -67,7 +67,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 
 ## 권한
 
-`src/lib/auth/permissions.ts`에 모여 있습니다.
+`src/entities/user/model/permissions.ts`에 모여 있습니다.
 
 | 규칙 | 함수 |
 |---|---|
@@ -75,20 +75,24 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 | 재고·이용 기록은 관리자는 모든 매장, 스태프는 소속 매장만 | `canManageInventory`, `canRecordPlays` |
 | 매장·직원 관리는 관리자만 | `canManageOrganization` |
 | 화면에 보여줄 매장: 운영 중인 매장 중에서, 스태프는 요청과 관계없이 소속 매장, 관리자는 요청한 매장(잘못되면 첫 매장) | `resolveCafe`, `visibleCafes` |
-| 페이지 단위 역할 제한 (`/cafes`, `/staff`) | `requireRole` (`guard.ts`, 권한 없으면 `forbidden()` → 403) |
+| 페이지 단위 역할 제한 (`/cafes`, `/staff`) | `requireRole` (`server/auth/guard.ts`, 권한 없으면 `forbidden()` → 403) |
 
 화면에서 버튼을 숨기는 것은 편의일 뿐입니다. **모든 서버 액션은 시작할 때 `getCurrentUser()`로 권한을 다시 확인합니다.** 새 액션을 만들 때도 같은 규칙을 지키세요.
+
+## 코드 구조
+
+화면 코드는 Feature-Sliced Design([conventions.md](../../../docs/conventions.md#프론트엔드-구조-feature-sliced-design))을 따르고, DB·인증·저장소는 그 밖의 `src/server`와 `src/db`에 둡니다.
 
 ## 데이터 흐름
 
 ```
-page.tsx / actions.ts            화면·서버 액션: 권한 확인, 입력 검증(zod)
+views/*/ui/*-page.tsx, features/*/api/actions.ts   화면·서버 액션: 권한 확인, 입력 검증(zod)
         │
         ▼
-lib/<domain>/data.ts             서버 전용(server-only) 진입점. 저장소를 고른다.
+server/<domain>/data.ts             서버 전용(server-only) 진입점. 저장소를 고른다.
         │
         ▼
-lib/<domain>/repository.ts       인터페이스 + Drizzle 구현 (규칙·상태 전이도 여기, 단위 테스트 대상)
+server/<domain>/repository.ts       인터페이스 + Drizzle 구현 (규칙·상태 전이도 여기, 단위 테스트 대상)
         │
         ▼
 src/db                           Drizzle 스키마·마이그레이션. server.ts의 getDb()가 연결을 하나만 만들어 함께 쓴다
@@ -99,7 +103,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
 - **동시성:** 마지막 박스 대여(`plays.start`)와 대기 번호 발급(`waitlist.add`)은 트랜잭션 안에서 해당 줄을 잠그고(`FOR UPDATE`) 확인합니다.
 - **시각:** DB는 `timestamptz`로 저장하고, 도메인 타입은 ISO 문자열입니다. 바꾸는 곳은 `src/db/mappers.ts` 한 곳입니다.
 - **스키마 변경:** `src/db/schema.ts`를 고치고 `pnpm db:generate`로 마이그레이션 SQL을 만들어 함께 커밋합니다. 서버는 처음 DB를 열 때 적용합니다.
-- **시드 데이터:** 카탈로그는 공통 패키지의 `@avocado/domain/catalog`(avocado 변환 결과 `packages/domain/data/catalog.json`)에서 필요한 항목만 골라 씁니다(`games/seed.ts`). 재고는 `inventory/seed.ts`가 매장·게임 조합의 해시로 매번 같게 만듭니다.
+- **시드 데이터:** 카탈로그는 공통 패키지의 `@avocado/domain/catalog`(avocado 변환 결과 `packages/domain/data/catalog.json`)에서 필요한 항목만 골라 씁니다(`server/games/seed.ts`). 재고는 `server/inventory/seed.ts`가 매장·게임 조합의 해시로 매번 같게 만듭니다.
 
 ### 키오스크 조회 API
 
@@ -113,7 +117,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
 - 운영 중인 매장만 응답하고, 없거나 폐점한 매장은 404입니다. 폐기한 게임은 빠집니다.
 - 상태: 남은 박스가 있으면 `available`, 모두 이용 중이면 `in-use`, 점검 중이면 `unavailable`
 - 썸네일은 백오피스 주소를 붙인 절대 주소입니다(런처가 다른 포트에서 뜨기 때문).
-- **기기 토큰:** 관리자가 매장 관리 > 매장 메뉴 > 키오스크 토큰에서 기기마다 발급합니다(`lib/kiosk/devices.ts`). 런처는 `Authorization: Bearer <토큰>`으로 보냅니다.
+- **기기 토큰:** 관리자가 매장 관리 > 매장 메뉴 > 키오스크 토큰에서 기기마다 발급합니다(`server/kiosk/devices.ts`). 런처는 `Authorization: Bearer <토큰>`으로 보냅니다.
   - DB에는 토큰의 SHA-256 해시와 앞 8글자만 두고, 원문은 발급 직후 한 번만 보여줍니다. 잃어버린 기기는 폐기합니다.
   - 토큰의 매장과 주소의 매장이 다르면 403, 없거나 폐기한 토큰이면 401입니다.
   - 토큰 없이 오면 운영에서는 401, 개발 중에는 편의상 허용합니다. 개발 DB에는 매장마다 `kio_dev_<매장 id>` 토큰이 있습니다.
@@ -122,11 +126,11 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
 
 ### 로그인 (Auth.js 4)
 
-- 이메일·비밀번호(Credentials) 로그인, 세션은 JWT 쿠키(12시간). 설정은 `lib/auth/options.ts`, 경로는 `/api/auth/*`, 화면은 `/login`.
+- 이메일·비밀번호(Credentials) 로그인, 세션은 JWT 쿠키(12시간). 설정은 `server/auth/options.ts`, 경로는 `/api/auth/*`, 화면은 `/login`.
 - **요청마다 DB 확인:** JWT는 서버에서 바로 끊을 수 없으므로, `getCurrentUser()`가 요청마다 DB에서 직원을 다시 읽어 퇴사 처리된 직원은 바로 로그인 화면(`?error=inactive`)으로 보냅니다. 역할·소속 매장 변경도 바로 반영됩니다.
 - 로그인하지 않았으면 `getCurrentUser()`가 `/login`으로 보냅니다. 모든 화면과 서버 액션은 이 함수로 시작하므로 따로 막는 곳이 없습니다.
 - 없는 이메일에도 비밀번호 비교를 한 번 해서, 응답 시간으로 계정이 있는지 알 수 없게 했습니다.
-- **로그인 잠금** (`lib/auth/login-attempts.ts`): 같은 이메일로 15분 안에 5번 틀리면 15분 동안 잠그고, 잠긴 동안에는 맞는 비밀번호도 받지 않습니다(로그인 화면 `error=locked`). 성공하면 기록을 지웁니다. 이메일 기준이라 남이 일부러 잠글 수도 있지만, 비밀번호 추측을 막는 쪽을 택했습니다.
+- **로그인 잠금** (`server/auth/login-attempts.ts`): 같은 이메일로 15분 안에 5번 틀리면 15분 동안 잠그고, 잠긴 동안에는 맞는 비밀번호도 받지 않습니다(로그인 화면 `error=locked`). 성공하면 기록을 지웁니다. 이메일 기준이라 남이 일부러 잠글 수도 있지만, 비밀번호 추측을 막는 쪽을 택했습니다.
 - **임시 비밀번호:** 관리자가 직원 관리에서 정한 비밀번호(등록·재설정)는 임시입니다(`users.must_change_password`). 그 직원은 로그인하면 어느 화면이든 `/password`로 가서 본인 비밀번호로 바꿔야 합니다(`getCurrentUser`가 보냄, `getSignedInUser`는 이 확인을 하지 않음). 메일 발송이 없으므로 비밀번호를 잊으면 관리자가 재설정합니다.
 - **본인 변경:** 계정 메뉴 > 비밀번호 변경(`/password`). 지금 비밀번호를 확인한 뒤 바꿉니다.
 - 운영에서는 `NEXTAUTH_URL`·`NEXTAUTH_SECRET`이 필요합니다. 개발 값은 `.env.development`(비밀 아님)에 있습니다.
@@ -150,7 +154,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
   - 이용 기록: `/plays`, `/inventory`(이용 중 수), `/cafes`, `/`(인기 순위)
   - 매장·직원: 사이드바(계정 영역)와 모든 매장 선택에 쓰이므로 `revalidatePath("/", "layout")`
 - **현재 시각:** 렌더링 중에 `Date.now()`를 부르면 React lint(`react-hooks/purity`)에 걸립니다. 이용 중 경과 시간처럼 시각이 필요하면 `data.ts`에서 데이터와 함께 돌려줍니다(`listActivePlays`).
-  - 화면이 열려 있는 동안 시간이 흘러야 하면 `useMinuteClock`(`src/hooks/use-minute-clock.ts`)을 씁니다. 서버가 준 시각으로 하이드레이션한 뒤 브라우저 시각으로 1분마다 갱신합니다(이용 중 경과 시간, `ElapsedTime`).
+  - 화면이 열려 있는 동안 시간이 흘러야 하면 `useMinuteClock`(`src/shared/lib/use-minute-clock.ts`)을 씁니다. 서버가 준 시각으로 하이드레이션한 뒤 브라우저 시각으로 1분마다 갱신합니다(이용 중 경과 시간, `ElapsedTime`).
 
 ## 목록 화면 패턴
 
@@ -163,7 +167,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
   - `md:` 이상은 표 + `ListPagination`, 그 미만은 `InfiniteList`입니다.
   - JS로 화면 크기를 판단하면 첫 화면이 잠깐 데스크톱으로 보이기 때문입니다.
 - **범위를 벗어난 페이지**는 마지막 페이지로 보여줍니다.
-- **`InfiniteList`**(`components/list/infinite-list.tsx`)
+- **`InfiniteList`**(`shared/ui/infinite-list.tsx`)
   - 서버가 그린 첫 묶음에 이어 다음 묶음을 불러옵니다.
   - 수정·등록 뒤 서버 데이터가 갱신되면, 이미 불러온 범위를 한 번에 다시 받아 스크롤 위치를 지킵니다.
   - 조건이 바뀌면 부모가 `key`를 바꿔 처음부터 시작합니다.

@@ -1,10 +1,10 @@
 import type { KioskReservationLookup } from "@avocado/domain/kiosk";
 
-import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/lib/kiosk/auth";
-import { findOpenCafe } from "@/lib/kiosk/open-cafe";
-import { toKioskReservation } from "@/lib/kiosk/to-kiosk-guest";
-import { findReservationsForKiosk } from "@/lib/reservations/data";
-import { phoneLast4Schema } from "@/lib/reservations/schema";
+import { kioskError, kioskJson, rejectUnauthorizedKiosk } from "@/server/kiosk/auth";
+import { findOpenCafe } from "@/server/kiosk/open-cafe";
+import { toKioskReservation } from "@/server/kiosk/to-kiosk-guest";
+import { findReservationsForKiosk } from "@/server/reservations/data";
+import { phoneLast4Schema } from "@/entities/reservation/schema";
 
 /** 키오스크 '예약 확인': 오늘 아직 끝나지 않은 예약 중 전화번호 뒷자리가 같은 것 */
 export async function GET(request: Request, ctx: RouteContext<"/api/kiosk/cafes/[cafeId]/reservations">) {

@@ -1,0 +1,54 @@
+import { Suspense } from "react";
+
+import { PageHeading } from "@/widgets/app-shell";
+import { ListSkeleton } from "@/shared/ui/list-empty";
+import { CreateStaffDialog } from "@/features/manage-staff";
+import { StaffList } from "@/widgets/staff-list";
+import { requireRole } from "@/server/auth/guard";
+import { listCafes } from "@/server/cafes/data";
+import { listUsers } from "@/server/users/data";
+
+export default function StaffPage() {
+  // 사용자(쿠키)를 읽어 권한을 확인하므로 Suspense 안에서 렌더링한다.
+  return (
+    <Suspense
+      fallback={
+        <>
+          <PageHeading icon="staff" title="직원 관리" />
+          <ListSkeleton />
+        </>
+      }
+    >
+      <StaffContent />
+    </Suspense>
+  );
+}
+
+async function StaffContent() {
+  const me = await requireRole(["admin"]);
+  const [users, cafes] = await Promise.all([listUsers(), listCafes()]);
+  const cafeOptions = cafes
+    .filter((c) => c.status === "open")
+    .map((c) => ({ value: c.id, label: c.name }));
+  const activeCount = users.filter((u) => u.active).length;
+
+  return (
+    <>
+      <PageHeading
+        icon="staff"
+        title="직원 관리"
+        description="직원을 등록하고 역할과 소속 매장을 정합니다. 퇴사 처리한 직원은 바로 로그인할 수 없습니다."
+        actions={<CreateStaffDialog cafes={cafeOptions} />}
+      />
+      <p className="text-sm text-muted-foreground">
+        재직 {activeCount}명 · 퇴사 {users.length - activeCount}명
+      </p>
+      <StaffList
+        users={users}
+        cafes={cafes}
+        cafeOptions={cafeOptions}
+        currentUserId={me.id}
+      />
+    </>
+  );
+}

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { BRAND } from "@/lib/site";
+import { SiteFooter } from "@/widgets/site-footer";
+import { SiteHeader } from "@/widgets/site-header";
+import { BRAND } from "@/shared/config/site";
 
 import "./globals.css";
 

@@ -1,6 +1,6 @@
 # 보드게임 카페 프랜차이즈
 
-> 포트폴리오 프로젝트입니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
+> **프로젝트 상태:** 개발 중인 포트폴리오 프로젝트이며 아직 배포하지 않았습니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
 
 보드게임 카페 프랜차이즈의 세 가지 웹 앱을 한 저장소에서 관리합니다(pnpm workspaces + Turborepo).
 
@@ -20,6 +20,19 @@
 저장소: [github.com/ryushin01/avocado-monorepo](https://github.com/ryushin01/avocado-monorepo). 원래 avocado 프로젝트(`ryushin01/avocado`)와는 별도 저장소입니다.
 
 > 백오피스 데이터는 PostgreSQL(Drizzle)에 저장합니다. 개발할 때는 설치 없이 Node 안에서 도는 PGlite를 쓰고(`apps/admin/.data`), 운영에서는 `DATABASE_URL`로 PostgreSQL에 붙습니다. 백오피스는 로그인(Auth.js 4, 이메일·비밀번호)이 필요하고, 개발용 계정은 [apps/admin/README.md](apps/admin/README.md)에 있습니다. 런처는 백오피스의 키오스크 API를 읽으므로 백오피스가 켜져 있어야 합니다.
+
+## 기술 스택
+
+![Skills](https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,postgres,pnpm,vitest,githubactions)
+
+| 구분 | 사용 기술 |
+|---|---|
+| 프레임워크 | Next.js 16, React 19, TypeScript |
+| UI | Tailwind CSS 4, shadcn/ui(Base UI), lucide-react, Recharts, Embla Carousel, sonner |
+| 데이터 | PostgreSQL(운영), PGlite(개발), Drizzle ORM, Zod 4 |
+| 인증 | Auth.js 4 (이메일·비밀번호) |
+| 구조 | Feature-Sliced Design, pnpm 12 workspaces, Turborepo |
+| 품질 | ESLint 9(FSD 경계 규칙), Vitest 5, Playwright, GitHub Actions, CodeRabbit |
 
 ## 시작하기
 
@@ -67,7 +80,6 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
 | `pnpm test:coverage` | 단위 테스트 + 커버리지 (앱마다 `coverage/`) |
 | `pnpm e2e` | E2E 테스트 (백오피스와 키오스크용 런처를 함께 띄움) |
-
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·아이콘을 홍보 사이트용 webp로 다시 생성 (`apps/web/public/images`) |

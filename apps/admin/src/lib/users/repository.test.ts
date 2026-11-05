@@ -6,7 +6,7 @@ import { cafes } from "@/db/schema";
 import { createTestDb } from "@/db/testing";
 
 import { createUserRepository } from "./repository";
-import { userInputSchema, type UserInput } from "./schema";
+import { changePasswordSchema, userInputSchema, type UserInput } from "./schema";
 
 const ADMIN = "u_admin";
 const staff = (patch: Partial<UserInput> = {}): UserInput => ({
@@ -77,6 +77,27 @@ describe("UserRepository", () => {
     expect((await repo.findForLogin("A2@EXAMPLE.COM "))?.passwordHash).toBe("new-hash");
   });
 
+  it("관리자가 정한 비밀번호는 임시라 다음 로그인 때 바꿔야 하고, 본인이 바꾸면 풀린다", async () => {
+    const { repo } = await setup();
+    const created = await repo.create(staff({ email: "temp@example.com" }), HASH);
+    if (typeof created === "string") throw new Error(created);
+    expect((await repo.get(created.id))?.mustChangePassword).toBe(true);
+
+    expect(await repo.changeOwnPassword(created.id, "own-hash")).toBe(true);
+    expect((await repo.get(created.id))?.mustChangePassword).toBe(false);
+
+    // 관리자가 다른 직원의 비밀번호를 재설정하면 다시 임시
+    await repo.update(created.id, staff({ email: "temp@example.com" }), ADMIN, "reset-hash");
+    expect((await repo.get(created.id))?.mustChangePassword).toBe(true);
+    // 비밀번호 없이 정보만 고치면 그대로
+    await repo.changeOwnPassword(created.id, "own-hash-2");
+    await repo.update(created.id, staff({ email: "temp@example.com", name: "이름만" }), ADMIN);
+    expect((await repo.get(created.id))?.mustChangePassword).toBe(false);
+    // 자기 비밀번호를 직원 관리에서 바꾸면 임시가 아니다
+    await repo.update(ADMIN, { name: "김관리", email: "admin@example.com", role: "admin" }, ADMIN, "mine");
+    expect((await repo.get(ADMIN))?.mustChangePassword).toBe(false);
+  });
+
   it("로그인 조회: 이메일 대소문자를 무시하고, 퇴사자도 찾되 재직 여부를 알려준다", async () => {
     const { repo } = await setup();
     expect(await repo.findForLogin("Admin@Example.com")).toMatchObject({ user: { id: ADMIN, active: true }, passwordHash: HASH });
@@ -95,5 +116,23 @@ describe("userInputSchema", () => {
       "han@example.com",
     );
     expect(userInputSchema.safeParse({ ...staff(), email: "nope" }).success).toBe(false);
+  });
+});
+
+describe("changePasswordSchema", () => {
+  it("새 비밀번호는 8자 이상, 확인과 같아야 하고 지금 비밀번호와 달라야 한다", () => {
+    const errors = (v: Record<string, string>) =>
+      changePasswordSchema.safeParse(v).error?.flatten().fieldErrors ?? {};
+    expect(errors({ current: "", next: "short", confirm: "x" })).toMatchObject({
+      current: expect.any(Array),
+      next: expect.any(Array),
+    });
+    expect(errors({ current: "old-pass-1", next: "new-pass-1", confirm: "new-pass-2" })).toEqual({
+      confirm: ["새 비밀번호가 서로 다릅니다."],
+    });
+    expect(errors({ current: "same-pass-1", next: "same-pass-1", confirm: "same-pass-1" })).toEqual({
+      next: ["지금 비밀번호와 다른 비밀번호를 정해주세요."],
+    });
+    expect(changePasswordSchema.safeParse({ current: "old-pass-1", next: "new-pass-1", confirm: "new-pass-1" }).success).toBe(true);
   });
 });

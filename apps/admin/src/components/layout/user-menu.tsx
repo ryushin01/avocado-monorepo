@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, KeyRound, LogOut } from "lucide-react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useTransition } from "react";
 
@@ -59,6 +60,10 @@ export function UserMenu({ user, cafeName }: { user: User; cafeName?: string }) 
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href="/password" />}>
+              <KeyRound />
+              비밀번호 변경
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={logout}>
               <LogOut />
               로그아웃

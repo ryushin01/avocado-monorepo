@@ -139,7 +139,7 @@ function StaffFields({
       {textField("name", "이름")}
       {textField("email", "이메일", { type: "email", inputMode: "email" })}
       <Field data-invalid={form.invalid("password")}>
-        <FieldLabel htmlFor="staff-password">{isNew ? "초기 비밀번호" : "새 비밀번호 (바꿀 때만)"}</FieldLabel>
+        <FieldLabel htmlFor="staff-password">{isNew ? "초기 비밀번호" : "임시 비밀번호 (재설정할 때만)"}</FieldLabel>
         {/* 비밀번호는 실패해도 되돌려 채우지 않는다. */}
         <Input
           id="staff-password"
@@ -149,7 +149,9 @@ function StaffFields({
           aria-invalid={form.invalid("password")}
         />
         <FieldDescription>
-          {isNew ? "8자 이상. 직원에게 따로 알려주세요." : "비워 두면 지금 비밀번호를 그대로 씁니다."}
+          {isNew
+            ? "8자 이상. 직원에게 따로 알려주세요. 직원은 처음 로그인할 때 본인 비밀번호로 바꿉니다."
+            : "비밀번호를 잊은 직원에게 임시 비밀번호를 정해 줍니다. 직원은 다음 로그인 때 바꿔야 합니다. 비워 두면 그대로 둡니다."}
         </FieldDescription>
         <FieldError errors={form.errors("password")} />
       </Field>

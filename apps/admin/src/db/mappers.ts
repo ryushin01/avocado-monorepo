@@ -93,6 +93,7 @@ export const toUser = (r: Row<typeof schema.users>): User => ({
   role: r.role,
   cafeId: opt(r.cafeId),
   active: r.active,
+  mustChangePassword: r.mustChangePassword,
 });
 
 export const toReservation = (r: Row<typeof schema.reservations>): Reservation => ({

@@ -33,6 +33,8 @@ export interface UserRepository {
   update(id: string, input: UserInput, actorId: string, passwordHash?: string): Promise<User | UserSaveError>;
   /** 퇴사(false)·복직(true). 자기 자신은 퇴사 처리할 수 없다. */
   setActive(id: string, active: boolean, actorId: string): Promise<User | UserSaveError>;
+  /** 본인이 비밀번호를 바꾼다. 임시 비밀번호 표시도 지운다. */
+  changeOwnPassword(id: string, passwordHash: string): Promise<boolean>;
 }
 
 export const byUserOrder = (a: User, b: User) =>
@@ -79,13 +81,17 @@ export function createUserRepository(db: Database): UserRepository {
     return null;
   }
 
-  const save = (u: User, passwordHash?: string) => ({
+  /**
+   * 관리자가 정해 준 비밀번호(등록·재설정)는 임시로 보고, 다음 로그인 때 본인이 바꾸게 한다.
+   * 자기 비밀번호를 직원 관리에서 바꾼 경우는 임시가 아니다.
+   */
+  const save = (u: User, passwordHash?: string, temporary = true) => ({
     name: u.name,
     email: u.email,
     role: u.role,
     cafeId: u.cafeId ?? null,
     active: u.active,
-    ...(passwordHash ? { passwordHash } : {}),
+    ...(passwordHash ? { passwordHash, mustChangePassword: temporary } : {}),
   });
 
   return {
@@ -111,7 +117,7 @@ export function createUserRepository(db: Database): UserRepository {
       const error = await check(undefined, user);
       if (error) return error;
       await db.insert(users).values({ id: user.id, ...save(user, passwordHash) });
-      return user;
+      return { ...user, mustChangePassword: true };
     },
 
     async update(id, input, actorId, passwordHash) {
@@ -120,8 +126,8 @@ export function createUserRepository(db: Database): UserRepository {
       const after = normalize({ ...before, cafeId: undefined, ...input, id });
       const error = await check(before, after, actorId);
       if (error) return error;
-      await db.update(users).set(save(after, passwordHash)).where(eq(users.id, id));
-      return after;
+      await db.update(users).set(save(after, passwordHash, id !== actorId)).where(eq(users.id, id));
+      return passwordHash ? { ...after, mustChangePassword: id !== actorId } : after;
     },
 
     async setActive(id, active, actorId) {
@@ -132,6 +138,15 @@ export function createUserRepository(db: Database): UserRepository {
       if (error) return error;
       await db.update(users).set({ active }).where(eq(users.id, id));
       return after;
+    },
+
+    async changeOwnPassword(id, passwordHash) {
+      const rows = await db
+        .update(users)
+        .set({ passwordHash, mustChangePassword: false })
+        .where(eq(users.id, id))
+        .returning({ id: users.id });
+      return rows.length > 0;
     },
   };
 }

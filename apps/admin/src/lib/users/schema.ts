@@ -33,3 +33,13 @@ export const passwordSchema = z
   .string({ error: "비밀번호를 입력해주세요." })
   .min(8, "비밀번호는 8자 이상이어야 합니다.")
   .max(72, "비밀번호는 72자 이하여야 합니다.");
+
+/** 본인 비밀번호 변경 폼 */
+export const changePasswordSchema = z
+  .object({
+    current: z.string({ error: "지금 비밀번호를 입력해주세요." }).min(1, "지금 비밀번호를 입력해주세요."),
+    next: passwordSchema,
+    confirm: z.string({ error: "새 비밀번호를 한 번 더 입력해주세요." }),
+  })
+  .refine((v) => v.next === v.confirm, { path: ["confirm"], message: "새 비밀번호가 서로 다릅니다." })
+  .refine((v) => v.next !== v.current, { path: ["next"], message: "지금 비밀번호와 다른 비밀번호를 정해주세요." });

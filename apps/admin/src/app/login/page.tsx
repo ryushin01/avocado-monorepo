@@ -26,6 +26,7 @@ export const metadata: Metadata = { title: "로그인 · 보드게임 카페 백
 const ERRORS: Record<string, string> = {
   inactive: "퇴사 처리됐거나 사용할 수 없는 계정입니다. 관리자에게 문의해주세요.",
   CredentialsSignin: "이메일 또는 비밀번호가 맞지 않습니다.",
+  locked: "로그인을 5번 잘못해 15분 동안 잠겼습니다. 잠시 후 다시 시도하거나 관리자에게 문의해주세요.",
 };
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {

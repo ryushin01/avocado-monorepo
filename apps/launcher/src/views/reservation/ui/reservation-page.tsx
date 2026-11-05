@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "예약 확인" };
 
 export default function ReservationPage() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
       <IdleReturn />
       <Link href="/" className={buttonVariants({ variant: "ghost", size: "lg", className: "h-12 self-start px-4 text-base" })}>
         <ArrowLeft />

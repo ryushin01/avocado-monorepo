@@ -40,16 +40,13 @@ const range = (min: number, max: number, unit: string) =>
 
 export default function GamePage({ params }: PageProps<"/game/[bggId]">) {
   // Partial Prefetching에서는 params도 Suspense 안에서 읽어야 바로 이동하는 틀이 만들어진다.
+  // 불러오는 동안 바로가기로 들어와도 초점이 사라지지 않도록 main은 Suspense 밖에 둔다.
   return (
-    <Suspense
-      fallback={
-        <main className="mx-auto max-w-7xl px-4 md:px-6">
-          <Skeleton className="h-[640px] rounded-lg" />
-        </main>
-      }
-    >
-      <GameContent params={params} />
-    </Suspense>
+    <main id="main" tabIndex={-1} className="scroll-mt-28 mx-auto max-w-7xl px-4 md:px-6">
+      <Suspense fallback={<Skeleton className="h-[640px] rounded-lg" />}>
+        <GameContent params={params} />
+      </Suspense>
+    </main>
   );
 }
 
@@ -71,7 +68,6 @@ async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params"
   ];
 
   return (
-    <main className="mx-auto max-w-7xl px-4 md:px-6">
       <article className="flex flex-col gap-10 rounded-lg bg-card px-5 py-10 text-card-foreground md:px-12 md:py-16">
         <Breadcrumb>
           <BreadcrumbList>
@@ -148,7 +144,6 @@ async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params"
           </div>
         </div>
       </article>
-    </main>
   );
 }
 

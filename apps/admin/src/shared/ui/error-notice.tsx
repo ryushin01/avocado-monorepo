@@ -13,16 +13,28 @@ import {
   CardTitle,
 } from "@avocado/ui/components/card";
 
-/** 오류 화면. 오류 번호는 서버 로그의 digest와 같아서 문의를 받으면 로그를 찾을 수 있다. */
-export function ErrorNotice({ error, retry }: { error: unknown; retry: () => void }) {
+const LAYOUT = "flex flex-1 items-center justify-center p-6";
+
+/**
+ * 오류 화면. 오류 번호는 서버 로그의 digest와 같아서 문의를 받으면 로그를 찾을 수 있다.
+ * 이미 `<main>` 안에 그릴 때(백오피스 레이아웃)는 insideMain을 넘겨 `<main>`이 겹치지 않게 한다.
+ */
+export function ErrorNotice({
+  error,
+  retry,
+  insideMain = false,
+}: {
+  error: unknown;
+  retry: () => void;
+  insideMain?: boolean;
+}) {
   useEffect(() => {
     console.error(error);
   }, [error]);
 
   const digest = error instanceof Error ? (error as Error & { digest?: string }).digest : undefined;
 
-  return (
-    <div className="flex flex-1 items-center justify-center p-6">
+  const card = (
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -45,6 +57,12 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry: () => voi
           </Link>
         </CardFooter>
       </Card>
-    </div>
+  );
+
+  if (insideMain) return <div className={LAYOUT}>{card}</div>;
+  return (
+    <main id="main" tabIndex={-1} className={LAYOUT}>
+      {card}
+    </main>
   );
 }

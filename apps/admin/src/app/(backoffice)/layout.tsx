@@ -32,7 +32,8 @@ export default function BackofficeLayout({ children }: LayoutProps<"/">) {
         />
         <SidebarInset>
           <PageHeader />
-          <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+          {/* 본문 바로가기는 반복되는 머리글 뒤로 이동한다. */}
+          <div id="main" tabIndex={-1} className="flex flex-1 flex-col gap-4 p-4 md:p-6">
             {children}
           </div>
         </SidebarInset>

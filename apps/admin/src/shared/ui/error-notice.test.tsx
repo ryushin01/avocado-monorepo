@@ -24,4 +24,11 @@ describe("ErrorNotice", () => {
     expect(screen.queryByText(/오류 번호/)).not.toBeInTheDocument();
     expect(screen.queryByText("비밀 메시지")).not.toBeInTheDocument();
   });
+
+  it("이미 main 안에 그릴 때는 main을 겹치지 않는다", () => {
+    const { container, rerender } = render(<ErrorNotice error={new Error("x")} retry={() => {}} />);
+    expect(container.querySelector("main#main")).not.toBeNull();
+    rerender(<ErrorNotice error={new Error("x")} retry={() => {}} insideMain />);
+    expect(container.querySelector("main")).toBeNull();
+  });
 });

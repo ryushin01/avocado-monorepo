@@ -90,7 +90,9 @@
 
 ## 테스트
 
-- **단위 테스트(Vitest):** `src/**/*.test.ts`에 둡니다. repository·schema·권한·목록 계산처럼 화면과 무관한 규칙을 검증합니다.
+- **단위 테스트(Vitest):** `src/**/*.test.ts`에 둡니다. repository·schema·권한·목록 계산처럼 화면과 무관한 규칙을 검증합니다. Jest는 쓰지 않습니다. Vitest가 같은 API에 ESM·TypeScript를 설정 없이 지원하고, 두 러너를 함께 두면 설정만 늘어납니다.
+- **컴포넌트 테스트(Vitest + Testing Library):** 백오피스에서 `*.test.tsx`로 대상 옆에 둡니다. 서버 컴포넌트와 화면 흐름은 E2E로 확인하고, 여기서는 조건에 따라 달라지는 표시 조각만 봅니다.
+- **커버리지:** `pnpm test:coverage`. CI가 결과를 7일간 보관합니다. 기준선은 아직 정하지 않았습니다.
   - 백오피스 저장소 테스트는 `createTestDb({...})`로 테스트마다 새 메모리 PGlite를 만듭니다. 외래 키가 있으므로 기록이 가리키는 매장·게임도 함께 넣고, 날짜는 빈 문자열 대신 실제 날짜를 씁니다.
 - **E2E(Playwright):** `apps/admin/e2e/`에 있습니다. 백오피스(3100)와 키오스크 테스트용 런처(3101, 둔산점·개발용 기기 토큰)를 함께 띄웁니다. 두 앱 모두 **프로덕션 빌드**(`next build` → `next start`)로 띄우므로 E2E 시작 전에 빌드가 한 번 돕니다. 화면 대기 시간은 10초입니다.
   - 테스트는 병렬로 돕니다. **데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다.**
@@ -103,9 +105,13 @@
   - 테스트는 기본으로 관리자로 로그인한 상태입니다. `e2e/auth.setup.ts`가 먼저 실제 로그인 화면으로 로그인해 세션을 저장합니다. 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
   - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작하고, 프로덕션 모드라 `SEED_DEMO=1`로 개발용 시드를 넣습니다. 로그인 화면에 개발용 계정 안내가 나오지 않으므로 테스트는 `e2e/helpers.ts`의 계정을 씁니다.
   - 모바일 목록은 `waitForMobileList()`로 목록이 실제로 보일 때까지 기다린 뒤 다룹니다. Suspense 스트리밍 중에는 숨은 영역에 먼저 그려졌다가 옮겨지기 때문입니다.
-- **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다. E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
+- **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다(단위 테스트는 커버리지와 함께). E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
 - **작업을 마치면** 저장소 루트에서 `pnpm typecheck && pnpm lint && pnpm test && pnpm e2e && pnpm build`를 모두 통과시킵니다. Turborepo가 모든 앱·패키지에서 같은 이름의 스크립트를 실행합니다. `cacheComponents` 규칙 위반은 `build`에서만 드러나는 경우가 있습니다.
+
+## 코드 리뷰
+
+CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`이고, 이 문서의 규칙을 경로별 지침으로 넣어 두었습니다. 규칙을 바꾸면 그 파일도 함께 고칩니다.
 
 ## 알려진 함정
 

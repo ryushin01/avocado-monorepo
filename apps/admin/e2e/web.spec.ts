@@ -40,3 +40,10 @@ test("없는 게임·유형·주소는 안내 화면에서 홈으로 돌아간�
   await page.getByRole("link", { name: "홈으로" }).click();
   await expect(page).toHaveURL(`${WEB_URL}/`);
 });
+
+test("홈페이지에도 보안 헤더가 있다", async ({ request }) => {
+  const headers = (await request.get(WEB_URL)).headers();
+  expect(headers["x-frame-options"]).toBe("DENY");
+  expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(headers["x-powered-by"]).toBeUndefined();
+});

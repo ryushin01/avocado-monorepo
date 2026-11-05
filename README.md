@@ -62,7 +62,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm typecheck` | 모든 앱·패키지 타입 검사 |
 | `pnpm lint` | ESLint |
 | `pnpm test` | 단위 테스트 (Vitest) |
-| `pnpm e2e` | E2E 테스트 (지금은 백오피스만) |
+| `pnpm e2e` | E2E 테스트 (백오피스와 키오스크용 런처를 함께 띄움) |
 
 푸시와 PR마다 GitHub Actions가 위 검사를 모두 실행합니다(`.github/workflows/ci.yml`).
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
@@ -105,5 +105,5 @@ docs/
 
 - 배포 설정 (운영 PostgreSQL, 비밀 값 관리)
 - 예약: 손님이 직접 하는 온라인 예약, 정원·테이블 배정, 문자 알림(대기 호출 등)
-- 런처·홈페이지의 E2E 테스트
+- 홈페이지 E2E 테스트 (런처는 키오스크 흐름만 백오피스 E2E에서 확인)
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

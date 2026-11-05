@@ -45,3 +45,29 @@ export async function scrollToEnd(page: Page) {
 
 export const totalFrom = async (page: Page, pattern: RegExp) =>
   Number((await page.getByText(pattern).textContent())?.match(/\d+/)?.[0]);
+
+/** 키오스크 테스트용 런처 포트 (playwright.config.ts가 둔산점으로 띄운다) */
+export const LAUNCHER_PORT = 3101;
+export const LAUNCHER_URL = `http://localhost:${LAUNCHER_PORT}`;
+
+/** 한국 날짜 YYYY-MM-DD (offsetDays: 0 오늘, 1 내일) */
+export function kstDate(offsetDays = 0) {
+  return new Date(Date.now() + 9 * 3_600_000 + offsetDays * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** 지금 한국 시각의 시(0~23) */
+export const kstHour = () => new Date(Date.now() + 9 * 3_600_000).getUTCHours();
+
+/** 테스트마다 겹치지 않는 휴대전화 번호 (010-0XXX-XXXX). 뒷자리 4자리도 함께 준다. */
+export function uniquePhone() {
+  const n = String(Math.floor(Math.random() * 1e8)).padStart(8, "0");
+  return { phone: `010-${n.slice(0, 4)}-${n.slice(4)}`, last4: n.slice(4) };
+}
+
+/** 빈 브라우저(로그인 안 한 상태)로 로그인 화면에서 로그인한다. */
+export async function signIn(page: Page, email: string, password = DEV_PASSWORD) {
+  await page.goto("/login");
+  await page.getByLabel("이메일").fill(email);
+  await page.getByLabel("비밀번호").fill(password);
+  await page.getByRole("button", { name: "로그인" }).click();
+}

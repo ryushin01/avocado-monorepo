@@ -69,12 +69,16 @@
 
 - **단위 테스트(Vitest):** `src/**/*.test.ts`에 둡니다. repository·schema·권한·목록 계산처럼 화면과 무관한 규칙을 검증합니다.
   - 백오피스 저장소 테스트는 `createTestDb({...})`로 테스트마다 새 메모리 PGlite를 만듭니다. 외래 키가 있으므로 기록이 가리키는 매장·게임도 함께 넣고, 날짜는 빈 문자열 대신 실제 날짜를 씁니다.
-- **E2E(Playwright):** 지금은 백오피스(`apps/admin/e2e/`)에만 있습니다.
-  - 테스트는 병렬로 돕니다. **데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다.** 홍대점은 읽기 전용 테스트(스태프·대시보드)용이라 바꾸지 않습니다. 카탈로그는 `Date.now()`를 붙인 고유한 이름의 게임을 새로 만들어 씁니다.
+- **E2E(Playwright):** `apps/admin/e2e/`에 있습니다. 백오피스(3100)와 키오스크 테스트용 런처(3101, 둔산점·개발용 기기 토큰)를 함께 띄웁니다. 두 앱 모두 **프로덕션 빌드**(`next build` → `next start`)로 띄우므로 E2E 시작 전에 빌드가 한 번 돕니다. 화면 대기 시간은 10초입니다.
+  - 테스트는 병렬로 돕니다. **데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다.**
+    - 홍대점은 읽기 전용(스태프·대시보드·통계)이라 바꾸지 않습니다.
+    - 재고: 둔산점(추가)·서면점(수정)·강남점(제외)·판교점(모바일). 예약·대기·이용 기록: 서면점. 키오스크: 둔산점. 로그인 잠금: 판교점 스태프 계정.
+    - 새로 만드는 매장·직원·예약 손님은 `Date.now()`나 `uniquePhone()`으로 이름·번호를 겹치지 않게 합니다.
+    - 화면 문구는 스트리밍 중에 숨은 영역에 잠깐 두 번 있을 수 있으므로, 보이는 요소만 찾는 역할(`getByRole`)을 먼저 씁니다. 카탈로그는 `Date.now()`를 붙인 고유한 이름의 게임을 새로 만들어 씁니다.
   - 정확한 전체 개수(110, 매장 5개 등)는 단위 테스트에서 확인합니다. 다른 테스트가 동시에 데이터를 추가하기 때문입니다.
   - 시드에는 매장마다 이용 중인 게임이 있습니다. 재고를 제외하는 테스트는 '이용 중' 배지가 없는 행을 고릅니다.
   - 테스트는 기본으로 관리자로 로그인한 상태입니다. `e2e/auth.setup.ts`가 먼저 실제 로그인 화면으로 로그인해 세션을 저장합니다. 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
-  - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작합니다.
+  - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작하고, 프로덕션 모드라 `SEED_DEMO=1`로 개발용 시드를 넣습니다. 로그인 화면에 개발용 계정 안내가 나오지 않으므로 테스트는 `e2e/helpers.ts`의 계정을 씁니다.
   - 모바일 목록은 `waitForMobileList()`로 목록이 실제로 보일 때까지 기다린 뒤 다룹니다. Suspense 스트리밍 중에는 숨은 영역에 먼저 그려졌다가 옮겨지기 때문입니다.
 - **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다. E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
@@ -101,4 +105,5 @@
 | 이미지가 안 보임 (썸네일·자리표시) | 카탈로그 이미지는 `packages/domain/assets`에만 있고 앱 `public`에는 복사본이 들어감 | 앱 `package.json`의 `dev`·`build` 맨 앞에 `copy-catalog-assets public &&` (pre 스크립트 대신 한 줄에 써서 실행 순서가 보이게 함) |
 | lint `react-hooks/purity`: Cannot call impure function during render | 서버 컴포넌트에서 `Date.now()` 호출 | `data.ts`에서 조회 시각을 데이터와 함께 돌려줌 |
 | 게임 썸네일이 원형으로 잘림 | shadcn `Avatar`의 이미지·테두리(`after:`)가 기본 `rounded-full` | `GameThumbnail`에서 `after:rounded-md`, 이미지 `rounded-md` |
+| 루트 `pnpm e2e`에서만 가끔 `ERR_CONNECTION_REFUSED`와 함께 방금 만든 데이터가 사라짐 | 개발 서버(`next dev`)는 메모리가 한도의 80%를 넘으면 스스로 다시 켜짐(`devMemoryThresholdRestart`). 메모리 DB가 초기화되고 잠깐 접속이 끊김 | E2E는 프로덕션 빌드로 돌린다 (`playwright.config.ts`의 `webServer`) |
 | 비활성 Select 값이 제출되지 않음 | 비활성 폼 컨트롤은 값을 보내지 않음 | 숨은 `<input>`으로 같은 값을 보냄 (직원 수정의 역할) |

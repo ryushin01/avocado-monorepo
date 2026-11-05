@@ -85,7 +85,7 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 | `pnpm typecheck` | 라우트 타입 생성 후 타입 검사 |
 | `pnpm lint` | ESLint |
 | `pnpm test` | 단위 테스트 (Vitest) |
-| `pnpm e2e` | E2E 테스트 (Playwright, 3100번 포트로 개발 서버를 직접 띄움. 메모리 DB로 시작하고 실제 로그인 화면으로 로그인) |
+| `pnpm e2e` | E2E 테스트 (Playwright). 백오피스(3100, 메모리 DB)와 키오스크 테스트용 런처(3101)를 프로덕션 빌드로 직접 띄우고, 실제 로그인 화면으로 로그인 |
 | `pnpm db:generate` | `src/db/schema.ts`를 바꾼 뒤 마이그레이션 SQL 만들기 (`src/db/migrations`, git에 넣음) |
 | `pnpm db:reset` | 개발 DB(`.data/pglite`) 지우기. 다음 실행 때 시드로 다시 만듦 |
 
@@ -134,4 +134,3 @@ shadcn/ui 컴포넌트는 `packages/ui`에 있고 `@avocado/ui/components/<이�
 ## 아직 하지 않은 것
 
 - 관리자가 새로 등록한 게임의 썸네일: 입력한 원본 이미지 주소를 그대로 불러옵니다(지연 로딩만 적용)
-- 매장·직원 관리, 이용 기록 화면의 E2E 테스트 (단위 테스트로 규칙은 검증함)

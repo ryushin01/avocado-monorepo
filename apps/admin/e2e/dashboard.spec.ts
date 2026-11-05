@@ -31,7 +31,10 @@ test.describe("대시보드 (관리자)", () => {
     await expect(page.getByText("매장별 재고 상태")).toBeVisible();
 
     const cafeTable = page.getByRole("table").filter({ hasText: "매장" }).last();
-    await expect(cafeTable.locator("tbody tr")).toHaveCount(5);
+    // 매장 관리 테스트가 동시에 매장을 늘리므로 시드 5개 매장이 모두 있는지만 본다.
+    for (const name of ["강남점", "홍대점", "판교점", "대전 둔산점", "부산 서면점"]) {
+      await expect(cafeTable.getByRole("link", { name, exact: true })).toBeVisible();
+    }
     await cafeTable.getByRole("link", { name: "홍대점" }).click();
     await expect(page).toHaveURL(/\/inventory\?cafe=c_hongdae/);
   });

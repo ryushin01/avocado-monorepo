@@ -20,7 +20,7 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry: () => voi
   }, [error]);
 
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
+    <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center p-6 outline-none">
       <Empty className="border bg-background">
         <EmptyHeader>
           <EmptyMedia variant="icon">
@@ -40,6 +40,6 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry: () => voi
           </Link>
         </EmptyContent>
       </Empty>
-    </div>
+    </main>
   );
 }

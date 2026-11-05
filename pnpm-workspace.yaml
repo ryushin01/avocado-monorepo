@@ -3,3 +3,7 @@ packages:
   - packages/*
 allowBuilds:
   esbuild: true
+# 개발 도구에만 쓰이는 의존성의 보안 경고 대응
+overrides:
+  "minimatch@>=7 <11.0.1": ^11.0.1
+  "esbuild@<0.25.0": ^0.25.0

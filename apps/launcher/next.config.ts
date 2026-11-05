@@ -1,10 +1,8 @@
 import { securityHeaders } from "@avocado/config/security-headers";
 import type { NextConfig } from "next";
 
-// 게임 썸네일은 백오피스 주소에서 불러온다. 설정값은 빌드 때 읽는다.
-const headers = securityHeaders({
-  imgSrc: [new URL(process.env.BACKOFFICE_URL ?? "http://localhost:3000").origin],
-});
+// 게임 표지는 백오피스의 썸네일이거나 관리자가 입력한 원본 주소(http·https)다.
+const headers = securityHeaders({ imgSrc: ["http:", "https:"] });
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,

@@ -17,3 +17,10 @@ export const sentryOptions = {
     stackFrameVariables: false,
   },
 };
+
+/** 방문 기록(세션)과 이동·클릭 기록(브레드크럼)은 오류 수집에 필요하지 않아 브라우저에서 끈다. */
+const VISITOR_TRACKING = new Set(["BrowserSession", "Breadcrumbs"]);
+
+export function withoutVisitorTracking<T extends { name: string }>(integrations: T[]): T[] {
+  return integrations.filter(({ name }) => !VISITOR_TRACKING.has(name));
+}

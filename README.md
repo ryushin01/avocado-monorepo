@@ -75,7 +75,7 @@ flowchart LR
 | 영역 | 기술 | 이유 |
 |---|---|---|
 | 프레임워크 | Next.js 16 (App Router, Turbopack), React 19 (React Compiler) | 서버 컴포넌트와 서버 액션으로 API 층 없이 화면과 데이터를 연결합니다 |
-| 언어 | TypeScript 7 (타입 검사), TypeScript 6 (도구) | `typescript-eslint`가 TS 7을 지원하지 않아 함께 씁니다. 백오피스 타입 검사가 약 3.9초에서 0.9초로 줄었습니다(1회 측정) |
+| 언어 | TypeScript 7 (`tsc7`, 타입 검사), TypeScript 6 (`typescript ~6.0.3`, 도구) | `typescript-eslint`가 TS 7을 지원하지 않아 함께 씁니다. `typescript` 패키지를 7로 올리면 lint가 실패합니다. 백오피스 타입 검사가 약 3.9초에서 0.9초로 줄었습니다(1회 측정) |
 | 구조 | Feature-Sliced Design, pnpm 12 workspaces, Turborepo | 세 앱이 UI, 도메인 타입, 설정을 공유하고, 화면 코드의 의존 방향을 lint로 강제합니다 |
 | UI | shadcn/ui (Base UI), Tailwind CSS 4, lucide-react, Recharts, Embla Carousel, sonner | 컴포넌트를 저장소 안에서 직접 고칠 수 있습니다 |
 | 데이터 | PostgreSQL, Drizzle ORM, PGlite | 개발과 테스트는 설치 없이 PGlite로 돌고, 운영은 `DATABASE_URL`로 PostgreSQL에 붙습니다 |

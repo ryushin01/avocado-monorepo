@@ -76,7 +76,7 @@ flowchart LR
 
 ## 기술 스택
 
-![Skills](https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,postgres,pnpm,vitest,githubactions)
+![Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, pnpm, Vitest, GitHub Actions](https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,postgres,pnpm,vitest,githubactions)
 
 | 영역 | 기술 | 이유 |
 |---|---|---|

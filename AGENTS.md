@@ -16,7 +16,7 @@ Board game cafe franchise monorepo (Korean UI), pnpm workspaces + Turborepo. Use
 - `apps/launcher`: customer kiosk (port 3001). Reads the backoffice kiosk API; contract types in `@avocado/domain/kiosk`.
 - `apps/web`: franchise promo site ported from avocado (port 3002). Static pages from `@avocado/domain/catalog`.
 - `packages/ui`: shadcn/ui components + theme (`@avocado/ui/components/<name>`). Add components there with the shadcn CLI.
-- `packages/domain`: catalog data/thumbnails generated from avocado, shared types. `packages/logger`: server error logging. `packages/config`: tsconfig/ESLint.
+- `packages/domain`: catalog data/thumbnails generated from avocado, shared types. `packages/logger`: server error logging. Type checks run on TypeScript 7 (`tsc7`), while tools use TypeScript 6; keep `typescript` at `~6.0.3`. `packages/config`: tsconfig/ESLint.
 
 Before changing code, read `README.md` (layout, scripts) and `docs/conventions.md` (Feature-Sliced Design layers enforced by lint, UI rules: shadcn/ui only, Base UI `render` prop, form pattern, test rules, known pitfalls). Each app folder may have its own `AGENTS.md`.
 

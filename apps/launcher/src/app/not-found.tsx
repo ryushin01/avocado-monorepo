@@ -15,7 +15,7 @@ import { IdleReturn } from "@/shared/ui/idle-return";
 
 export default function NotFound() {
   return (
-    <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center p-6 outline-none">
+    <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center p-6">
       <IdleReturn seconds={30} />
       <Empty className="border bg-background">
         <EmptyHeader>

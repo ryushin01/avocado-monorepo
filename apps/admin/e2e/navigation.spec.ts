@@ -120,6 +120,25 @@ test.describe("본문 바로가기", () => {
     ["매장 런처 없는 주소", `${LAUNCHER_URL}/no-such-page`],
   ] as const;
 
+  test("백오피스: 반복되는 머리글을 건너뛴 곳으로 이동한다", async ({ page }) => {
+    await page.goto("/");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#main")).toBeFocused();
+    await expect(page.locator("#main").locator("header")).toHaveCount(0);
+  });
+
+  test("홈페이지: 고정 머리글이 본문을 가리지 않는다", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 500 });
+    await page.goto(`${WEB_URL}/games`);
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#main")).toBeFocused();
+    const headerBottom = (await page.locator("header").first().boundingBox())!;
+    const mainTop = (await page.locator("#main").boundingBox())!;
+    expect(mainTop.y).toBeGreaterThanOrEqual(headerBottom.y + headerBottom.height);
+  });
+
   for (const [name, url] of pages) {
     test(`${name}: 첫 Tab에 나타나고 Enter로 본문에 초점이 간다`, async ({ page }) => {
       await page.goto(url);
@@ -129,7 +148,10 @@ test.describe("본문 바로가기", () => {
       await expect(link).toBeFocused();
       await expect(link).toBeInViewport();
       await page.keyboard.press("Enter");
-      await expect(page.locator("main#main")).toBeFocused();
+      const target = page.locator("#main");
+      await expect(target).toBeFocused();
+      // 초점 위치가 눈에 보여야 한다. (KWCAG 6.1.2)
+      await expect(target).not.toHaveCSS("outline-style", "none");
     });
   }
 });

@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "대기 등록" };
 
 export default function WaitlistPage() {
   return (
-    <main id="main" tabIndex={-1} className="outline-none mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
       <IdleReturn />
       <Link href="/" className={buttonVariants({ variant: "ghost", size: "lg", className: "h-12 self-start px-4 text-base" })}>
         <ArrowLeft />

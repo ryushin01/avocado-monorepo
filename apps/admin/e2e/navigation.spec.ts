@@ -33,3 +33,43 @@ test("로그아웃하고 스태프로 다시 로그인하면 소속 매장 화�
   await expect(page.getByText("홍대점의 재고 현황입니다.")).toBeVisible();
   await expect(page.getByRole("link", { name: "매장 관리" })).toHaveCount(0);
 });
+
+test("사이드바 핸들을 드래그해 너비를 바꾸고, 새로고침해도 유지하며, 키보드로도 조절한다", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+
+  const sidebar = page.locator('[data-slot="sidebar-container"]');
+  const handle = page.getByRole("separator", { name: "사이드바 너비 조절" });
+  await expect(sidebar).toBeVisible();
+  const widthOf = async () => (await sidebar.boundingBox())!.width;
+  await expect.poll(widthOf).toBe(256);
+
+  const box = (await handle.boundingBox())!;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(box.x + box.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 64, y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(widthOf).toBe(320);
+  // 드래그 끝의 click으로 접히면 안 된다.
+  await expect(page.locator('[data-slot="sidebar"]')).toHaveAttribute("data-state", "expanded");
+
+  await page.reload();
+  await expect(sidebar).toBeVisible();
+  await expect.poll(widthOf).toBe(320);
+
+  await page.getByRole("separator", { name: "사이드바 너비 조절" }).focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect.poll(widthOf).toBe(304);
+  await page.keyboard.press("Home");
+  await expect.poll(widthOf).toBe(192);
+  await page.keyboard.press("End");
+  await expect.poll(widthOf).toBe(384);
+
+  // 드래그 없이 클릭하면 접힌다.
+  await page.getByRole("separator", { name: "사이드바 너비 조절" }).click();
+  await expect(page.locator('[data-slot="sidebar"]')).toHaveAttribute("data-state", "collapsed");
+  await page.getByRole("button", { name: "사이드바 펼치기" }).click();
+  await expect(page.locator('[data-slot="sidebar"]')).toHaveAttribute("data-state", "expanded");
+  await expect.poll(widthOf).toBe(384);
+});

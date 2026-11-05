@@ -24,6 +24,7 @@
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석
+  - `components/sidebar.tsx`: `SidebarRail`을 드래그해 너비 조절(192~384px, 클릭은 접기·펼치기, 키보드는 좌우 화살표·Home·End), 너비를 `localStorage`에 저장, `SidebarWidthScript`로 새로고침 때 너비가 튀지 않게 함(사이드바를 쓰는 앱의 루트 레이아웃에 둠), `SidebarInset`에 `min-w-0`(넓은 사이드바에서 표가 페이지를 밀어내지 않게 함)
 - **문구는 한국어 존댓말**로 씁니다. 개수 단위는 게임 종류 "종", 박스 "개", 매장 "개"입니다.
 
 ## 차트

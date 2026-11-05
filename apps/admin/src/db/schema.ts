@@ -10,6 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+import type { AuditAction } from "@/entities/audit";
 import type { Role } from "@/entities/user";
 import type { CafeStatus } from "@/entities/cafe";
 import type { GameCategory, GameDifficulty } from "@/entities/game";
@@ -155,6 +156,25 @@ export const kioskDevices = pgTable(
     revokedAt: at("revoked_at"),
   },
   (t) => [uniqueIndex("kiosk_devices_token_idx").on(t.tokenHash), index("kiosk_devices_cafe_idx").on(t.cafeId)],
+);
+
+/** 관리 작업의 변경 이력. 추가만 하고 고치거나 지우지 않는다. */
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: text("id").primaryKey(),
+    at: at("at").notNull(),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    /** 작업할 때의 직원 이름 */
+    actorName: text("actor_name").notNull(),
+    action: text("action").$type<AuditAction>().notNull(),
+    targetName: text("target_name").notNull(),
+    cafeId: text("cafe_id").references(() => cafes.id),
+    detail: text("detail"),
+  },
+  (t) => [index("audit_logs_at_idx").on(t.at)],
 );
 
 /** 로그인 연속 실패 기록 (이메일별). 성공하면 지운다. */

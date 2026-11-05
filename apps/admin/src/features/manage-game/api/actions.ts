@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { recordAudit } from "@/server/audit/data";
 import { getCurrentUser } from "@/server/auth/current-user";
+import type { AuditAction } from "@/entities/audit";
 import { canManageCatalog } from "@/entities/user";
 import { formDataToObject, formError, type FormState } from "@/shared/lib/form";
 import { createGame, listCatalog, updateGame } from "@/server/games/data";
@@ -16,11 +18,13 @@ const NOT_FOUND = "게임을 찾을 수 없습니다. 목록을 새로고침해�
 
 async function submitGameForm(
   formData: FormData,
+  action: AuditAction,
   save: (input: z.infer<typeof gameInputSchema>) => Promise<{ name: string } | null>,
   done: (name: string) => string,
 ): Promise<FormState> {
   const values = formDataToObject(formData);
-  if (!canManageCatalog(await getCurrentUser())) return formError(values, FORBIDDEN);
+  const actor = await getCurrentUser();
+  if (!canManageCatalog(actor)) return formError(values, FORBIDDEN);
 
   const parsed = gameInputSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
@@ -28,6 +32,7 @@ async function submitGameForm(
   const game = await save(parsed.data);
   if (!game) return formError(values, NOT_FOUND);
 
+  await recordAudit(actor, { action, targetName: game.name });
   revalidatePath("/games");
   revalidatePath("/inventory");
   return { status: "success", message: done(game.name) };
@@ -37,7 +42,7 @@ export async function createGameAction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  return submitGameForm(formData, createGame, (name) => `'${name}'을(를) 등록했습니다.`);
+  return submitGameForm(formData, "game.create", createGame, (name) => `'${name}'을(를) 등록했습니다.`);
 }
 
 export async function updateGameAction(
@@ -47,6 +52,7 @@ export async function updateGameAction(
 ): Promise<FormState> {
   return submitGameForm(
     formData,
+    "game.update",
     (input) => updateGame(id, input),
     (name) => `'${name}'을(를) 수정했습니다.`,
   );

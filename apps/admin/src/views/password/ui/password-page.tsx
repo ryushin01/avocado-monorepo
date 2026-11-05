@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "비밀번호 변경 · 보드게임 
 /** 본인 비밀번호 변경. 임시 비밀번호인 직원은 다른 화면 대신 여기로 온다. */
 export default function PasswordPage() {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
+    <main id="main" tabIndex={-1} className="outline-none flex min-h-dvh items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <Suspense fallback={<Skeleton className="m-6 h-72" />}>
           <PasswordContent />

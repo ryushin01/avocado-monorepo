@@ -1,3 +1,4 @@
+import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${geistSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col gap-10 bg-page">
+        <SkipLink />
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />

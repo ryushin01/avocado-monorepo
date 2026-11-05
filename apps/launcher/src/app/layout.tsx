@@ -1,3 +1,4 @@
+import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 
@@ -21,7 +22,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-muted/40">{children}</body>
+      <body className="flex min-h-full flex-col bg-muted/40">
+        <SkipLink />
+        {children}
+      </body>
     </html>
   );
 }

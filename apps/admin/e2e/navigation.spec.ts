@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { DEV_PASSWORD, USERS } from "./helpers";
+import { DEV_PASSWORD, LAUNCHER_URL, USERS, WEB_URL } from "./helpers";
 
 test("사이드바 메뉴로 페이지를 이동한다", async ({ page }) => {
   await page.goto("/");
@@ -107,4 +107,29 @@ test("없는 주소는 안내 화면을 보여 주고 대시보드로 돌아간�
   await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();
   await page.getByRole("link", { name: "대시보드로 이동" }).click();
   await expect(page).toHaveURL("/");
+});
+
+test.describe("본문 바로가기", () => {
+  const pages = [
+    ["백오피스", "/"],
+    ["백오피스 없는 주소", "/no-such-page"],
+    ["홈페이지", WEB_URL],
+    ["홈페이지 게임 목록", `${WEB_URL}/games`],
+    ["홈페이지 없는 주소", `${WEB_URL}/no-such-page`],
+    ["매장 런처", LAUNCHER_URL],
+    ["매장 런처 없는 주소", `${LAUNCHER_URL}/no-such-page`],
+  ] as const;
+
+  for (const [name, url] of pages) {
+    test(`${name}: 첫 Tab에 나타나고 Enter로 본문에 초점이 간다`, async ({ page }) => {
+      await page.goto(url);
+      await expect(page.locator("main")).toBeVisible();
+      await page.keyboard.press("Tab");
+      const link = page.getByRole("link", { name: "본문 바로가기" });
+      await expect(link).toBeFocused();
+      await expect(link).toBeInViewport();
+      await page.keyboard.press("Enter");
+      await expect(page.locator("main#main")).toBeFocused();
+    });
+  }
 });

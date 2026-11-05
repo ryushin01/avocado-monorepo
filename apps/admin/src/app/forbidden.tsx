@@ -12,7 +12,7 @@ import {
 
 export default function Forbidden() {
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
+    <main id="main" tabIndex={-1} className="flex flex-1 items-center justify-center p-6 outline-none">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -30,6 +30,6 @@ export default function Forbidden() {
           </Link>
         </CardFooter>
       </Card>
-    </div>
+    </main>
   );
 }

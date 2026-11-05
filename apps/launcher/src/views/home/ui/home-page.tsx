@@ -11,7 +11,7 @@ import { fetchCafeGames } from "@/shared/api/backoffice";
 /** 시작 화면: 매장 이름과 큰 메뉴 버튼 */
 export default function HomePage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-10 p-8">
+    <main id="main" tabIndex={-1} className="outline-none mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-10 p-8">
       <Suspense fallback={<Skeleton className="h-24 w-96" />}>
         <Welcome />
       </Suspense>

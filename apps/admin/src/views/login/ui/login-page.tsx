@@ -31,7 +31,7 @@ const ERRORS: Record<string, string> = {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
+    <main id="main" tabIndex={-1} className="outline-none flex min-h-dvh items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">

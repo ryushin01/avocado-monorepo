@@ -26,7 +26,7 @@ export async function generateMetadata({
 export default function CategoryPage({ params, searchParams }: PageProps<"/games/[category]">) {
   // Partial Prefetching에서는 params도 Suspense 안에서 읽어야 바로 이동하는 틀이 만들어진다.
   return (
-    <main className="mx-auto max-w-7xl px-4 md:px-6">
+    <main id="main" tabIndex={-1} className="outline-none mx-auto max-w-7xl px-4 md:px-6">
       <div className="flex flex-col gap-8 rounded-lg bg-card px-5 py-10 text-card-foreground md:px-12 md:py-16">
         <Suspense fallback={<GridSkeleton />}>
           <CategoryContent params={params} searchParams={searchParams} />

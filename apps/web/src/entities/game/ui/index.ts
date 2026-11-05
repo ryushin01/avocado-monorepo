@@ -1,3 +1,2 @@
-export {
-  GameTile,
-} from "./game-tile";
+export { GameImage } from "./game-image";
+export { GameTile, GameTileSkeleton } from "./game-tile";

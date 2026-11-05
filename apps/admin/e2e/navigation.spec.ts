@@ -130,7 +130,7 @@ test.describe("본문 바로가기", () => {
 
   test("홈페이지: 고정 머리글이 본문을 가리지 않는다", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 500 });
-    await page.goto(`${WEB_URL}/games`);
+    await page.goto(`${WEB_URL}/games/strategy`);
     await page.keyboard.press("Tab");
     await page.keyboard.press("Enter");
     await expect(page.locator("#main")).toBeFocused();

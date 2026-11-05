@@ -7,7 +7,8 @@ import { CATEGORY_INFO, catalogGamesIn, type CategoryInfo } from "@avocado/domai
 import { buttonVariants } from "@avocado/ui/components/button";
 import { Skeleton } from "@avocado/ui/components/skeleton";
 
-import { GameTile } from "@/entities/game/ui";
+import { PageHeader } from "@/widgets/site-header";
+import { GameTile, GameTileSkeleton } from "@/entities/game/ui";
 import { GAME_SORT_LABELS, GAME_SORTS, parseGameSort, sortGames } from "@/entities/game";
 
 const findCategory = (key: string) => CATEGORY_INFO.find((c) => c.key === key);
@@ -23,17 +24,31 @@ export async function generateMetadata({
   return category ? { title: category.label, description: category.description } : {};
 }
 
+const BACK_HOME = { href: "/", label: "홈으로" };
+
 export default function CategoryPage({ params, searchParams }: PageProps<"/games/[category]">) {
   // Partial Prefetching에서는 params도 Suspense 안에서 읽어야 바로 이동하는 틀이 만들어진다.
+  // 불러오는 동안 바로가기로 들어와도 초점이 사라지지 않도록 main은 Suspense 밖에 둔다.
   return (
-    <main id="main" tabIndex={-1} className="scroll-mt-28 mx-auto max-w-7xl px-4 md:px-6">
-      <div className="flex flex-col gap-8 rounded-lg bg-card px-5 py-10 text-card-foreground md:px-12 md:py-16">
-        <Suspense fallback={<GridSkeleton />}>
-          <CategoryContent params={params} searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </main>
+    <div className="flex flex-1 flex-col lg:grid lg:grid-cols-8">
+      <Suspense fallback={<PageHeader title={<Skeleton className="h-7 w-32 lg:h-10" />} back={BACK_HOME} />}>
+        <CategoryHeader params={params} />
+      </Suspense>
+      <main id="main" tabIndex={-1} className="min-w-0 scroll-mt-14 lg:col-span-6 lg:scroll-mt-0">
+        <div className="flex flex-col gap-8 rounded-lg border border-page bg-card px-5 py-10 text-card-foreground lg:min-h-screen lg:px-[60px] lg:py-[100px]">
+          <Suspense fallback={<GridSkeleton />}>
+            <CategoryContent params={params} searchParams={searchParams} />
+          </Suspense>
+        </div>
+      </main>
+    </div>
   );
+}
+
+async function CategoryHeader({ params }: Pick<PageProps<"/games/[category]">, "params">) {
+  const category = findCategory((await params).category);
+  if (!category) notFound();
+  return <PageHeader title={category.bggType.toUpperCase()} back={BACK_HOME} />;
 }
 
 async function CategoryContent({ params, searchParams }: PageProps<"/games/[category]">) {
@@ -43,11 +58,8 @@ async function CategoryContent({ params, searchParams }: PageProps<"/games/[cate
   return (
     <>
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-medium tracking-widest text-primary">
-          {category.bggType.toUpperCase()}
-        </p>
         <h1 className="text-3xl font-bold">{category.label}</h1>
-        <p className="text-muted-foreground">{category.description}</p>
+        <p className="tracking-tighter text-muted-foreground">{category.description}</p>
       </header>
       {/* 정렬은 주소(sort)로 정하므로 요청 시점에 그린다. */}
       <Suspense fallback={<GridSkeleton />}>
@@ -83,10 +95,10 @@ async function SortedGames({
         ))}
         <span className="ml-auto text-sm text-muted-foreground tabular-nums">{games.length}종</span>
       </nav>
-      <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <ul className="-mx-5 grid grid-cols-2 bg-page md:grid-cols-3 lg:mx-0 xl:grid-cols-4 2xl:grid-cols-5">
         {games.map((game) => (
           <li key={game.bggId}>
-            <GameTile game={game} sizes="(min-width: 1280px) 20vw, (min-width: 768px) 33vw, 50vw" />
+            <GameTile game={game} sizes="(min-width: 1536px) 14vw, (min-width: 1280px) 17vw, (min-width: 1024px) 23vw, (min-width: 768px) 33vw, 50vw" />
           </li>
         ))}
       </ul>
@@ -96,9 +108,13 @@ async function SortedGames({
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+    <div
+      role="status"
+      aria-label="게임 목록을 불러오는 중입니다"
+      className="-mx-5 grid grid-cols-2 bg-page md:grid-cols-3 lg:mx-0 xl:grid-cols-4 2xl:grid-cols-5"
+    >
       {Array.from({ length: 10 }, (_, i) => (
-        <Skeleton key={i} className="aspect-[2/3] rounded-lg" />
+        <GameTileSkeleton key={i} />
       ))}
     </div>
   );

@@ -6,7 +6,7 @@
 /* avocado의 색: 어두운 바탕 위에 흰 패널, 주황 강조색 */
 :root {
   --primary: #ff5100;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #111111; /* 주황 바탕의 흰 글자는 대비가 3.4:1이라 기준(4.5:1)에 못 미친다. */
   --ring: #ff5100;
 }
 

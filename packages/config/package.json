@@ -6,7 +6,8 @@
   "exports": {
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./tsconfig.next.json": "./tsconfig.next.json",
-    "./eslint-next": "./eslint-next.mjs"
+    "./eslint-next": "./eslint-next.mjs",
+    "./eslint-fsd": "./eslint-fsd.mjs"
   },
   "peerDependencies": {
     "eslint": "^9",

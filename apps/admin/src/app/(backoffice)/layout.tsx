@@ -4,14 +4,14 @@ import {
   AppSidebar,
   SidebarNav,
   SidebarNavSkeleton,
-} from "@/components/layout/app-sidebar";
-import { PageHeader } from "@/components/layout/page-header";
-import { UserMenu } from "@/components/layout/user-menu";
+  PageHeader,
+  UserMenu,
+  getNavItemsFor,
+} from "@/widgets/app-shell";
 import { SidebarInset, SidebarProvider } from "@avocado/ui/components/sidebar";
 import { TooltipProvider } from "@avocado/ui/components/tooltip";
-import { getCurrentUser } from "@/lib/auth/current-user";
-import { listCafes } from "@/lib/cafes/data";
-import { getNavItemsFor } from "@/lib/navigation";
+import { getCurrentUser } from "@/server/auth/current-user";
+import { listCafes } from "@/server/cafes/data";
 
 export default function BackofficeLayout({ children }: LayoutProps<"/">) {
   return (

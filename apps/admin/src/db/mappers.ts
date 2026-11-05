@@ -1,10 +1,10 @@
-import type { User } from "@/lib/auth/roles";
-import type { Cafe } from "@/lib/cafes/types";
-import type { BoardGame } from "@/lib/games/types";
-import type { InventoryItem } from "@/lib/inventory/types";
-import type { PlaySession } from "@/lib/plays/types";
-import type { Reservation } from "@/lib/reservations/types";
-import type { WaitlistEntry } from "@/lib/waitlist/types";
+import type { User } from "@/entities/user";
+import type { Cafe } from "@/entities/cafe";
+import type { BoardGame } from "@/entities/game";
+import type { InventoryItem } from "@/entities/inventory";
+import type { PlaySession } from "@/entities/play";
+import type { Reservation } from "@/entities/reservation";
+import type { WaitlistEntry } from "@/entities/waitlist";
 
 import type { schema } from "./index";
 

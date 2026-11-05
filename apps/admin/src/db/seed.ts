@@ -9,7 +9,7 @@ import {
   fromReservation,
   fromWaitlistEntry,
 } from "./mappers";
-import { seedKioskDevice } from "@/lib/kiosk/devices";
+import { seedKioskDevice } from "@/server/kiosk/devices";
 
 import * as schema from "./schema";
 import type { SeedData } from "./seed-data";

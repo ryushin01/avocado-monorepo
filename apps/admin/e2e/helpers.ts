@@ -24,6 +24,10 @@ export const rowOf = (page: Page, name: string) =>
 
 export const listItems = (page: Page) => page.getByTestId("list-item");
 
+/** 가상화 목록은 화면 근처만 그리므로, 개수 대신 전체 순번(aria-posinset)으로 찾는다. */
+export const listItemAt = (page: Page, position: number) =>
+  page.locator(`[role="listitem"][aria-posinset="${position}"]`);
+
 /**
  * Suspense로 스트리밍된 목록은 숨겨진 div에 먼저 그려졌다가 제자리로 옮겨진다.
  * 개수만 세면 옮겨지기 전 요소를 잡을 수 있으므로, 보일 때까지 기다린다.
@@ -33,6 +37,17 @@ export async function waitForMobileList(page: Page) {
   // 옮기는 순간에는 숨은 쪽과 보이는 쪽에 감시 요소가 둘 있으므로, 하나만 남을 때까지 기다린다.
   await expect(page.getByTestId("load-more-sentinel")).toHaveCount(1);
   await expect(page.getByTestId("load-more-sentinel")).toBeVisible();
+}
+
+/** 끝까지 불러온 뒤 마지막 항목이 그려졌는지 확인한다. (다른 테스트가 게임을 추가해도 개수에 흔들리지 않는다) */
+export async function expectLastItemVisible(page: Page) {
+  const last = page.locator('[role="listitem"][aria-posinset]').last();
+  // 실제 높이를 재면서 전체 길이가 바뀌므로, 맨 아래에 닿을 때까지 다시 내린다.
+  await expect(async () => {
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(last).toBeVisible({ timeout: 500 });
+    expect(await last.getAttribute("aria-posinset")).toBe(await last.getAttribute("aria-setsize"));
+  }).toPass({ timeout: 10_000 });
 }
 
 export async function scrollToEnd(page: Page) {

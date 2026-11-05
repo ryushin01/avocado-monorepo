@@ -46,6 +46,7 @@
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석
+  - `dialog`, `sheet`, `breadcrumb`, `spinner`, `carousel`, `pagination`, `sidebar`: 화면 낭독기가 읽는 영어 기본 문구를 한국어로 바꿈
   - `components/sidebar.tsx`: `SidebarRail`을 드래그해 너비 조절(192~384px, 클릭은 접기·펼치기, 키보드는 좌우 화살표·Home·End). 너비와 접힘 상태는 쿠키 대신 `localStorage`에 저장합니다(레이아웃이 정적이라 서버에서 쿠키를 읽을 수 없음). 사이드바를 쓰는 앱의 루트 레이아웃에 `SidebarWidthScript`(body 맨 앞)와 `SidebarStateScript`(children 바로 뒤)를 두어 새로고침 때 모양이 튀지 않게 합니다. `SidebarInset`의 `min-w-0`은 넓은 사이드바에서 표가 페이지를 밀어내지 않게 합니다
 - **문구는 한국어 존댓말**로 씁니다. 개수 단위는 게임 종류 "종", 박스 "개", 매장 "개"입니다.
 
@@ -94,7 +95,7 @@
 - **컴포넌트 테스트(Vitest + Testing Library):** 백오피스에서 `*.test.tsx`로 대상 옆에 둡니다. 서버 컴포넌트와 화면 흐름은 E2E로 확인하고, 여기서는 조건에 따라 달라지는 표시 조각만 봅니다.
 - **커버리지:** `pnpm test:coverage`. CI가 결과를 7일간 보관합니다. 기준선은 아직 정하지 않았습니다.
   - 백오피스 저장소 테스트는 `createTestDb({...})`로 테스트마다 새 메모리 PGlite를 만듭니다. 외래 키가 있으므로 기록이 가리키는 매장·게임도 함께 넣고, 날짜는 빈 문자열 대신 실제 날짜를 씁니다.
-- **E2E(Playwright):** `apps/admin/e2e/`에 있습니다. 백오피스(3100)와 키오스크 테스트용 런처(3101, 둔산점·개발용 기기 토큰)를 함께 띄웁니다. 두 앱 모두 **프로덕션 빌드**(`next build` → `next start`)로 띄우므로 E2E 시작 전에 빌드가 한 번 돕니다. 화면 대기 시간은 10초입니다.
+- **E2E(Playwright):** `apps/admin/e2e/`에 있습니다. 백오피스(3100), 키오스크 테스트용 런처(3101, 둔산점·개발용 기기 토큰), 홈페이지(3102)를 함께 띄웁니다. 모두 **프로덕션 빌드**(`next build` → `next start`)로 띄우므로 E2E 시작 전에 빌드가 돕니다. CI에서는 앞 단계의 빌드를 재사용하고, 매장·토큰을 빌드 때 읽는 런처만 다시 빌드합니다. 화면 대기 시간은 10초입니다.
   - 테스트는 병렬로 돕니다. **데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다.**
     - 홍대점은 읽기 전용(스태프·대시보드·통계)이라 바꾸지 않습니다.
     - 재고: 둔산점(추가)·서면점(수정)·강남점(제외)·판교점(모바일). 예약·대기·이용 기록: 서면점. 키오스크: 둔산점. 로그인 잠금: 판교점 스태프 계정.

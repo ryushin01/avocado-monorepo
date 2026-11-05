@@ -50,6 +50,10 @@ export const totalFrom = async (page: Page, pattern: RegExp) =>
 export const LAUNCHER_PORT = 3101;
 export const LAUNCHER_URL = `http://localhost:${LAUNCHER_PORT}`;
 
+/** 홈페이지 테스트 포트 */
+export const WEB_PORT = 3102;
+export const WEB_URL = `http://localhost:${WEB_PORT}`;
+
 /** 한국 날짜 YYYY-MM-DD (offsetDays: 0 오늘, 1 내일) */
 export function kstDate(offsetDays = 0) {
   return new Date(Date.now() + 9 * 3_600_000 + offsetDays * 86_400_000).toISOString().slice(0, 10);

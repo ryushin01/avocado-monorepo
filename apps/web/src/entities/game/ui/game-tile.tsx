@@ -3,12 +3,16 @@ import Link from "next/link";
 
 import type { CatalogGame } from "@avocado/domain/catalog";
 
+// CSS의 url()은 저장소 하위 경로(GitHub Pages)를 자동으로 붙이지 못한다.
+const PLACEHOLDER = `url('${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/images/game-placeholder.png')`;
+
 /** 표지 카드 (avocado 목록 카드). 10위 안이면 배지를 붙인다. */
 export function GameTile({ game, sizes }: { game: CatalogGame; sizes: string }) {
   return (
     <Link
       href={`/game/${game.bggId}`}
-      className="group relative block aspect-[2/3] overflow-hidden rounded-lg bg-[url('/images/game-placeholder.png')] bg-cover bg-center outline-none focus-visible:ring-3 focus-visible:ring-ring"
+      style={{ backgroundImage: PLACEHOLDER }}
+      className="group relative block aspect-[2/3] overflow-hidden rounded-lg bg-cover bg-center outline-none focus-visible:ring-3 focus-visible:ring-ring"
     >
       <Image
         src={game.imageUrl}

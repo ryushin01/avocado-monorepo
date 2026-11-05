@@ -37,7 +37,7 @@ async function StaffContent() {
       <PageHeading
         icon="staff"
         title="직원 관리"
-        description="직원을 등록하고 역할과 소속 매장을 정합니다. 퇴사 처리한 직원은 계정 전환 목록에서 빠집니다."
+        description="직원을 등록하고 역할과 소속 매장을 정합니다. 퇴사 처리한 직원은 바로 로그인할 수 없습니다."
         actions={<CreateStaffDialog cafes={cafeOptions} />}
       />
       <p className="text-sm text-muted-foreground">

@@ -55,3 +55,10 @@ apps/*/public/images/game-placeholder.png
 # IDE 설정
 .idea/
 !.env.example
+!.env.development
+
+# PGlite 개발 DB (pnpm --filter @avocado/admin db:reset으로 지우고 다시 만든다)
+.data/
+
+# Playwright 로그인 상태 (e2e/auth.setup.ts가 매번 만든다)
+apps/admin/e2e/.auth/

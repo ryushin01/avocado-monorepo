@@ -1,16 +1,22 @@
+import { readFileSync } from "node:fs";
+
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 
+/** 시드 직원 (비밀번호는 모두 DEV_PASSWORD). storageState는 auth.setup.ts가 만든다. */
 export const USERS = {
-  admin: "u_admin",
-  gangnamStaff: "u_staff_gangnam",
-  hongdaeStaff: "u_staff_hongdae",
+  admin: { email: "admin@example.com", storageState: "e2e/.auth/admin.json" },
+  hongdaeStaff: { email: "hongdae@example.com", storageState: "e2e/.auth/hongdae-staff.json" },
 } as const;
 
-/** 개발용 가상 계정 쿠키를 심는다. 기본값은 관리자. */
-export async function loginAs(context: BrowserContext, userId: string) {
-  await context.addCookies([
-    { name: "mock-user-id", value: userId, url: "http://localhost:3100" },
-  ]);
+export const DEV_PASSWORD = "avocado1234";
+
+/** 이미 로그인해 둔 직원으로 바꾼다 (세션 쿠키를 그 직원 것으로 갈아 끼운다). */
+export async function loginAs(context: BrowserContext, user: (typeof USERS)[keyof typeof USERS]) {
+  const state = JSON.parse(readFileSync(user.storageState, "utf8")) as {
+    cookies: Parameters<BrowserContext["addCookies"]>[0];
+  };
+  await context.clearCookies();
+  await context.addCookies(state.cookies);
 }
 
 export const rowOf = (page: Page, name: string) =>

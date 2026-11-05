@@ -1,15 +1,15 @@
+import { count, eq, sum } from "drizzle-orm";
+
+import type { Database } from "@/db";
+import { newId } from "@/db/ids";
+import { toGame } from "@/db/mappers";
+import { cafes, games, inventoryItems } from "@/db/schema";
 import { slice, type ListRange, type ListResult } from "@/lib/list";
-import type { MockDb } from "@/lib/mock-db";
 
 import type { GameInput } from "./schema";
-import type {
-  BoardGame,
-  CatalogEntry,
-  GameHolding,
-  GameListFilter,
-} from "./types";
+import type { BoardGame, CatalogEntry, GameHolding, GameListFilter } from "./types";
 
-/** 백엔드가 정해지면 이 인터페이스의 API 구현체로 교체한다. */
+/** 백엔드를 바꾸면 이 인터페이스의 구현만 교체한다. */
 export interface GameRepository {
   /** 카탈로그 목록. 각 게임의 매장 보유 현황을 함께 돌려준다. */
   list(filter?: GameListFilter, range?: ListRange): Promise<ListResult<CatalogEntry>>;
@@ -30,66 +30,73 @@ export function matchesGame(game: BoardGame, filter: GameListFilter = {}) {
   );
 }
 
-export const byGameName = (a: BoardGame, b: BoardGame) =>
-  a.name.localeCompare(b.name, "ko");
+export const byGameName = (a: BoardGame, b: BoardGame) => a.name.localeCompare(b.name, "ko");
 
-export function createGameRepository(db: MockDb): GameRepository {
-  const holdings = () => {
-    const map = new Map<string, GameHolding>();
-    // 폐점한 매장의 재고는 보유 현황에 넣지 않는다.
-    const open = new Set(db.cafes.filter((c) => c.status === "open").map((c) => c.id));
-    for (const item of db.inventory) {
-      if (!open.has(item.cafeId)) continue;
-      const h = map.get(item.gameId) ?? { cafeCount: 0, quantity: 0 };
-      map.set(item.gameId, {
-        cafeCount: h.cafeCount + 1,
-        quantity: h.quantity + item.quantity,
-      });
-    }
-    return map;
-  };
+export function createGameRepository(db: Database): GameRepository {
+  /** 게임별 보유 매장 수·총 수량. 폐점한 매장의 재고는 넣지 않는다. */
+  async function holdings() {
+    const rows = await db
+      .select({
+        gameId: inventoryItems.gameId,
+        cafeCount: count(),
+        quantity: sum(inventoryItems.quantity).mapWith(Number),
+      })
+      .from(inventoryItems)
+      .innerJoin(cafes, eq(cafes.id, inventoryItems.cafeId))
+      .where(eq(cafes.status, "open"))
+      .groupBy(inventoryItems.gameId);
+    return new Map<string, GameHolding>(
+      rows.map((r) => [r.gameId, { cafeCount: r.cafeCount, quantity: r.quantity }]),
+    );
+  }
 
   return {
     async list(filter, range) {
-      const map = holdings();
-      const games = db.games
+      // 카탈로그는 수백 종 규모라 모두 읽어 이름순(한국어 정렬)으로 거른다.
+      const [rows, map] = await Promise.all([db.select().from(games), holdings()]);
+      const entries = rows
+        .map(toGame)
         .filter((g) => matchesGame(g, filter))
         .sort(byGameName)
-        .map((g) => ({
-          ...g,
-          holding: map.get(g.id) ?? { cafeCount: 0, quantity: 0 },
-        }));
-      return slice(games, range);
+        .map((g) => ({ ...g, holding: map.get(g.id) ?? { cafeCount: 0, quantity: 0 } }));
+      return slice(entries, range);
     },
+
     async get(id) {
-      const game = db.games.find((g) => g.id === id);
-      return game ? { ...game } : null;
+      const [row] = await db.select().from(games).where(eq(games.id, id));
+      return row ? toGame(row) : null;
     },
+
     async create(input) {
-      const game: BoardGame = {
-        ...input,
-        id: `g_${db.nextGameId++}`,
-        createdAt: new Date().toISOString(),
-      };
-      db.games.push(game);
-      return { ...game };
+      const [row] = await db
+        .insert(games)
+        .values({
+          ...input,
+          id: newId("g"),
+          englishName: input.englishName ?? null,
+          imageUrl: input.imageUrl ?? null,
+          createdAt: new Date(),
+        })
+        .returning();
+      return toGame(row);
     },
+
     async update(id, input) {
-      const index = db.games.findIndex((g) => g.id === id);
-      if (index === -1) return null;
-      const current = db.games[index];
-      // 폼에서 비운 선택 항목(영문명·이미지)은 지운다.
-      db.games[index] = {
-        ...current,
-        englishName: undefined,
-        imageUrl: undefined,
-        ...input,
-        // 원본 이미지를 바꾸면 예전 원본으로 만든 썸네일은 더 이상 맞지 않는다.
-        thumbnailUrl:
-          input.imageUrl === current.imageUrl ? current.thumbnailUrl : undefined,
-        id,
-      };
-      return { ...db.games[index] };
+      const [current] = await db.select().from(games).where(eq(games.id, id));
+      if (!current) return null;
+      const [row] = await db
+        .update(games)
+        .set({
+          ...input,
+          // 폼에서 비운 선택 항목(영문명·이미지)은 지운다.
+          englishName: input.englishName ?? null,
+          imageUrl: input.imageUrl ?? null,
+          // 원본 이미지를 바꾸면 예전 원본으로 만든 썸네일은 더 이상 맞지 않는다.
+          thumbnailUrl: (input.imageUrl ?? null) === current.imageUrl ? current.thumbnailUrl : null,
+        })
+        .where(eq(games.id, id))
+        .returning();
+      return toGame(row);
     },
   };
 }

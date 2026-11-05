@@ -16,7 +16,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 | `PlaySession` | `src/lib/plays/types.ts` | 게임 한 번 대여. `startedAt`(이용 시작), `returnedAt`(반납, 없으면 이용 중), `playerCount`, `table`. 인기 순위를 계산한다. |
 | `Reservation` | `src/lib/reservations/types.ts` | 예약. 이름·휴대전화·인원·방문 시각·메모, 상태 `pending`(가예약)·`confirmed`(확정)·`seated`(입장)·`cancelled`(취소)·`no_show`(노쇼), 키오스크 도착 시각 `arrivedAt` |
 | `WaitlistEntry` | `src/lib/waitlist/types.ts` | 현장 대기. 그날 매장별 번호, 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
-| `User` | `src/lib/auth/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 목 DB `users`에 있고 개발용 계정 전환 목록이기도 하다. |
+| `User` | `src/lib/auth/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 로그인 계정이며 비밀번호는 bcrypt 해시로 `users.password_hash`에 둔다. |
 
 정해 둔 것:
 
@@ -47,7 +47,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
   - 전화번호는 숫자만 저장하고 휴대전화(010~019)만 받습니다.
   - 키오스크 응답에는 전화번호를 넣지 않고, 이름은 가려서(김*수) 보냅니다. 손님은 전화번호 뒷자리 4자리로만 찾습니다.
 - **인기 순위:** 지금 시각 기준 최근 7일(주간)·30일(월간)의 이용 시작 횟수로 매깁니다(이용 중인 기록 포함, 취소한 기록 제외). 횟수가 같으면 이름순이고, 1~10위만 보여줍니다.
-  - 이용 기록 목 데이터(`plays/seed.ts`)는 서버를 켤 때 그 시각 기준 60일치를 만듭니다. 지난 기록은 모두 반납돼 있고, 매장마다 3~5개가 지금 이용 중입니다.
+  - 이용 기록 시드(`plays/seed.ts`)는 개발 DB를 처음 만들 때 그 시각 기준 60일치를 넣습니다(시간이 지나면 기록도 그만큼 오래된 것이 되므로, 새 시드가 필요하면 `db:reset`). 지난 기록은 모두 반납돼 있고, 매장마다 3~5개가 지금 이용 중입니다.
   - 매장이 보유한(폐기 제외) 게임만 이용됩니다. 게임별 인기도가 날마다 오르내려서 주간과 월간 순위가 달라집니다.
 - **대여·반납 규칙** (`plays/repository.ts`, `inventory/repository.ts`)
   - 빌려줄 수 있는 게임: 상태가 이용 가능이고 `보유 수량 − 이용 중` > 0. 폐점 매장에서는 시작할 수 없습니다.
@@ -88,13 +88,17 @@ page.tsx / actions.ts            화면·서버 액션: 권한 확인, 입력 �
 lib/<domain>/data.ts             서버 전용(server-only) 진입점. 저장소를 고른다.
         │
         ▼
-lib/<domain>/repository.ts       인터페이스 + 인메모리 구현 (순수 함수, 단위 테스트 대상)
+lib/<domain>/repository.ts       인터페이스 + Drizzle 구현 (규칙·상태 전이도 여기, 단위 테스트 대상)
         │
         ▼
-lib/mock-db                      cafes · games · inventory · plays · users 배열 (globalThis에 보관해 HMR에도 유지)
+src/db                           Drizzle 스키마·마이그레이션. server.ts의 getDb()가 연결을 하나만 만들어 함께 쓴다
+                                 (DATABASE_URL이면 PostgreSQL, 아니면 PGlite. globalThis에 보관해 HMR에도 유지)
 ```
 
-- **repository:** `MockDb`를 받아 동작하는 순수 구현이라, 테스트에서는 `createMockDb({...})`로 원하는 데이터를 만들어 검증합니다.
+- **repository:** `Database`(Drizzle)를 받아 동작합니다. 테스트에서는 `createTestDb({...})`(`src/db/testing.ts`)가 테스트마다 새 메모리 PGlite를 만들고 원하는 데이터를 넣어 줍니다. 주지 않은 항목은 시드로 채웁니다.
+- **동시성:** 마지막 박스 대여(`plays.start`)와 대기 번호 발급(`waitlist.add`)은 트랜잭션 안에서 해당 줄을 잠그고(`FOR UPDATE`) 확인합니다.
+- **시각:** DB는 `timestamptz`로 저장하고, 도메인 타입은 ISO 문자열입니다. 바꾸는 곳은 `src/db/mappers.ts` 한 곳입니다.
+- **스키마 변경:** `src/db/schema.ts`를 고치고 `pnpm db:generate`로 마이그레이션 SQL을 만들어 함께 커밋합니다. 서버는 처음 DB를 열 때 적용합니다.
 - **시드 데이터:** 카탈로그는 공통 패키지의 `@avocado/domain/catalog`(avocado 변환 결과 `packages/domain/data/catalog.json`)에서 필요한 항목만 골라 씁니다(`games/seed.ts`). 재고는 `inventory/seed.ts`가 매장·게임 조합의 해시로 매번 같게 만듭니다.
 
 ### 키오스크 조회 API
@@ -112,25 +116,32 @@ lib/mock-db                      cafes · games · inventory · plays · users �
 - **토큰:** 백오피스에 `KIOSK_API_TOKEN`을 설정하면 `Authorization: Bearer <토큰>`이 맞는 요청만 받습니다(아니면 401). 런처도 같은 값을 설정합니다. 설정하지 않으면(개발) 모두 받습니다. 지금은 모든 매장이 토큰 하나를 같이 쓰므로, 로그인이 정해지면 매장별 토큰으로 바꿔 토큰으로 매장도 확인해야 합니다.
 - 상태를 바꾸는 요청(도착, 대기 등록)은 백오피스 `/reservations` 화면을 갱신합니다.
 
-### 백엔드로 바꿀 때
+### 로그인 (Auth.js 4)
 
-1. 각 `repository.ts`의 인터페이스(`GameRepository`, `InventoryRepository`, `CafeRepository`, `PlayRepository`, `UserRepository`)를 API 호출로 구현합니다. 실패는 `"in-use"`, `"duplicate-name"` 같은 문자열 코드로 돌려주고, 서버 액션이 문구로 바꿉니다. 순위·분포 집계는 백엔드에서 하는 편이 낫습니다.
-2. `data.ts`에서 인메모리 구현 대신 새 구현을 쓰게 합니다. 화면과 서버 액션은 고칠 필요가 없습니다.
-3. `lib/auth/current-user.ts`의 `getCurrentUser()`를 실제 세션 조회로 바꾸고, `mock-auth-actions.ts`와 계정 메뉴의 "계정 전환" 그룹을 지웁니다. `mock-users.ts`의 `SEED_USERS`는 직원 시드로 옮깁니다.
-4. 모바일 무한 스크롤은 지금 서버 액션(`fetchCatalogAction`, `fetchInventoryAction`)으로 다음 묶음을 읽습니다. 서버 액션은 순서대로 하나씩 처리되므로, 조회 전용 API(Route Handler 등)로 바꾸는 것도 고려하세요.
+- 이메일·비밀번호(Credentials) 로그인, 세션은 JWT 쿠키(12시간). 설정은 `lib/auth/options.ts`, 경로는 `/api/auth/*`, 화면은 `/login`.
+- **요청마다 DB 확인:** JWT는 서버에서 바로 끊을 수 없으므로, `getCurrentUser()`가 요청마다 DB에서 직원을 다시 읽어 퇴사 처리된 직원은 바로 로그인 화면(`?error=inactive`)으로 보냅니다. 역할·소속 매장 변경도 바로 반영됩니다.
+- 로그인하지 않았으면 `getCurrentUser()`가 `/login`으로 보냅니다. 모든 화면과 서버 액션은 이 함수로 시작하므로 따로 막는 곳이 없습니다.
+- 없는 이메일에도 비밀번호 비교를 한 번 해서, 응답 시간으로 계정이 있는지 알 수 없게 했습니다.
+- 운영에서는 `NEXTAUTH_URL`·`NEXTAUTH_SECRET`이 필요합니다. 개발 값은 `.env.development`(비밀 아님)에 있습니다.
+
+### 다른 저장소로 바꿀 때
+
+1. 각 `repository.ts`의 인터페이스(`GameRepository`, `InventoryRepository`, `CafeRepository`, `PlayRepository`, `UserRepository`, `ReservationRepository`, `WaitlistRepository`, `StatsRepository`)를 새 저장소로 구현합니다. 실패는 `"in-use"`, `"duplicate-name"` 같은 문자열 코드로 돌려주고, 서버 액션이 문구로 바꿉니다. 순위·분포 집계는 백엔드에서 하는 편이 낫습니다.
+2. `data.ts`에서 새 구현을 쓰게 합니다. 화면과 서버 액션은 고칠 필요가 없습니다. PostgreSQL이면 `DATABASE_URL`만 주면 됩니다.
+3. 모바일 무한 스크롤은 지금 서버 액션(`fetchCatalogAction`, `fetchInventoryAction`)으로 다음 묶음을 읽습니다. 서버 액션은 순서대로 하나씩 처리되므로, 조회 전용 API(Route Handler 등)로 바꾸는 것도 고려하세요.
 
 ## Next.js 16 렌더링 규칙 (`cacheComponents`)
 
 이 버전은 학습 데이터와 다를 수 있으니, 작업 전에 `node_modules/next/dist/docs/`의 해당 문서를 확인하세요(`AGENTS.md` 참고).
 
-- **요청 시점 데이터는 `<Suspense>` 안에서 읽습니다.** `cookies()`(현재 사용자), `searchParams`, 목 데이터 조회가 여기에 해당하고, 밖에서 읽으면 빌드가 실패합니다. 그래서 각 페이지는 `XxxPage`(정적 틀 + Suspense)와 `XxxContent`(async, 데이터 읽기)로 나뉩니다.
-- **목 데이터 조회는 `connection()`을 먼저 부릅니다.** 메모리에서 바로 읽으면 빌드 때 정적 HTML에 고정되기 때문입니다(`data.ts` 참고).
+- **요청 시점 데이터는 `<Suspense>` 안에서 읽습니다.** 세션(현재 사용자), `searchParams`, DB 조회가 여기에 해당하고, 밖에서 읽으면 빌드가 실패합니다. 그래서 각 페이지는 `XxxPage`(정적 틀 + Suspense)와 `XxxContent`(async, 데이터 읽기)로 나뉩니다.
+- **DB 조회와 세션 확인은 `connection()`을 먼저 부릅니다.** 빌드 때 정적 HTML에 고정되지 않게 하고, Auth.js가 안에서 쓰는 난수 때문에 미리 렌더링이 멈추는 것을 막습니다(`data.ts`, `current-user.ts`).
 - **레이아웃 최상단에서 사용자를 기다리지 않습니다.** 사이드바 틀은 Suspense 밖에 두고, 사용자에 따라 달라지는 메뉴·계정 영역만 Suspense 슬롯으로 넣습니다. 틀까지 Suspense 안에 두면 모바일에서 하이드레이션 불일치가 납니다([conventions.md](conventions.md#알려진-함정) 참고).
 - **`forbidden()`** 은 `experimental.authInterrupts`로 켜 두었습니다. Suspense 안에서 불러도 `src/app/forbidden.tsx`가 보입니다.
 - **변경 후 갱신:** 서버 액션이 바꾼 데이터를 보여주는 경로를 `revalidatePath`로 갱신합니다.
   - 재고: `/inventory`, `/games`(보유 현황), `/`(대시보드), `/plays`(빌려줄 수 있는 게임)
   - 이용 기록: `/plays`, `/inventory`(이용 중 수), `/cafes`, `/`(인기 순위)
-  - 매장·직원: 사이드바(계정 영역·계정 전환)와 모든 매장 선택에 쓰이므로 `revalidatePath("/", "layout")`
+  - 매장·직원: 사이드바(계정 영역)와 모든 매장 선택에 쓰이므로 `revalidatePath("/", "layout")`
 - **현재 시각:** 렌더링 중에 `Date.now()`를 부르면 React lint(`react-hooks/purity`)에 걸립니다. 이용 중 경과 시간처럼 시각이 필요하면 `data.ts`에서 데이터와 함께 돌려줍니다(`listActivePlays`).
   - 화면이 열려 있는 동안 시간이 흘러야 하면 `useMinuteClock`(`src/hooks/use-minute-clock.ts`)을 씁니다. 서버가 준 시각으로 하이드레이션한 뒤 브라우저 시각으로 1분마다 갱신합니다(이용 중 경과 시간, `ElapsedTime`).
 

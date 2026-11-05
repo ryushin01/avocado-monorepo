@@ -2,7 +2,7 @@
 
 보드게임 카페 프랜차이즈 직원이 쓰는 운영 백오피스입니다. 본사 공통 게임 카탈로그와 매장별 재고를 관리하고, 대시보드에서 매장 현황을 한눈에 봅니다.
 
-> 아직 백엔드와 인증이 없습니다. 데이터는 서버 메모리의 목 데이터이고, 로그인 대신 **개발용 계정 전환**으로 역할별 화면을 확인합니다. 서버를 다시 켜면 데이터가 초기 상태로 돌아갑니다.
+> 데이터는 PostgreSQL(Drizzle ORM)에 저장합니다. 개발할 때는 설치 없이 Node 안에서 도는 PostgreSQL(PGlite, `.data/pglite`)을 쓰고, `DATABASE_URL`을 주면 실제 PostgreSQL에 붙습니다. 로그인은 Auth.js 4(이메일·비밀번호)입니다.
 
 ## 주요 기능
 
@@ -32,6 +32,8 @@
 - [Next.js](https://nextjs.org) 16 (App Router, `cacheComponents`), React 19, TypeScript
 - [shadcn/ui](https://ui.shadcn.com) (`base-nova` 스타일, [Base UI](https://base-ui.com) 기반), Tailwind CSS 4, [lucide](https://lucide.dev) 아이콘
 - [Recharts](https://recharts.org) (shadcn chart 컴포넌트로 사용), zod (입력 검증), sonner (알림)
+- PostgreSQL + [Drizzle ORM](https://orm.drizzle.team), 개발·테스트는 [PGlite](https://pglite.dev)
+- [Auth.js](https://next-auth.js.org) 4 (`next-auth`, 이메일·비밀번호, JWT 세션), bcryptjs
 - Vitest (단위 테스트), Playwright (E2E)
 
 ## 시작하기
@@ -42,18 +44,32 @@
 pnpm dev:admin               # 루트에서. http://localhost:3000
 ```
 
-### 개발용 계정 전환
+처음 실행하면 개발 DB(`.data/pglite`)를 만들고 가상 매장·게임·직원·기록을 시드로 넣습니다. 데이터는 서버를 다시 켜도 남습니다. 처음 상태로 돌리려면 `pnpm --filter @avocado/admin db:reset` 뒤 다시 실행하세요.
 
-사이드바 아래 계정 메뉴의 **계정 전환 (개발용)** 에서 바꿉니다. 선택한 계정은 `mock-user-id` 쿠키에 저장됩니다. 직원 관리에서 등록한 직원도 여기에 나타나고, 퇴사 처리한 직원은 빠집니다.
+### 개발용 계정
 
-| 계정 | 역할 | 소속 매장 |
+`http://localhost:3000/login`에서 로그인합니다. 비밀번호는 모두 **`avocado1234`** 입니다(개발 서버의 로그인 화면 아래에도 나옵니다).
+
+| 이메일 | 이름 | 역할 | 소속 매장 |
+|---|---|---|---|
+| admin@example.com | 김관리 | 관리자 | - (모든 매장) |
+| gangnam@example.com | 이스태프 | 스태프 | 강남점 |
+| hongdae@example.com | 박스태프 | 스태프 | 홍대점 |
+| pangyo@example.com | 최스태프 | 스태프 | 판교점 |
+
+left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 없습니다. 직원 관리에서 새 직원을 등록할 때는 초기 비밀번호를 정합니다.
+
+### 환경 변수
+
+| 변수 | 개발 | 운영 |
 |---|---|---|
-| 김관리 | 관리자 | - (모든 매장) |
-| 이스태프 | 스태프 | 강남점 |
-| 박스태프 | 스태프 | 홍대점 |
-| 최스태프 | 스태프 | 판교점 |
+| `DATABASE_URL` | 없으면 PGlite | PostgreSQL 주소 (필수) |
+| `PGLITE_DATA_DIR` | 기본 `.data/pglite`, `memory://`면 메모리 (E2E) | - |
+| `NEXTAUTH_URL`, `NEXTAUTH_SECRET` | `.env.development`에 개발 값이 있음 | 서비스 주소와 서명 키 (필수) |
+| `KIOSK_API_TOKEN` | 비우면 키오스크 API를 모두 허용 | 런처와 같은 값 |
+| `SEED_DEMO` | - | `1`이면 빈 DB에 개발용 시드를 넣음 |
 
-정퇴사(강남점)는 퇴사 처리된 직원이라 계정 전환에 나오지 않습니다.
+예시는 `.env.example`에 있습니다. 개발 서버(`next dev`)는 처음 DB를 열 때 마이그레이션을 적용하고, 비어 있으면 시드를 넣습니다.
 
 ## 스크립트
 
@@ -66,7 +82,9 @@ pnpm dev:admin               # 루트에서. http://localhost:3000
 | `pnpm typecheck` | 라우트 타입 생성 후 타입 검사 |
 | `pnpm lint` | ESLint |
 | `pnpm test` | 단위 테스트 (Vitest) |
-| `pnpm e2e` | E2E 테스트 (Playwright, 3100번 포트로 개발 서버를 직접 띄움) |
+| `pnpm e2e` | E2E 테스트 (Playwright, 3100번 포트로 개발 서버를 직접 띄움. 메모리 DB로 시작하고 실제 로그인 화면으로 로그인) |
+| `pnpm db:generate` | `src/db/schema.ts`를 바꾼 뒤 마이그레이션 SQL 만들기 (`src/db/migrations`, git에 넣음) |
+| `pnpm db:reset` | 개발 DB(`.data/pglite`) 지우기. 다음 실행 때 시드로 다시 만듦 |
 
 게임 카탈로그와 썸네일은 공통 패키지 `packages/domain`에 있습니다. avocado 데이터에서 다시 만드는 방법은 루트 README를 보세요.
 
@@ -83,7 +101,7 @@ src/
 │  │  ├─ plays/              이용 기록(대여·반납) 화면 + 서버 액션
 │  │  ├─ reservations/       예약·현장 대기 화면 + 서버 액션
 │  │  ├─ cafes/ staff/       매장·직원 관리 화면 + 서버 액션 (관리자)
-│  │  └─ mock-auth-actions.ts 개발용 계정 전환
+│  ├─ login/                 로그인 화면
 │  ├─ api/kiosk/             가맹점 런처(키오스크)용 API (게임 조회, 예약 확인·도착, 대기 등록·조회)
 │  └─ forbidden.tsx          403 화면
 ├─ components/
@@ -93,12 +111,12 @@ src/
 ├─ lib/
 │  ├─ games/ inventory/ cafes/ plays/ users/ reservations/ waitlist/ stats/   도메인별 types · schema · repository · data(서버 전용) · seed
 │  ├─ guests/                손님 연락처: 전화번호 정리·검증, 키오스크용 이름 가리기
-│  ├─ mock-db/               인메모리 저장소
 │  ├─ kiosk/                 재고 → 키오스크 응답 변환
 │  ├─ auth/                  현재 사용자, 역할, 권한
 │  ├─ list.ts                페이지 계산·URL 생성
 │  └─ form.ts                폼 결과 타입·변환
-e2e/                         Playwright 테스트
+src/db/                      DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)
+e2e/                         Playwright 테스트 (auth.setup.ts가 먼저 실제로 로그인)
 public/images/games/         카탈로그 썸네일 복사본 (git 제외, dev·build 전에 자동 복사)
 docs/architecture.md         백오피스 설계 문서
 ```
@@ -112,6 +130,7 @@ shadcn/ui 컴포넌트는 `packages/ui`에 있고 `@avocado/ui/components/<이�
 
 ## 아직 하지 않은 것
 
-- 백엔드 API와 실제 인증 (현재는 목 데이터와 개발용 계정 전환)
+- 비밀번호 찾기·변경(직원 본인), 로그인 시도 제한
+- 매장별 키오스크 토큰 (지금은 모든 매장이 토큰 하나를 같이 씀)
 - 관리자가 새로 등록한 게임의 썸네일: 입력한 원본 이미지 주소를 그대로 불러옵니다(지연 로딩만 적용)
 - 매장·직원 관리, 이용 기록 화면의 E2E 테스트 (단위 테스트로 규칙은 검증함)

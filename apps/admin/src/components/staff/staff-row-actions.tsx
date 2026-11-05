@@ -107,7 +107,7 @@ export function StaffRowActions({
           <AlertDialogHeader>
             <AlertDialogTitle>퇴사 처리할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              &lsquo;{user.name}&rsquo;을(를) 퇴사 처리하면 계정 전환 목록에서 빠지고
+              &lsquo;{user.name}&rsquo;을(를) 퇴사 처리하면 바로 로그인이 막혀
               백오피스를 쓸 수 없습니다. 직원 정보는 남아 있어 다시 복직 처리할 수 있습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>

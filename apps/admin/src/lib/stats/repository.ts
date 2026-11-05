@@ -1,5 +1,9 @@
 import { byGameName } from "@/lib/games/repository";
-import type { MockDb } from "@/lib/mock-db";
+import { and, gte, inArray, lt } from "drizzle-orm";
+
+import type { Database } from "@/db";
+import { toCafe, toGame, toInventoryItem, toPlay } from "@/db/mappers";
+import { cafes as cafeTable, games as gameTable, inventoryItems, playSessions } from "@/db/schema";
 import { DAY, KST_OFFSET, minutesBetween, startOfKstDay, toKstDate } from "@/lib/plays/time";
 import type { PlaySession } from "@/lib/plays/types";
 
@@ -39,13 +43,14 @@ export interface StatsRepository {
   summarize(cafeIds: string[], period: StatPeriod, now: Date): Promise<StatsSummary>;
 }
 
-export function createStatsRepository(db: MockDb): StatsRepository {
+export function createStatsRepository(database: Database): StatsRepository {
   return {
     async summarize(cafeIds, period, now) {
       const scope = new Set(cafeIds);
       const to = startOfKstDay(now.getTime()); // 오늘 0시 (제외)
       const from = to - period * DAY;
       const prevFrom = from - period * DAY;
+      const db = await loadStatsData(database, cafeIds, new Date(prevFrom), new Date(to));
 
       const inScope = db.plays.filter((p) => scope.has(p.cafeId));
       const between = (start: number, end: number) =>
@@ -164,5 +169,31 @@ export function createStatsRepository(db: MockDb): StatsRepository {
         cafes,
       };
     },
+  };
+}
+
+/** 통계에 필요한 행만 읽는다: 범위 매장의 두 기간 이용 기록, 재고, 게임, 매장 */
+async function loadStatsData(db: Database, cafeIds: string[], from: Date, to: Date) {
+  if (cafeIds.length === 0) return { plays: [], inventory: [], games: [], cafes: [] };
+  const [plays, inventory, games, cafes] = await Promise.all([
+    db
+      .select()
+      .from(playSessions)
+      .where(
+        and(
+          inArray(playSessions.cafeId, cafeIds),
+          gte(playSessions.startedAt, from),
+          lt(playSessions.startedAt, to),
+        ),
+      ),
+    db.select().from(inventoryItems).where(inArray(inventoryItems.cafeId, cafeIds)),
+    db.select().from(gameTable),
+    db.select().from(cafeTable).where(inArray(cafeTable.id, cafeIds)),
+  ]);
+  return {
+    plays: plays.map(toPlay),
+    inventory: inventory.map(toInventoryItem),
+    games: games.map(toGame),
+    cafes: cafes.map(toCafe),
   };
 }

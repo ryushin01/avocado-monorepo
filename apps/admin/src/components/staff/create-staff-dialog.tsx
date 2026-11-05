@@ -12,7 +12,7 @@ export function CreateStaffDialog({ cafes }: { cafes: CafeOption[] }) {
   return (
     <StaffFormDialog
       title="직원 등록"
-      description="새 직원을 등록합니다. 등록하면 개발용 계정 전환 목록에도 나타납니다."
+      description="새 직원을 등록합니다. 직원은 이메일과 초기 비밀번호로 로그인합니다."
       submitLabel="등록"
       cafes={cafes}
       action={createUserAction}

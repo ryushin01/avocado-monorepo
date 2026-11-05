@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { Cafe } from "@/lib/cafes/types";
 import type { BoardGame } from "@/lib/games/types";
 import type { InventoryItem } from "@/lib/inventory/types";
-import { createMockDb } from "@/lib/mock-db";
+import { createSeedData } from "@/db/seed-data";
+import { createTestDb } from "@/db/testing";
 import type { PlaySession } from "@/lib/plays/types";
 
 import { createStatsRepository } from "./repository";
 import { changeRate, parseStatPeriod } from "./schema";
 
-const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "", status: "open" });
+const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open" });
 const game = (id: string, name: string): BoardGame => ({
   id,
   name,
@@ -19,14 +20,14 @@ const game = (id: string, name: string): BoardGame => ({
   playTimeMin: 30,
   playTimeMax: 60,
   difficulty: "easy",
-  createdAt: "",
+  createdAt: "2026-10-01T00:00:00.000Z",
 });
 const item = (cafeId: string, gameId: string, quantity: number, status: InventoryItem["status"] = "available"): InventoryItem => ({
   cafeId,
   gameId,
   quantity,
   status,
-  updatedAt: "",
+  updatedAt: "2026-10-01T00:00:00.000Z",
 });
 let seq = 0;
 /** kst: "2026-11-02T14:00" 같은 한국 시각, minutes: 이용 시간 (없으면 이용 중) */
@@ -45,8 +46,10 @@ const play = (cafeId: string, gameId: string, kst: string, minutes?: number, pla
 // 지금: 2026-11-04(수) 15:00 한국 시각 → 7일 기간 = 10/28(수)~11/3(화), 지난 기간 = 10/21~10/27
 const now = new Date("2026-11-04T06:00:00.000Z");
 
-function setup() {
-  const db = createMockDb({
+async function setup() {
+  const db = await createTestDb({
+    reservations: [],
+    waitlist: [],
     cafes: [cafe("a"), cafe("b")],
     games: [game("g1", "카탄"), game("g2", "아줄"), game("g3", "딕싯")],
     inventory: [item("a", "g1", 2), item("a", "g2", 1), item("b", "g1", 2), item("b", "g3", 1, "retired")],
@@ -67,7 +70,7 @@ function setup() {
 
 describe("StatsRepository.summarize", () => {
   it("어제까지 온전한 7일을 이번 기간으로, 그 앞 7일을 지난 기간으로 센다 (오늘은 뺀다)", async () => {
-    const s = await setup().summarize(["a", "b"], 7, now);
+    const s = await (await setup()).summarize(["a", "b"], 7, now);
     expect(s.kpis.plays).toEqual({ current: 4, previous: 2 });
     expect(s.kpis.dailyAverage).toEqual({ current: 0.6, previous: 0.3 });
     expect(s.kpis.averageMinutes).toEqual({ current: 56.3, previous: 60 });
@@ -93,7 +96,7 @@ describe("StatsRepository.summarize", () => {
   });
 
   it("요일×시간대는 한국 시각으로 세고, 히트맵 시간 범위는 기록이 있는 시간대다", async () => {
-    const s = await setup().summarize(["a", "b"], 7, now);
+    const s = await (await setup()).summarize(["a", "b"], 7, now);
     const at = (weekday: number, hour: number) =>
       s.heatmap.cells.find((c) => c.weekday === weekday && c.hour === hour)?.count;
     expect(at(2, 14)).toBe(2); // 화 14시
@@ -107,7 +110,7 @@ describe("StatsRepository.summarize", () => {
   });
 
   it("게임 회전율: 폐기 제외 보유 박스 대비 이용 횟수, 많은 순", async () => {
-    const s = await setup().summarize(["a", "b"], 7, now);
+    const s = await (await setup()).summarize(["a", "b"], 7, now);
     expect(s.turnover.map((t) => [t.game.name, t.boxes, t.plays, t.playsPerBox])).toEqual([
       ["아줄", 1, 1, 1],
       ["카탄", 4, 3, 0.8],
@@ -115,7 +118,7 @@ describe("StatsRepository.summarize", () => {
   });
 
   it("매장 비교: 매장마다 이번·지난 기간 이용, 박스당 이용, 일별 추이", async () => {
-    const s = await setup().summarize(["a", "b"], 7, now);
+    const s = await (await setup()).summarize(["a", "b"], 7, now);
     expect(s.cafes.map((c) => [c.cafeName, c.plays.current, c.plays.previous, c.playsPerBox])).toEqual([
       ["a점", 3, 1, 1],
       ["b점", 1, 1, 0.5],
@@ -124,17 +127,18 @@ describe("StatsRepository.summarize", () => {
   });
 
   it("범위를 매장 하나로 좁힐 수 있고, 기록이 없으면 평균은 비어 있다", async () => {
-    const s = await setup().summarize(["b"], 7, now);
+    const s = await (await setup()).summarize(["b"], 7, now);
     expect(s.kpis.plays.current).toBe(1);
     expect(s.cafes.map((c) => c.cafeId)).toEqual(["b"]);
-    const empty = await setup().summarize(["nope"], 7, now);
+    const empty = await (await setup()).summarize(["nope"], 7, now);
     expect(empty.kpis.averageMinutes).toEqual({ current: null, previous: null });
     expect(empty.heatmap.max).toBe(0);
   });
 
   it("시드 데이터로 28일을 보면 지난 기간까지 모두 채워진다", async () => {
-    const db = createMockDb({}, now);
-    const s = await createStatsRepository(db).summarize(db.cafes.map((c) => c.id), 28, now);
+    const data = createSeedData({ users: [], reservations: [], waitlist: [] }, now);
+    const db = await createTestDb(data, now);
+    const s = await createStatsRepository(db).summarize(data.cafes.map((c) => c.id), 28, now);
     expect(s.daily.every((d) => d.current > 0 && d.previous > 0)).toBe(true);
     expect(s.turnover.length).toBeGreaterThan(50);
   });

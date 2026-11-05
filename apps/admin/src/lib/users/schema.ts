@@ -27,3 +27,9 @@ export const userInputSchema = z
   });
 
 export type UserInput = z.infer<typeof userInputSchema>;
+
+/** 새 비밀번호. 등록할 때는 필수, 수정할 때는 비우면 그대로 둔다. bcrypt는 72바이트까지만 쓴다. */
+export const passwordSchema = z
+  .string({ error: "비밀번호를 입력해주세요." })
+  .min(8, "비밀번호는 8자 이상이어야 합니다.")
+  .max(72, "비밀번호는 72자 이하여야 합니다.");

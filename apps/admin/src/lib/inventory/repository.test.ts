@@ -2,13 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import type { Cafe } from "@/lib/cafes/types";
 import type { BoardGame } from "@/lib/games/types";
-import { createMockDb } from "@/lib/mock-db";
+import { fromPlay } from "@/db/mappers";
+import { playSessions } from "@/db/schema";
+import { createSeedData } from "@/db/seed-data";
+import { createTestDb } from "@/db/testing";
 
 import { createInventoryRepository, distributions } from "./repository";
 import { createSeedInventory } from "./seed";
 import type { InventoryItem } from "./types";
 
-const cafe = (id: string): Cafe => ({ id, name: id, region: "", openedAt: "", status: "open" });
+const cafe = (id: string): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status: "open" });
 const game = (id: string, name: string, categories: BoardGame["categories"]): BoardGame => ({
   id,
   name,
@@ -18,7 +21,7 @@ const game = (id: string, name: string, categories: BoardGame["categories"]): Bo
   playTimeMin: 30,
   playTimeMax: 60,
   difficulty: "normal",
-  createdAt: "",
+  createdAt: "2026-10-01T00:00:00.000Z",
 });
 const item = (
   cafeId: string,
@@ -33,8 +36,8 @@ const item = (
   ...patch,
 });
 
-function setup() {
-  const db = createMockDb({
+async function setup() {
+  const db = await createTestDb({
     cafes: [cafe("a"), cafe("b")],
     games: [
       game("g1", "카탄", ["family", "strategy"]),
@@ -42,6 +45,9 @@ function setup() {
       game("g3", "딕싯", ["party"]),
     ],
     plays: [],
+    users: [],
+    reservations: [],
+    waitlist: [],
     inventory: [
       item("a", "g1", { quantity: 3 }),
       item("a", "g2", { status: "maintenance", updatedAt: "2026-10-05T00:00:00.000Z" }),
@@ -54,7 +60,7 @@ function setup() {
 
 describe("InventoryRepository", () => {
   it("매장별로 나눠 보여주고, 게임 이름·카테고리·상태로 거른다", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     expect((await repo.list("a")).items.map((e) => e.game.name)).toEqual(["아줄", "카탄"]);
     expect((await repo.list("a", { status: "maintenance" })).items.map((e) => e.gameId)).toEqual(["g2"]);
     expect((await repo.list("a", { category: "strategy" })).items.map((e) => e.gameId)).toEqual(["g1"]);
@@ -62,12 +68,12 @@ describe("InventoryRepository", () => {
   });
 
   it("추가 후보는 그 매장에 없는 게임만이다", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     expect((await repo.listAddable("a")).map((g) => g.id)).toEqual(["g3"]);
   });
 
   it("추가하면 '이용 가능'으로 들어가고, 이미 있거나 없는 매장·게임이면 null", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     const added = await repo.add("a", "g3", 2);
     expect(added).toMatchObject({ cafeId: "a", gameId: "g3", quantity: 2, status: "available" });
     expect(await repo.add("a", "g3", 1)).toBeNull();
@@ -76,7 +82,7 @@ describe("InventoryRepository", () => {
   });
 
   it("수정하면 최근 변경 시각이 바뀌고, 다른 매장 재고에는 영향이 없다", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     const updated = await repo.update("a", "g1", { quantity: 5, status: "maintenance" });
     expect(updated).toMatchObject({ quantity: 5, status: "maintenance" });
     expect(typeof updated !== "string" && updated.updatedAt > "2026-10-01").toBe(true);
@@ -88,7 +94,7 @@ describe("InventoryRepository", () => {
   });
 
   it("제외하면 그 매장에서만 빠진다", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     expect(await repo.remove("a", "g1")).toBe(true);
     expect(await repo.remove("a", "g1")).toBe("not-found");
     expect((await repo.list("a")).total).toBe(1);
@@ -96,13 +102,15 @@ describe("InventoryRepository", () => {
   });
 
   it("이용 중인 박스: 목록에 수를 보여주고, 그보다 적게 줄이거나 제외할 수 없다", async () => {
-    const { db, repo } = setup();
-    db.plays.push(
+    const { db, repo } = await setup();
+    await db.insert(playSessions).values(
+      [
       { id: "p1", cafeId: "a", gameId: "g1", startedAt: "2026-11-01T10:00:00.000Z", playerCount: 2 },
       { id: "p2", cafeId: "a", gameId: "g1", startedAt: "2026-11-01T10:00:00.000Z", playerCount: 2 },
       // 반납한 기록과 다른 매장 기록은 세지 않는다.
       { id: "p3", cafeId: "a", gameId: "g1", startedAt: "2026-11-01T09:00:00.000Z", returnedAt: "2026-11-01T10:00:00.000Z", playerCount: 2 },
       { id: "p4", cafeId: "b", gameId: "g1", startedAt: "2026-11-01T10:00:00.000Z", playerCount: 2 },
+      ].map(fromPlay),
     );
     expect((await repo.list("a")).items.map((e) => [e.gameId, e.inUse])).toEqual([
       ["g2", 0],
@@ -119,7 +127,7 @@ describe("InventoryRepository", () => {
   });
 
   it("요약: 매장별·전체 집계와 유형 분포, 최근 점검 중 목록", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     const summary = await repo.summarize(["a", "b"]);
 
     expect(summary.cafes.map(({ cafe, ...s }) => [cafe.id, s])).toEqual([
@@ -151,7 +159,7 @@ describe("InventoryRepository", () => {
   });
 
   it("요약 범위를 매장 하나로 좁힐 수 있다", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     const summary = await repo.summarize(["b"]);
     expect(summary.cafes.map((c) => c.cafe.id)).toEqual(["b"]);
     expect(summary.totals.gameCount).toBe(2);
@@ -193,7 +201,7 @@ describe("distributions", () => {
   });
 
   it("요약의 분포는 폐기를 빼고 같은 게임을 한 번만 센다", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     // a: g1(카탄 2–4명), g2(아줄, 점검 중) / b: g1(폐기), g3 → 활성 게임 g1·g2·g3
     const summary = await repo.summarize(["a", "b"]);
     expect(summary.players.find((p) => p.label === "2명")?.gameCount).toBe(3);
@@ -202,7 +210,7 @@ describe("distributions", () => {
 
 describe("createSeedInventory", () => {
   it("매번 같은 결과를 만들고, 매장마다 카탈로그의 일부를 보유한다", () => {
-    const db = createMockDb();
+    const db = createSeedData({ plays: [], reservations: [], waitlist: [] });
     const again = createSeedInventory(db.cafes, db.games);
     expect(again).toEqual(db.inventory);
     // 매장 순서대로 55% · 65% · 75% · 55% · 65% 안팎을 보유한다.

@@ -12,7 +12,6 @@ import { TooltipProvider } from "@avocado/ui/components/tooltip";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { listCafes } from "@/lib/cafes/data";
 import { getNavItemsFor } from "@/lib/navigation";
-import { listUsers } from "@/lib/users/data";
 
 export default function BackofficeLayout({ children }: LayoutProps<"/">) {
   return (
@@ -48,14 +47,7 @@ async function UserNav() {
 }
 
 async function UserFooter() {
-  const [user, cafes, users] = await Promise.all([
-    getCurrentUser(),
-    listCafes(),
-    listUsers(),
-  ]);
+  const [user, cafes] = await Promise.all([getCurrentUser(), listCafes()]);
   const cafeName = cafes.find((c) => c.id === user.cafeId)?.name;
-  const accounts = users
-    .filter((u) => u.active)
-    .map(({ id, name, role }) => ({ id, name, role }));
-  return <UserMenu user={user} cafeName={cafeName} accounts={accounts} />;
+  return <UserMenu user={user} cafeName={cafeName} />;
 }

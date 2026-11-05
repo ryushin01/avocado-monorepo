@@ -88,7 +88,7 @@ export function StaffFormDialog({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           {/* form이 다시 마운트될 때(제출 후) 역할 선택도 입력값으로 되돌린다. */}
-          <StaffFields form={form} cafes={cafes} lockRole={lockRole} />
+          <StaffFields form={form} cafes={cafes} lockRole={lockRole} isNew={!user} />
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
               취소
@@ -108,10 +108,13 @@ function StaffFields({
   form,
   cafes,
   lockRole,
+  isNew,
 }: {
   form: ReturnType<typeof useDialogForm>;
   cafes: CafeOption[];
   lockRole: boolean;
+  /** 등록이면 초기 비밀번호가 필수 */
+  isNew: boolean;
 }) {
   const [role, setRole] = useState<Role>(form.text("role") === "admin" ? "admin" : "staff");
 
@@ -135,6 +138,21 @@ function StaffFields({
       <FormErrorAlert message={form.formError} />
       {textField("name", "이름")}
       {textField("email", "이메일", { type: "email", inputMode: "email" })}
+      <Field data-invalid={form.invalid("password")}>
+        <FieldLabel htmlFor="staff-password">{isNew ? "초기 비밀번호" : "새 비밀번호 (바꿀 때만)"}</FieldLabel>
+        {/* 비밀번호는 실패해도 되돌려 채우지 않는다. */}
+        <Input
+          id="staff-password"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          aria-invalid={form.invalid("password")}
+        />
+        <FieldDescription>
+          {isNew ? "8자 이상. 직원에게 따로 알려주세요." : "비워 두면 지금 비밀번호를 그대로 씁니다."}
+        </FieldDescription>
+        <FieldError errors={form.errors("password")} />
+      </Field>
       <Field data-invalid={form.invalid("role")}>
         <FieldLabel htmlFor="staff-role">역할</FieldLabel>
         <Select

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createMockDb } from "@/lib/mock-db";
+import { inventoryItems } from "@/db/schema";
+import { createTestDb } from "@/db/testing";
 
 import { createGameRepository } from "./repository";
 import type { GameInput } from "./schema";
@@ -17,14 +18,17 @@ const input = (patch: Partial<GameInput> = {}): GameInput => ({
   ...patch,
 });
 
+/** 카탈로그만 보는 테스트라 무거운 이용 기록은 넣지 않는다. */
+const catalogDb = () => createTestDb({ plays: [], reservations: [], waitlist: [] });
+
 describe("GameRepository (카탈로그)", () => {
   it("avocado 데이터 110개를 시드로 쓴다", async () => {
-    const repo = createGameRepository(createMockDb());
+    const repo = createGameRepository(await catalogDb());
     expect((await repo.list()).total).toBe(110);
   });
 
   it("한글·영문 이름(부분 일치), 카테고리(포함)로 필터하고 이름순 정렬한다", async () => {
-    const repo = createGameRepository(createMockDb());
+    const repo = createGameRepository(await catalogDb());
 
     expect((await repo.list({ q: "카탄" })).items.map((g) => g.name)).toEqual([
       "카탄: 도시와 기사",
@@ -41,7 +45,7 @@ describe("GameRepository (카탈로그)", () => {
   });
 
   it("range로 잘라 주고, total은 필터 적용 후 전체 개수다", async () => {
-    const repo = createGameRepository(createMockDb());
+    const repo = createGameRepository(await catalogDb());
     const all = (await repo.list({ category: "strategy" })).items;
     const page2 = await repo.list({ category: "strategy" }, { offset: 20, limit: 20 });
     expect(page2.total).toBe(all.length);
@@ -49,22 +53,25 @@ describe("GameRepository (카탈로그)", () => {
   });
 
   it("매장 보유 현황(보유 매장 수·총 수량)을 함께 돌려주고, 폐점 매장은 뺀다", async () => {
-    const db = createMockDb({
+    const db = await createTestDb({
       cafes: [
-        { id: "a", name: "A", region: "", openedAt: "", status: "open" },
-        { id: "b", name: "B", region: "", openedAt: "", status: "open" },
-        { id: "z", name: "Z", region: "", openedAt: "", status: "closed" },
+        { id: "a", name: "A", region: "", openedAt: "2024-01-01", status: "open" },
+        { id: "b", name: "B", region: "", openedAt: "2024-01-01", status: "open" },
+        { id: "z", name: "Z", region: "", openedAt: "2024-01-01", status: "closed" },
       ],
       games: [],
       inventory: [],
+      users: [],
     });
     const repo = createGameRepository(db);
     const owned = await repo.create(input({ name: "가" }));
     await repo.create(input({ name: "나" }));
-    db.inventory.push(
-      { cafeId: "a", gameId: owned.id, quantity: 2, status: "available", updatedAt: "" },
-      { cafeId: "b", gameId: owned.id, quantity: 3, status: "retired", updatedAt: "" },
-      { cafeId: "z", gameId: owned.id, quantity: 9, status: "available", updatedAt: "" },
+    await db.insert(inventoryItems).values(
+      [
+      { cafeId: "a", gameId: owned.id, quantity: 2, status: "available", updatedAt: new Date() },
+      { cafeId: "b", gameId: owned.id, quantity: 3, status: "retired", updatedAt: new Date() },
+      { cafeId: "z", gameId: owned.id, quantity: 9, status: "available", updatedAt: new Date() },
+      ],
     );
 
     const { items } = await repo.list();
@@ -75,7 +82,7 @@ describe("GameRepository (카탈로그)", () => {
   });
 
   it("수정하면 등록일은 유지하고, 비운 선택 항목은 지운다", async () => {
-    const repo = createGameRepository(createMockDb({ games: [], inventory: [] }));
+    const repo = createGameRepository(await createTestDb({ games: [], inventory: [], plays: [], users: [] }));
     const created = await repo.create(input());
     const updated = await repo.update(
       created.id,
@@ -91,11 +98,10 @@ describe("GameRepository (카탈로그)", () => {
   });
 
   it("시드 게임은 모두 로컬 썸네일이 있고, 원본 이미지를 바꾸면 썸네일을 지운다", async () => {
-    const db = createMockDb();
-    expect(db.games.every((g) => g.thumbnailUrl?.startsWith("/images/games/"))).toBe(true);
-
-    const repo = createGameRepository(db);
-    const game = db.games[0];
+    const repo = createGameRepository(await catalogDb());
+    const { items } = await repo.list();
+    expect(items.every((g) => g.thumbnailUrl?.startsWith("/images/games/"))).toBe(true);
+    const game = items[0];
     const base = input({ name: game.name, imageUrl: game.imageUrl });
     expect((await repo.update(game.id, base))?.thumbnailUrl).toBe(game.thumbnailUrl);
     const changed = await repo.update(game.id, { ...base, imageUrl: "https://example.com/a.png" });

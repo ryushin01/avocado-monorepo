@@ -1,6 +1,8 @@
 "use server";
 
+import { hash } from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { canManageOrganization } from "@/lib/auth/permissions";
@@ -13,7 +15,7 @@ import {
 } from "@/lib/form";
 import type { UserSaveError } from "@/lib/users/repository";
 import { createUser, setUserActive, updateUser } from "@/lib/users/data";
-import { userInputSchema, type UserInput } from "@/lib/users/schema";
+import { passwordSchema, userInputSchema, type UserInput } from "@/lib/users/schema";
 
 const FORBIDDEN = "직원은 관리자만 관리할 수 있습니다.";
 
@@ -36,19 +38,35 @@ const FIELD_OF: Partial<Record<UserSaveError, string>> = {
 // 직원 목록은 사이드바의 계정 전환에도 쓰인다.
 const revalidate = () => revalidatePath("/", "layout");
 
+/**
+ * 비밀번호 칸: 등록할 때는 필수, 수정할 때는 비우면 그대로 둔다.
+ * 실패해도 비밀번호는 폼에 되돌려 보내지 않는다.
+ */
 async function submitUserForm(
   formData: FormData,
-  save: (input: UserInput, actor: User) => Promise<User | UserSaveError>,
+  passwordRequired: boolean,
+  save: (input: UserInput, actor: User, passwordHash?: string) => Promise<User | UserSaveError>,
   done: (name: string) => string,
 ): Promise<FormState> {
-  const values = formDataToObject(formData);
+  const { password = "", ...values } = formDataToObject(formData);
   const actor = await getCurrentUser();
   if (!canManageOrganization(actor)) return formError(values, FORBIDDEN);
 
   const parsed = userInputSchema.safeParse(values);
-  if (!parsed.success) return formError(values, parsed.error);
+  const pw =
+    passwordRequired || password !== ""
+      ? passwordSchema.safeParse(password)
+      : ({ success: true, data: undefined } as const);
+  if (!parsed.success || !pw.success) {
+    const fieldErrors = {
+      ...(parsed.success ? {} : z.flattenError(parsed.error).fieldErrors),
+      ...(pw.success ? {} : { password: z.flattenError(pw.error).formErrors }),
+    };
+    return { status: "error", fieldErrors, values };
+  }
 
-  const result = await save(parsed.data, actor);
+  const passwordHash = pw.data ? await hash(pw.data, 10) : undefined;
+  const result = await save(parsed.data, actor, passwordHash);
   if (typeof result === "string") {
     const field = FIELD_OF[result];
     return field
@@ -64,7 +82,12 @@ export async function createUserAction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  return submitUserForm(formData, createUser, (name) => `'${name}' 직원을 등록했습니다.`);
+  return submitUserForm(
+    formData,
+    true,
+    (input, _actor, passwordHash) => createUser(input, passwordHash!),
+    (name) => `'${name}' 직원을 등록했습니다.`,
+  );
 }
 
 export async function updateUserAction(
@@ -74,7 +97,8 @@ export async function updateUserAction(
 ): Promise<FormState> {
   return submitUserForm(
     formData,
-    (input, actor) => updateUser(id, input, actor.id),
+    false,
+    (input, actor, passwordHash) => updateUser(id, input, actor.id, passwordHash),
     (name) => `'${name}' 정보를 수정했습니다.`,
   );
 }

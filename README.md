@@ -16,7 +16,7 @@
 
 저장소: [github.com/ryushin01/avocado-monorepo](https://github.com/ryushin01/avocado-monorepo) (로컬 폴더 이름은 `avocado`). 원래 avocado 프로젝트(`ryushin01/avocado`)와는 별도 저장소입니다.
 
-> 아직 백엔드와 인증이 없습니다. 백오피스 데이터는 서버 메모리의 목 데이터라 서버를 다시 켜면 처음 상태로 돌아갑니다. 런처는 백오피스의 조회 API를 읽으므로 백오피스가 켜져 있어야 합니다.
+> 백오피스 데이터는 PostgreSQL(Drizzle)에 저장합니다. 개발할 때는 설치 없이 Node 안에서 도는 PGlite를 쓰고(`apps/admin/.data`), 운영에서는 `DATABASE_URL`로 PostgreSQL에 붙습니다. 백오피스는 로그인(Auth.js 4, 이메일·비밀번호)이 필요하고, 개발용 계정은 [apps/admin/README.md](apps/admin/README.md)에 있습니다. 런처는 백오피스의 키오스크 API를 읽으므로 백오피스가 켜져 있어야 합니다.
 
 ## 시작하기
 
@@ -103,7 +103,8 @@ docs/
 
 ## 아직 하지 않은 것
 
-- 백엔드 API와 실제 로그인 (키오스크 API는 공용 토큰 하나만 지원)
+- 배포 설정 (운영 PostgreSQL, 비밀 값 관리). 키오스크 API는 아직 공용 토큰 하나만 지원
+- 직원 비밀번호 찾기·변경, 로그인 시도 제한
 - 예약: 손님이 직접 하는 온라인 예약, 정원·테이블 배정, 문자 알림(대기 호출 등)
 - 런처·홈페이지의 E2E 테스트
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

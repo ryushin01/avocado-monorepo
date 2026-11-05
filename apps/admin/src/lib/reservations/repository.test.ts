@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import type { Cafe } from "@/lib/cafes/types";
 import { formatPhone, isMobilePhone, maskName, normalizePhone } from "@/lib/guests/contact";
-import { createMockDb } from "@/lib/mock-db";
+import { reservations as reservationTable } from "@/db/schema";
+import { createSeedData } from "@/db/seed-data";
+import { createTestDb } from "@/db/testing";
 import { createWaitlistRepository } from "@/lib/waitlist/repository";
 import { waitlistInputSchema } from "@/lib/waitlist/schema";
 
@@ -10,7 +12,7 @@ import { createReservationRepository } from "./repository";
 import { reservationInputSchema } from "./schema";
 import type { Reservation } from "./types";
 
-const cafe = (id: string, status: Cafe["status"] = "open"): Cafe => ({ id, name: id, region: "", openedAt: "", status });
+const cafe = (id: string, status: Cafe["status"] = "open"): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status });
 // 지금: 2026-11-05 15:00 (한국)
 const now = new Date("2026-11-05T06:00:00.000Z");
 const at = (kst: string) => new Date(`${kst}:00+09:00`).toISOString();
@@ -25,9 +27,9 @@ const input = (patch: Record<string, string> = {}) =>
     ...patch,
   });
 
-function setup(reservations: Reservation[] = []) {
-  const db = createMockDb({
-    cafes: [cafe("a"), cafe("z", "closed")],
+async function setup(reservations: Reservation[] = []) {
+  const db = await createTestDb({
+    cafes: [cafe("a"), cafe("b"), cafe("z", "closed")],
     games: [],
     inventory: [],
     plays: [],
@@ -65,7 +67,7 @@ describe("reservationInputSchema", () => {
 
 describe("ReservationRepository", () => {
   it("등록: 운영 중인 매장에 지금 이후로만, 날짜별로 시각순", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     expect(await repo.create("a", input({ time: "14:00" }), now)).toBe("past");
     expect(await repo.create("z", input(), now)).toBe("closed-cafe");
     await repo.create("a", input({ time: "20:00" }), now);
@@ -75,7 +77,7 @@ describe("ReservationRepository", () => {
   });
 
   it("상태 변경: 정해진 순서만, 끝난 예약은 못 바꾸고, 노쇼는 예약 시각 뒤에만", async () => {
-    const { repo } = setup();
+    const { repo } = await setup();
     const r = await repo.create("a", input({ status: "pending" }), now);
     if (typeof r === "string") throw new Error(r);
     expect(await repo.setStatus("a", r.id, "no_show", now)).toBe("too-early");
@@ -89,21 +91,21 @@ describe("ReservationRepository", () => {
   });
 
   it("수정: 시각을 바꿀 때만 지난 시각을 막고, 확정은 가예약으로 되돌리지 않는다", async () => {
-    const { db, repo } = setup([
-      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "" },
+    const { db, repo } = await setup([
+      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
     // 이미 지난 시각이지만 시각은 그대로 두고 인원만 바꿈
     expect(await repo.update("a", "r1", input({ time: "13:00", partySize: "3", status: "pending" }), now)).toMatchObject({ partySize: 3, status: "confirmed" });
     expect(await repo.update("a", "r1", input({ time: "12:00" }), now)).toBe("past");
-    expect(db.reservations[0].memo).toBeUndefined();
+    expect((await db.select().from(reservationTable))[0].memo).toBeNull();
   });
 
   it("키오스크: 오늘 끝나지 않은 예약만 뒷자리로 찾고, 도착을 알릴 수 있다", async () => {
-    const { repo } = setup([
-      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T18:00"), status: "confirmed", createdAt: "" },
-      { id: "r2", cafeId: "a", name: "박영수", phone: "01099995678", partySize: 4, startsAt: at("2026-11-05T13:00"), status: "seated", createdAt: "" },
-      { id: "r3", cafeId: "a", name: "최민지", phone: "01011115678", partySize: 3, startsAt: at("2026-11-06T18:00"), status: "confirmed", createdAt: "" },
-      { id: "r4", cafeId: "b", name: "정우성", phone: "01022225678", partySize: 2, startsAt: at("2026-11-05T18:00"), status: "confirmed", createdAt: "" },
+    const { repo } = await setup([
+      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T18:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
+      { id: "r2", cafeId: "a", name: "박영수", phone: "01099995678", partySize: 4, startsAt: at("2026-11-05T13:00"), status: "seated", createdAt: "2026-10-01T00:00:00.000Z" },
+      { id: "r3", cafeId: "a", name: "최민지", phone: "01011115678", partySize: 3, startsAt: at("2026-11-06T18:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
+      { id: "r4", cafeId: "b", name: "정우성", phone: "01022225678", partySize: 2, startsAt: at("2026-11-05T18:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
     expect((await repo.findForKiosk("a", "5678", now)).map((r) => r.id)).toEqual(["r1"]);
     expect(await repo.checkIn("a", "r1", "0000", now)).toBe("not-found");
@@ -116,7 +118,7 @@ describe("WaitlistRepository", () => {
   const guest = (phone: string, name = "김철수") => waitlistInputSchema.parse({ name, phone, partySize: "2" });
 
   it("등록하면 그날 번호를 매기고 앞에 남은 팀 수를 알려주며, 같은 번호로 두 번은 못 선다", async () => {
-    const { waits } = setup();
+    const { waits } = await setup();
     expect(await waits.add("a", guest("010-1111-2222"), now)).toMatchObject({ number: 1, ahead: 0 });
     expect(await waits.add("a", guest("010-3333-4444"), now)).toMatchObject({ number: 2, ahead: 1 });
     expect(await waits.add("a", guest("01011112222"), now)).toBe("duplicate");
@@ -127,7 +129,7 @@ describe("WaitlistRepository", () => {
   });
 
   it("호출·입장·이탈 순서를 지키고, 줄에서 빠지면 뒤 팀의 순서가 당겨진다", async () => {
-    const { waits } = setup();
+    const { waits } = await setup();
     const first = await waits.add("a", guest("010-1111-2222"), now);
     await waits.add("a", guest("010-3333-4444", "이영희"), new Date(now.getTime() + 1000));
     if (typeof first === "string") throw new Error(first);
@@ -143,7 +145,7 @@ describe("WaitlistRepository", () => {
 
 describe("시드", () => {
   it("운영 중인 매장마다 오늘·내일 예약과 오늘 대기가 있고, 지난 예약은 끝나 있다", () => {
-    const db = createMockDb({}, now);
+    const db = createSeedData({ plays: [] }, now);
     for (const c of db.cafes) {
       expect(db.reservations.filter((r) => r.cafeId === c.id)).toHaveLength(7);
       expect(db.waitlist.filter((w) => w.cafeId === c.id && w.status === "waiting")).toHaveLength(2);

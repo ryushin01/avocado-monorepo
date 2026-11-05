@@ -1,4 +1,9 @@
-import type { MockDb } from "@/lib/mock-db";
+import { and, count, eq, isNull, ne } from "drizzle-orm";
+
+import type { Database } from "@/db";
+import { newId } from "@/db/ids";
+import { toCafe } from "@/db/mappers";
+import { cafes, inventoryItems, playSessions, users } from "@/db/schema";
 
 import type { CafeInput } from "./schema";
 import type { Cafe, CafeOverview, CafeStatus } from "./types";
@@ -6,9 +11,9 @@ import type { Cafe, CafeOverview, CafeStatus } from "./types";
 export type CafeSaveError = "not-found" | "duplicate-name";
 export type CafeStatusError = "not-found" | "in-use";
 
-/** 백엔드가 정해지면 이 인터페이스의 API 구현체로 교체한다. */
+/** 백엔드를 바꾸면 이 인터페이스의 구현만 교체한다. */
 export interface CafeRepository {
-  /** 모든 매장 (폐점 포함), 등록 순 */
+  /** 모든 매장 (폐점 포함), 개점일·이름순 */
   list(): Promise<Cafe[]>;
   get(id: string): Promise<Cafe | null>;
   /** 매장 관리 화면용: 운영 중인 매장 먼저, 보유 게임·직원·이용 중 수와 함께 */
@@ -20,77 +25,105 @@ export interface CafeRepository {
 }
 
 const sameName = (a: string, b: string) => a.replace(/\s/g, "") === b.replace(/\s/g, "");
+const byOpening = (a: Cafe, b: Cafe) => a.openedAt.localeCompare(b.openedAt) || a.name.localeCompare(b.name, "ko");
 
-export function createCafeRepository(db: MockDb): CafeRepository {
-  const nameTaken = (name: string, exceptId?: string) =>
-    db.cafes.some((c) => c.id !== exceptId && sameName(c.name, name));
+export function createCafeRepository(db: Database): CafeRepository {
+  async function nameTaken(name: string, exceptId?: string) {
+    const rows = await db
+      .select({ name: cafes.name })
+      .from(cafes)
+      .where(exceptId ? ne(cafes.id, exceptId) : undefined);
+    return rows.some((r) => sameName(r.name, name));
+  }
+  const countBy = async (query: Promise<{ cafeId: string | null; n: number }[]>) =>
+    new Map((await query).flatMap((r) => (r.cafeId ? [[r.cafeId, r.n] as const] : [])));
 
   return {
     async list() {
-      return db.cafes.map((c) => ({ ...c }));
+      return (await db.select().from(cafes)).map(toCafe).sort(byOpening);
     },
+
     async get(id) {
-      const cafe = db.cafes.find((c) => c.id === id);
-      return cafe ? { ...cafe } : null;
+      const [row] = await db.select().from(cafes).where(eq(cafes.id, id));
+      return row ? toCafe(row) : null;
     },
+
     async overview() {
-      const count = <T,>(items: T[], cafeId: (item: T) => string | undefined) => {
-        const map = new Map<string, number>();
-        for (const item of items) {
-          const id = cafeId(item);
-          if (id) map.set(id, (map.get(id) ?? 0) + 1);
-        }
-        return map;
-      };
-      const games = count(db.inventory, (i) => i.cafeId);
-      const staff = count(
-        db.users.filter((u) => u.active && u.role === "staff"),
-        (u) => u.cafeId,
-      );
-      const inUse = count(
-        db.plays.filter((p) => !p.returnedAt),
-        (p) => p.cafeId,
-      );
-      return db.cafes
+      const [list, gameCounts, staffCounts, inUseCounts] = await Promise.all([
+        this.list(),
+        countBy(
+          db
+            .select({ cafeId: inventoryItems.cafeId, n: count() })
+            .from(inventoryItems)
+            .groupBy(inventoryItems.cafeId),
+        ),
+        countBy(
+          db
+            .select({ cafeId: users.cafeId, n: count() })
+            .from(users)
+            .where(and(eq(users.active, true), eq(users.role, "staff")))
+            .groupBy(users.cafeId),
+        ),
+        countBy(
+          db
+            .select({ cafeId: playSessions.cafeId, n: count() })
+            .from(playSessions)
+            .where(isNull(playSessions.returnedAt))
+            .groupBy(playSessions.cafeId),
+        ),
+      ]);
+      return list
         .map((c) => ({
           ...c,
-          gameCount: games.get(c.id) ?? 0,
-          staffCount: staff.get(c.id) ?? 0,
-          inUseCount: inUse.get(c.id) ?? 0,
+          gameCount: gameCounts.get(c.id) ?? 0,
+          staffCount: staffCounts.get(c.id) ?? 0,
+          inUseCount: inUseCounts.get(c.id) ?? 0,
         }))
         .sort((a, b) => Number(a.status === "closed") - Number(b.status === "closed"));
     },
+
     async create(input) {
-      if (nameTaken(input.name)) return "duplicate-name";
-      const cafe: Cafe = { ...input, id: `c_${db.nextCafeId++}`, status: "open" };
-      db.cafes.push(cafe);
-      return { ...cafe };
+      if (await nameTaken(input.name)) return "duplicate-name";
+      const [row] = await db
+        .insert(cafes)
+        .values({
+          ...input,
+          id: newId("c"),
+          address: input.address ?? null,
+          phone: input.phone ?? null,
+          status: "open",
+        })
+        .returning();
+      return toCafe(row);
     },
+
     async update(id, input) {
-      const index = db.cafes.findIndex((c) => c.id === id);
-      if (index === -1) return "not-found";
-      if (nameTaken(input.name, id)) return "duplicate-name";
+      if (!(await this.get(id))) return "not-found";
+      if (await nameTaken(input.name, id)) return "duplicate-name";
       // 폼에서 비운 선택 항목(주소·전화번호)은 지운다.
-      db.cafes[index] = {
-        ...db.cafes[index],
-        address: undefined,
-        phone: undefined,
-        ...input,
-      };
-      return { ...db.cafes[index] };
+      const [row] = await db
+        .update(cafes)
+        .set({ ...input, address: input.address ?? null, phone: input.phone ?? null })
+        .where(eq(cafes.id, id))
+        .returning();
+      return toCafe(row);
     },
+
     async setStatus(id, status) {
-      const index = db.cafes.findIndex((c) => c.id === id);
-      if (index === -1) return "not-found";
-      if (status === "closed" && db.plays.some((p) => p.cafeId === id && !p.returnedAt)) {
-        return "in-use";
+      if (!(await this.get(id))) return "not-found";
+      if (status === "closed") {
+        const [{ n }] = await db
+          .select({ n: count() })
+          .from(playSessions)
+          .where(and(eq(playSessions.cafeId, id), isNull(playSessions.returnedAt)));
+        if (n > 0) return "in-use";
       }
-      db.cafes[index] = {
-        ...db.cafes[index],
-        status,
-        closedAt: status === "closed" ? new Date().toISOString() : undefined,
-      };
-      return { ...db.cafes[index] };
+      const [row] = await db
+        .update(cafes)
+        .set({ status, closedAt: status === "closed" ? new Date() : null })
+        .where(eq(cafes.id, id))
+        .returning();
+      return toCafe(row);
     },
   };
 }

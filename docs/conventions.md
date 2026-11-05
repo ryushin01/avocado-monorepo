@@ -68,11 +68,13 @@
 ## 테스트
 
 - **단위 테스트(Vitest):** `src/**/*.test.ts`에 둡니다. repository·schema·권한·목록 계산처럼 화면과 무관한 규칙을 검증합니다.
+  - 백오피스 저장소 테스트는 `createTestDb({...})`로 테스트마다 새 메모리 PGlite를 만듭니다. 외래 키가 있으므로 기록이 가리키는 매장·게임도 함께 넣고, 날짜는 빈 문자열 대신 실제 날짜를 씁니다.
 - **E2E(Playwright):** 지금은 백오피스(`apps/admin/e2e/`)에만 있습니다.
   - 테스트는 병렬로 돕니다. **데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다.** 홍대점은 읽기 전용 테스트(스태프·대시보드)용이라 바꾸지 않습니다. 카탈로그는 `Date.now()`를 붙인 고유한 이름의 게임을 새로 만들어 씁니다.
   - 정확한 전체 개수(110, 매장 5개 등)는 단위 테스트에서 확인합니다. 다른 테스트가 동시에 데이터를 추가하기 때문입니다.
   - 시드에는 매장마다 이용 중인 게임이 있습니다. 재고를 제외하는 테스트는 '이용 중' 배지가 없는 행을 고릅니다.
-  - 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
+  - 테스트는 기본으로 관리자로 로그인한 상태입니다. `e2e/auth.setup.ts`가 먼저 실제 로그인 화면으로 로그인해 세션을 저장합니다. 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
+  - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작합니다.
   - 모바일 목록은 `waitForMobileList()`로 목록이 실제로 보일 때까지 기다린 뒤 다룹니다. Suspense 스트리밍 중에는 숨은 영역에 먼저 그려졌다가 옮겨지기 때문입니다.
 - **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다. E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
@@ -90,6 +92,9 @@
 | `pnpm install`이 "within the minimumReleaseAge cutoff"로 멈춤 | pnpm 12는 공개 하루 안 된 버전을 거부함. npm 잠금 파일을 그대로 가져오면 걸리기 쉬움 | 잠금 파일을 지우지 말고 먼저 하루 기다리거나, 필요하면 `pnpm clean --lockfile` 뒤 다시 설치 (더 오래된 버전이 없는 것만 `minimumReleaseAgeExclude`에 자동 추가됨) |
 | `pnpm -v`가 9 등 낮은 버전 | 오래된 pnpm은 `packageManager` 버전으로 자동 전환하지 않음 | `npm install -g pnpm@12.16.1` |
 | 차트 칸은 있는데 그래프가 비어 있음 (SVG 없음, 오류도 없음) | `recharts`가 두 벌 설치됨. 공통 UI 패키지의 `ChartContainer`와 앱의 차트가 서로 다른 recharts를 써서 연결되지 않음. pnpm에서 recharts의 peer `react-is`가 패키지마다 다른 버전으로 잡혀 생김 | recharts를 쓰는 패키지(`packages/ui`, `apps/admin`)에 같은 `react-is`(React와 같은 버전)를 직접 선언. 확인: `readlink -f packages/ui/node_modules/recharts apps/admin/node_modules/recharts`가 같아야 함 |
+| PGlite: "path argument ... Received an instance of URL" 로 서버가 멈춤 | 번들러가 PGlite를 묶어 자기 WASM 파일 경로를 못 찾음 | `next.config.ts`의 `serverExternalPackages: ["@electric-sql/pglite"]` |
+| "encountered the unstable value randomBytes while prerendering" | Auth.js 4의 `getServerSession`이 안에서 난수를 씀 | 세션을 읽기 전에 `await connection()` (`current-user.ts`, 로그인 화면) |
+| 테스트에서 "DateTimeParseError" 또는 외래 키 오류 | 예전 메모리 저장소는 빈 날짜·없는 매장을 받아 줬지만 실제 DB는 거부함 | 픽스처에 실제 날짜와 참조하는 매장·게임을 넣음 |
 | lint `react-hooks/refs`: Cannot access refs during render | 렌더링 중에 `useRef().current`를 읽음 (예: 캐러셀 플러그인) | 한 번만 만들 값은 `useState(() => ...)`로 만든다 |
 | 새 앱에서 공통 컴포넌트 스타일이 빠짐 | Tailwind가 `node_modules` 너머의 `packages/ui`를 찾지 않음 | 앱 `globals.css`에 `@source "../../../../packages/ui/src";` |
 | 이미지가 안 보임 (썸네일·자리표시) | 카탈로그 이미지는 `packages/domain/assets`에만 있고 앱 `public`에는 복사본이 들어감 | 앱 `package.json`의 `dev`·`build` 맨 앞에 `copy-catalog-assets public &&` (pre 스크립트 대신 한 줄에 써서 실행 순서가 보이게 함) |

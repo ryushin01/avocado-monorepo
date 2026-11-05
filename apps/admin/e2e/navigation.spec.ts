@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { DEV_PASSWORD, USERS } from "./helpers";
+
 test("사이드바 메뉴로 페이지를 이동한다", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "대시보드" })).toBeVisible();
@@ -17,10 +19,15 @@ test("사이드바 메뉴로 페이지를 이동한다", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "매장 관리" })).toBeVisible();
 });
 
-test("개발용 계정 전환으로 스태프 화면을 확인한다", async ({ page }) => {
+test("로그아웃하고 스태프로 다시 로그인하면 소속 매장 화면만 보인다", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "김관리 계정 메뉴" }).click();
-  await page.getByRole("menuitemradio", { name: "박스태프 (스태프)" }).click();
+  await page.getByRole("menuitem", { name: "로그아웃" }).click();
+  await expect(page).toHaveURL(/\/login/);
+
+  await page.getByLabel("이메일").fill(USERS.hongdaeStaff.email);
+  await page.getByLabel("비밀번호").fill(DEV_PASSWORD);
+  await page.getByRole("button", { name: "로그인" }).click();
 
   await expect(page.getByRole("button", { name: "박스태프 계정 메뉴" })).toBeVisible();
   await expect(page.getByText("홍대점의 재고 현황입니다.")).toBeVisible();

@@ -40,7 +40,12 @@
       "passThroughEnv": [
         "BACKOFFICE_URL",
         "LAUNCHER_CAFE_ID",
-        "KIOSK_API_TOKEN"
+        "KIOSK_API_TOKEN",
+        "DATABASE_URL",
+        "PGLITE_DATA_DIR",
+        "NEXTAUTH_URL",
+        "NEXTAUTH_SECRET",
+        "SEED_DEMO"
       ]
     }
   }

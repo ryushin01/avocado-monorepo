@@ -1,5 +1,10 @@
+import { and, asc, count, eq, gte, inArray, or } from "drizzle-orm";
+
+import type { Database } from "@/db";
+import { newId } from "@/db/ids";
+import { toWaitlistEntry } from "@/db/mappers";
+import { cafes, waitlistEntries } from "@/db/schema";
 import { phoneLast4 } from "@/lib/guests/contact";
-import type { MockDb } from "@/lib/mock-db";
 import { startOfKstDay } from "@/lib/plays/time";
 
 import type { WaitlistInput } from "./schema";
@@ -24,14 +29,10 @@ const TRANSITIONS: Record<WaitlistStatus, readonly WaitlistStatus[]> = {
 export const canChangeWaitlist = (from: WaitlistStatus, to: WaitlistStatus) =>
   TRANSITIONS[from].includes(to);
 
-const isActive = (e: WaitlistEntry) => ACTIVE_WAITLIST_STATUSES.includes(e.status);
-const byNumber = (a: WaitlistEntry, b: WaitlistEntry) =>
-  a.createdAt.localeCompare(b.createdAt) || a.number - b.number;
-
 /** 키오스크에 보여줄 내 대기: 앞에 남은 팀 수와 함께 */
 export type WaitlistPosition = WaitlistEntry & { ahead: number };
 
-/** 백엔드가 정해지면 이 인터페이스의 API 구현체로 교체한다. */
+/** 백엔드를 바꾸면 이 인터페이스의 구현만 교체한다. */
 export interface WaitlistRepository {
   /** 오늘(한국 날짜) 그 매장의 대기 전부, 등록순 */
   listToday(cafeId: string, now: Date): Promise<WaitlistEntry[]>;
@@ -48,63 +49,96 @@ export interface WaitlistRepository {
   findForKiosk(cafeId: string, last4: string): Promise<WaitlistPosition[]>;
 }
 
-export function createWaitlistRepository(db: MockDb): WaitlistRepository {
-  const active = (cafeId: string) =>
-    db.waitlist.filter((e) => e.cafeId === cafeId && isActive(e)).sort(byNumber);
-  const withAhead = (entry: WaitlistEntry): WaitlistPosition => ({
+export function createWaitlistRepository(db: Database): WaitlistRepository {
+  const isActive = (status: WaitlistStatus) => ACTIVE_WAITLIST_STATUSES.includes(status);
+  const activeIn = (cafeId: string) =>
+    and(eq(waitlistEntries.cafeId, cafeId), inArray(waitlistEntries.status, [...ACTIVE_WAITLIST_STATUSES]));
+  /** 줄에 있는 팀, 먼저 온 순 */
+  const activeList = async (cafeId: string) =>
+    (
+      await db
+        .select()
+        .from(waitlistEntries)
+        .where(activeIn(cafeId))
+        .orderBy(asc(waitlistEntries.createdAt), asc(waitlistEntries.number))
+    ).map(toWaitlistEntry);
+  const withAhead = (entry: WaitlistEntry, line: WaitlistEntry[]): WaitlistPosition => ({
     ...entry,
-    ahead: active(entry.cafeId).findIndex((e) => e.id === entry.id),
+    ahead: line.findIndex((e) => e.id === entry.id),
   });
 
   return {
     async listToday(cafeId, now) {
-      const from = new Date(startOfKstDay(now.getTime())).toISOString();
-      return db.waitlist
-        .filter((e) => e.cafeId === cafeId && (e.createdAt >= from || isActive(e)))
-        .sort(byNumber)
-        .map((e) => ({ ...e }));
+      const from = new Date(startOfKstDay(now.getTime()));
+      const rows = await db
+        .select()
+        .from(waitlistEntries)
+        .where(
+          and(
+            eq(waitlistEntries.cafeId, cafeId),
+            or(gte(waitlistEntries.createdAt, from), inArray(waitlistEntries.status, [...ACTIVE_WAITLIST_STATUSES])),
+          ),
+        )
+        .orderBy(asc(waitlistEntries.createdAt), asc(waitlistEntries.number));
+      return rows.map(toWaitlistEntry);
     },
 
     async add(cafeId, input, now) {
-      if (!db.cafes.some((c) => c.id === cafeId && c.status === "open")) return "closed-cafe";
-      if (active(cafeId).some((e) => e.phone === input.phone)) return "duplicate";
-      const from = new Date(startOfKstDay(now.getTime())).toISOString();
-      const todayCount = db.waitlist.filter((e) => e.cafeId === cafeId && e.createdAt >= from).length;
-      const entry: WaitlistEntry = {
-        ...input,
-        id: `w_${db.nextWaitlistId++}`,
-        cafeId,
-        number: todayCount + 1,
-        createdAt: now.toISOString(),
-        status: "waiting",
-      };
-      db.waitlist.push(entry);
-      return withAhead(entry);
+      const result = await db.transaction(async (tx) => {
+        // 같은 매장의 동시 등록이 같은 번호를 받지 않도록 매장 줄을 잠근다.
+        const [cafe] = await tx
+          .select()
+          .from(cafes)
+          .where(and(eq(cafes.id, cafeId), eq(cafes.status, "open")))
+          .for("update");
+        if (!cafe) return "closed-cafe" as const;
+        const [dup] = await tx
+          .select({ id: waitlistEntries.id })
+          .from(waitlistEntries)
+          .where(and(activeIn(cafeId), eq(waitlistEntries.phone, input.phone)));
+        if (dup) return "duplicate" as const;
+        const [{ n }] = await tx
+          .select({ n: count() })
+          .from(waitlistEntries)
+          .where(
+            and(eq(waitlistEntries.cafeId, cafeId), gte(waitlistEntries.createdAt, new Date(startOfKstDay(now.getTime())))),
+          );
+        const [row] = await tx
+          .insert(waitlistEntries)
+          .values({ ...input, id: newId("w"), cafeId, number: n + 1, createdAt: now, status: "waiting" })
+          .returning();
+        return toWaitlistEntry(row);
+      });
+      if (typeof result === "string") return result;
+      return withAhead(result, await activeList(cafeId));
     },
 
     async setStatus(cafeId, id, status, now) {
-      const index = db.waitlist.findIndex((e) => e.id === id && e.cafeId === cafeId);
-      if (index === -1) return "not-found";
-      const current = db.waitlist[index];
-      if (!isActive(current)) return "finished";
+      const where = and(eq(waitlistEntries.id, id), eq(waitlistEntries.cafeId, cafeId));
+      const [current] = await db.select().from(waitlistEntries).where(where);
+      if (!current) return "not-found";
+      if (!isActive(current.status)) return "finished";
       if (!canChangeWaitlist(current.status, status)) return "invalid-transition";
-      db.waitlist[index] = {
-        ...current,
-        status,
-        calledAt: status === "called" ? now.toISOString() : current.calledAt,
-        closedAt: isActive({ ...current, status }) ? undefined : now.toISOString(),
-      };
-      return { ...db.waitlist[index] };
+      const [row] = await db
+        .update(waitlistEntries)
+        .set({
+          status,
+          calledAt: status === "called" ? now : current.calledAt,
+          closedAt: isActive(status) ? null : now,
+        })
+        .where(where)
+        .returning();
+      return toWaitlistEntry(row);
     },
 
     async countActive(cafeId) {
-      return active(cafeId).length;
+      const [{ n }] = await db.select({ n: count() }).from(waitlistEntries).where(activeIn(cafeId));
+      return n;
     },
 
     async findForKiosk(cafeId, last4) {
-      return active(cafeId)
-        .filter((e) => phoneLast4(e.phone) === last4)
-        .map(withAhead);
+      const line = await activeList(cafeId);
+      return line.filter((e) => phoneLast4(e.phone) === last4).map((e) => withAhead(e, line));
     },
   };
 }

@@ -12,7 +12,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Board game cafe franchise monorepo (Korean UI), pnpm workspaces + Turborepo. Use pnpm only (no npm/yarn); the version is pinned in `packageManager`. Run commands from the repo root; target one project with `pnpm --filter <name>`, and add a dependency to the app/package that imports it (pnpm is strict, internal packages use `workspace:*`).
 
-- `apps/admin`: staff/admin back office (port 3000). Read its `README.md` and `docs/architecture.md` before changing it.
+- `apps/admin`: staff/admin back office (port 3000). Read its `README.md` and `docs/architecture.md` before changing it. Data: PostgreSQL via Drizzle (`src/db`), PGlite in dev/tests (`createTestDb` in unit tests). Login: Auth.js v4 credentials; dev accounts use password `avocado1234`. After editing `src/db/schema.ts`, run `pnpm --filter @avocado/admin db:generate` and commit the migration.
 - `apps/launcher`: customer kiosk (port 3001). Reads the backoffice kiosk API; contract types in `@avocado/domain/kiosk`.
 - `apps/web`: franchise promo site ported from avocado (port 3002). Static pages from `@avocado/domain/catalog`.
 - `packages/ui`: shadcn/ui components + theme (`@avocado/ui/components/<name>`). Add components there with the shadcn CLI.

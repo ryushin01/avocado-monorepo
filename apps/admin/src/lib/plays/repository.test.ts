@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import type { BoardGame } from "@/lib/games/types";
-import { createMockDb } from "@/lib/mock-db";
+import { fromPlay } from "@/db/mappers";
+import { playSessions } from "@/db/schema";
+import { createSeedData } from "@/db/seed-data";
+import { createTestDb } from "@/db/testing";
 
 import { createPlayRepository } from "./repository";
 import { createSeedPlays } from "./seed";
@@ -16,7 +19,7 @@ const game = (id: string, name: string): BoardGame => ({
   playTimeMin: 30,
   playTimeMax: 60,
   difficulty: "easy",
-  createdAt: "",
+  createdAt: "2026-10-01T00:00:00.000Z",
 });
 let seq = 0;
 const play = (
@@ -35,9 +38,20 @@ const play = (
   ...patch,
 });
 
-function setup() {
-  const db = createMockDb({
-    cafes: [],
+const openCafe = (id: string, status: "open" | "closed" = "open") => ({
+  id,
+  name: id,
+  region: "",
+  openedAt: "2024-01-01",
+  status,
+});
+/** 이용 기록 외 무거운 시드는 넣지 않는다. */
+const light = { users: [], reservations: [], waitlist: [] };
+
+async function setup() {
+  const db = await createTestDb({
+    ...light,
+    cafes: [openCafe("a"), openCafe("b")],
     games: [game("g1", "카탄"), game("g2", "아줄"), game("g3", "딕싯")],
     inventory: [],
     plays: [
@@ -61,7 +75,7 @@ const range = {
 
 describe("PlayRepository.ranking", () => {
   it("기간 안의 이용 횟수로 순위를 매기고, 같으면 이름순이다", async () => {
-    const ranking = await setup().ranking(["a", "b"], range);
+    const ranking = await (await setup()).ranking(["a", "b"], range);
     expect(ranking.map((r) => [r.rank, r.game.name, r.playCount])).toEqual([
       [1, "딕싯", 4],
       [2, "카탄", 2],
@@ -70,7 +84,7 @@ describe("PlayRepository.ranking", () => {
   });
 
   it("매장 범위를 좁힐 수 있다", async () => {
-    const ranking = await setup().ranking(["a"], range);
+    const ranking = await (await setup()).ranking(["a"], range);
     expect(ranking.map((r) => [r.game.name, r.playCount])).toEqual([
       ["카탄", 2],
       ["딕싯", 1],
@@ -79,8 +93,8 @@ describe("PlayRepository.ranking", () => {
   });
 
   it("limit만큼만 돌려주고, 기록이 없으면 빈 순위다", async () => {
-    expect(await setup().ranking(["a", "b"], range, 1)).toHaveLength(1);
-    expect(await setup().ranking(["nope"], range)).toEqual([]);
+    expect(await (await setup()).ranking(["a", "b"], range, 1)).toHaveLength(1);
+    expect(await (await setup()).ranking(["nope"], range)).toEqual([]);
   });
 });
 
@@ -88,7 +102,7 @@ describe("createSeedPlays", () => {
   const now = new Date("2026-11-03T09:00:00.000Z");
 
   it("매번 같은 결과를 만들고, 보유(폐기 제외) 게임만 최근 60일 안에서 이용된다", () => {
-    const db = createMockDb({}, now);
+    const db = createSeedData({ users: [], reservations: [], waitlist: [] }, now);
     expect(createSeedPlays(db.cafes, db.games, db.inventory, now)).toEqual(db.plays);
 
     const usable = new Set(
@@ -111,8 +125,8 @@ describe("createSeedPlays", () => {
   });
 
   it("주간 1~10위와 월간 1~10위가 채워지고, 둘이 똑같지는 않다", async () => {
-    const db = createMockDb({}, now);
-    const repo = createPlayRepository(db);
+    const db = createSeedData({ users: [], reservations: [], waitlist: [] }, now);
+    const repo = createPlayRepository(await createTestDb(db, now));
     const ids = db.cafes.map((c) => c.id);
     const day = 86_400_000;
     const week = await repo.ranking(ids, { from: new Date(now.getTime() - 7 * day), to: now });
@@ -131,7 +145,7 @@ describe("createSeedPlays: 이용 중", () => {
   const now = new Date("2026-11-03T09:00:00.000Z");
 
   it("매장마다 3~5개가 이용 중이고, 모두 이용 가능 상태인 게임의 박스 수 안이다", () => {
-    const db = createMockDb({}, now);
+    const db = createSeedData({ users: [], reservations: [], waitlist: [] }, now);
     for (const cafe of db.cafes) {
       const active = db.plays.filter((p) => p.cafeId === cafe.id && !p.returnedAt);
       expect(active.length).toBeGreaterThanOrEqual(3);
@@ -147,23 +161,18 @@ describe("createSeedPlays: 이용 중", () => {
 });
 
 describe("PlayRepository: 대여·반납", () => {
-  const cafe = (id: string, status: "open" | "closed" = "open") => ({
-    id,
-    name: id,
-    region: "",
-    openedAt: "",
-    status,
-  });
+  const cafe = openCafe;
   const item = (cafeId: string, gameId: string, quantity: number, status = "available" as const) => ({
     cafeId,
     gameId,
     quantity,
     status,
-    updatedAt: "",
+    updatedAt: "2026-10-01T00:00:00.000Z",
   });
 
-  function rentalSetup() {
-    const db = createMockDb({
+  async function rentalSetup() {
+    const db = await createTestDb({
+      ...light,
       cafes: [cafe("a"), cafe("z", "closed")],
       games: [game("g1", "카탄"), game("g2", "아줄"), game("g3", "딕싯")],
       inventory: [
@@ -179,7 +188,7 @@ describe("PlayRepository: 대여·반납", () => {
   }
 
   it("빌려줄 수 있는 게임: 이용 가능 상태이고 남은 박스가 있는 게임", async () => {
-    const { repo } = rentalSetup();
+    const { repo } = await rentalSetup();
     expect((await repo.listRentable("a")).map((r) => [r.game.name, r.available])).toEqual([
       ["아줄", 1],
       ["카탄", 2],
@@ -189,7 +198,7 @@ describe("PlayRepository: 대여·반납", () => {
   });
 
   it("남은 박스가 없거나 점검 중이거나 폐점 매장이면 시작할 수 없다", async () => {
-    const { repo } = rentalSetup();
+    const { repo } = await rentalSetup();
     const started = await repo.start("a", { gameId: "g1", playerCount: 4, table: "3번" });
     expect(started).toMatchObject({ cafeId: "a", gameId: "g1", playerCount: 4, table: "3번" });
     expect(typeof started !== "string" && started.returnedAt).toBeUndefined();
@@ -201,7 +210,7 @@ describe("PlayRepository: 대여·반납", () => {
   });
 
   it("반납하면 이용 중에서 빠져 지난 기록에 들어가고, 박스를 다시 빌려줄 수 있다", async () => {
-    const { repo } = rentalSetup();
+    const { repo } = await rentalSetup();
     const started = await repo.start("a", { gameId: "g2", playerCount: 2 });
     if (typeof started === "string") throw new Error(started);
     expect((await repo.listActive("a")).map((p) => p.id)).toEqual([started.id]);
@@ -215,22 +224,24 @@ describe("PlayRepository: 대여·반납", () => {
   });
 
   it("다른 매장의 기록은 반납·취소할 수 없고, 취소하면 기록이 사라진다", async () => {
-    const { db, repo } = rentalSetup();
+    const { db, repo } = await rentalSetup();
     const started = await repo.start("a", { gameId: "g1", playerCount: 2 });
     if (typeof started === "string") throw new Error(started);
     expect(await repo.return("z", started.id)).toBeNull();
     expect(await repo.cancel("z", started.id)).toBe(false);
     expect(await repo.cancel("a", started.id)).toBe(true);
-    expect(db.plays).toEqual([]);
+    expect(await db.select().from(playSessions)).toEqual([]);
   });
 
   it("지난 기록은 최근 시작 순이고, 게임 이름과 날짜(한국 시간)로 거른다", async () => {
-    const { db, repo } = rentalSetup();
-    db.plays.push(
-      play("a", "g1", "2026-11-01T14:59:00.000Z"), // 한국 11월 1일 23:59
-      play("a", "g2", "2026-11-01T15:00:00.000Z"), // 한국 11월 2일 00:00
-      play("a", "g1", "2026-11-02T05:00:00.000Z"),
-      play("a", "g1", "2026-11-02T06:00:00.000Z", { returnedAt: undefined }), // 이용 중
+    const { db, repo } = await rentalSetup();
+    await db.insert(playSessions).values(
+      [
+        play("a", "g1", "2026-11-01T14:59:00.000Z"), // 한국 11월 1일 23:59
+        play("a", "g2", "2026-11-01T15:00:00.000Z"), // 한국 11월 2일 00:00
+        play("a", "g1", "2026-11-02T05:00:00.000Z"),
+        play("a", "g1", "2026-11-02T06:00:00.000Z", { returnedAt: undefined }), // 이용 중
+      ].map(fromPlay),
     );
     const history = await repo.listHistory("a");
     expect(history.items.map((p) => p.startedAt)).toEqual([
@@ -245,16 +256,17 @@ describe("PlayRepository: 대여·반납", () => {
   });
 
   it("인기 순위는 이용 중인 기록도 시작 시각으로 센다", async () => {
-    const { db, repo } = rentalSetup();
-    db.plays.push(play("a", "g2", "2026-11-02T06:00:00.000Z", { returnedAt: undefined }));
+    const { db, repo } = await rentalSetup();
+    await db.insert(playSessions).values(fromPlay(play("a", "g2", "2026-11-02T06:00:00.000Z", { returnedAt: undefined })));
     expect((await repo.ranking(["a"], range)).map((r) => r.game.id)).toEqual(["g2"]);
   });
 });
 
 describe("PlayRepository.usage", () => {
   it("지금 이용 중, 오늘(한국 시간), 최근 7일 이용 시작 횟수를 매장별·전체로 센다", async () => {
-    const db = createMockDb({
-      cafes: [],
+    const db = await createTestDb({
+      ...light,
+      cafes: [openCafe("a"), openCafe("b"), openCafe("c")],
       games: [game("g1", "카탄")],
       inventory: [],
       users: [],

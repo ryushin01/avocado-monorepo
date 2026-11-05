@@ -1,20 +1,28 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 
-import { getMockDb } from "@/lib/mock-db/server";
+import { getDb } from "@/db/server";
+import { createUserRepository } from "@/lib/users/repository";
 
-import { findActiveUser, MOCK_USER_COOKIE } from "./mock-users";
+import { authOptions } from "./options";
 import type { User } from "./roles";
 
 /**
- * 현재 사용자. 요청마다 한 번만 읽는다.
- * cookies()를 읽으므로 호출하는 컴포넌트는 <Suspense> 안에 있어야 한다.
- *
- * TODO: 인증 방식이 정해지면 개발용 쿠키 대신 실제 세션 조회로 교체한다.
+ * 로그인한 직원. 요청마다 한 번만 읽는다.
+ * 세션 쿠키를 읽으므로 호출하는 컴포넌트는 <Suspense> 안에 있어야 한다.
+ * 로그인하지 않았거나 그사이 퇴사 처리됐으면 로그인 화면으로 보낸다.
  */
 export const getCurrentUser = cache(async (): Promise<User> => {
-  const id = (await cookies()).get(MOCK_USER_COOKIE)?.value;
-  return { ...findActiveUser(getMockDb().users, id) };
+  // 세션 확인은 요청마다 해야 하므로 미리 렌더링하지 않는다(Auth.js가 내부에서 난수를 쓴다).
+  await connection();
+  const session = await getServerSession(authOptions);
+  const id = (session?.user as { id?: string } | undefined)?.id;
+  if (!id) redirect("/login");
+  const user = await createUserRepository(await getDb()).get(id);
+  if (!user || !user.active) redirect("/login?error=inactive");
+  return user;
 });

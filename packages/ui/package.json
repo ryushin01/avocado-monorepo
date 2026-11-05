@@ -10,7 +10,7 @@
     "./styles.css": "./src/styles/globals.css"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc7 --noEmit",
     "lint": "eslint"
   },
   "dependencies": {
@@ -39,6 +39,6 @@
     "eslint-config-next": "16.4.5",
     "shadcn": "^4.23.0",
     "tailwindcss": "^4.3.4",
-    "typescript": "^5"
+    "typescript": "~6.0.3"
   }
 }

@@ -6,6 +6,10 @@ reviews:
   request_changes_workflow: false
   high_level_summary: true
   poem: false
+  pre_merge_checks:
+    # 이 저장소는 모든 함수에 주석을 달지 않고, 이유가 필요한 곳에만 쓴다.
+    docstrings:
+      mode: "off"
   auto_review:
     enabled: true
     drafts: false

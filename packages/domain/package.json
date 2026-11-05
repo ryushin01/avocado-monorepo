@@ -11,7 +11,7 @@
     "copy-catalog-assets": "./scripts/copy-assets.mjs"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc7 --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "import:avocado": "node scripts/import-avocado.mjs",
@@ -21,7 +21,7 @@
     "@avocado/config": "workspace:*",
     "@vitest/coverage-v8": "5.1.0",
     "sharp": "^0.35.5",
-    "typescript": "^5",
+    "typescript": "~6.0.3",
     "vitest": "^5.1.0"
   }
 }

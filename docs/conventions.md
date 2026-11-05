@@ -2,6 +2,13 @@
 
 모든 앱(`apps/*`)과 공통 패키지(`packages/*`)에 함께 적용합니다. 앱별 설계는 각 앱의 `docs/`나 README를 보세요.
 
+## TypeScript와 React Compiler
+
+- **타입 검사는 TypeScript 7, 도구는 TypeScript 6입니다.** `pnpm typecheck`는 `tsc7`(`packages/config/bin/tsc7.mjs`)로 돕니다. `typescript-eslint`는 TS 7을 지원하지 않고 6.1 미만만 받아서, 각 패키지의 `typescript`는 `~6.0.3`으로 고정합니다. TS 7은 별칭 패키지 `typescript-7`로 함께 설치합니다.
+- **`typescript`를 7로 올리지 않습니다.** lint가 시작부터 실패합니다. `typescript-eslint`가 TS 7을 지원하면 다시 봅니다.
+- **편집기는 TS 6 기준입니다.** 편집기와 `pnpm typecheck`의 결과가 드물게 다를 수 있으므로 `pnpm typecheck`를 기준으로 삼습니다.
+- **React Compiler를 세 앱에서 켜 두었습니다**(`next.config.ts`의 `reactCompiler`). 새 코드에서 성능만을 위한 `useMemo`, `useCallback`, `memo`를 넣지 않습니다. React Hooks lint 규칙을 어긴 컴포넌트는 컴파일러가 건너뛰므로 규칙을 지킵니다.
+
 ## 프론트엔드 구조 (Feature-Sliced Design)
 
 세 앱의 화면 코드는 `src` 아래 레이어로 나눕니다. **위 레이어는 아래 레이어만 가져옵니다.** `packages/config/eslint-fsd.mjs`가 `pnpm lint`에서 강제합니다.

@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { withoutVisitorTracking } from "./sentry";
+
 async function load(dsn?: string) {
   vi.resetModules();
   vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", dsn ?? "");
@@ -26,5 +28,16 @@ describe("sentryOptions", () => {
       httpBodies: [],
       urlQueryParams: false,
     });
+  });
+});
+
+describe("withoutVisitorTracking", () => {
+  it("방문 세션과 브레드크럼만 뺀다", () => {
+    const integrations = [
+      { name: "BrowserSession" },
+      { name: "Breadcrumbs" },
+      { name: "GlobalHandlers" },
+    ];
+    expect(withoutVisitorTracking(integrations)).toEqual([{ name: "GlobalHandlers" }]);
   });
 });

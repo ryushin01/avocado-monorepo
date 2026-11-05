@@ -60,7 +60,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry 프로젝트의 DSN입니다. 브라우저에도 노출되는 값이며 비밀 값이 아닙니다. 빌드할 때 넣습니다. |
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | 빌드할 때 소스맵을 올립니다. `SENTRY_AUTH_TOKEN`은 비밀 값입니다. |
 
-Sentry로 보내는 내용은 오류와 스택 정보이고, 쿠키, 헤더, 쿼리 문자열, 사용자 정보는 모으지 않습니다(`apps/web/src/shared/config/sentry.ts`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다.
+Sentry로 보내는 내용은 오류와 스택 정보이고, 쿠키, 헤더, 쿼리 문자열, 사용자 정보, 방문 세션, 이동·클릭 기록은 모으지 않습니다(`apps/web/src/shared/config/sentry.ts`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다.
 
 ## 빌드와 실행
 

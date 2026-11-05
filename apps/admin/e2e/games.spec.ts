@@ -247,6 +247,11 @@ test.describe("모바일 무한 스크롤 (카탈로그)", () => {
     await expect(listItemAt(page, 1)).toBeVisible();
   });
 
+  test("첫 항목들은 서버가 보낸 HTML에 들어 있다", async ({ page }) => {
+    const html = await (await page.request.get("/games")).text();
+    expect(html).toContain('data-testid="list-item"');
+  });
+
   test("초점이 있는 항목은 화면 밖으로 스크롤해도 지워지지 않는다", async ({ page }) => {
     await page.goto("/games");
     await waitForMobileList(page);

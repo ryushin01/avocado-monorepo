@@ -111,6 +111,8 @@ export function InfiniteList<T>({
     gap: ITEM_GAP,
     overscan: 6,
     scrollMargin,
+    // 서버는 창 크기를 모르므로 모바일 크기로 가정해, 첫 항목들을 처음 HTML에 넣는다.
+    initialRect: { width: 390, height: 844 },
     getItemKey: (index) => getKey(items[index]),
     // 초점이 있는 항목은 화면 밖으로 나가도 지우지 않는다. 지우면 키보드 초점이 페이지 처음으로 튕긴다.
     rangeExtractor: (range) => {

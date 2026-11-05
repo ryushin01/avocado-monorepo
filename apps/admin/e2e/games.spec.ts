@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import {
+  expectLastItemVisible,
+  listItemAt,
   listItems,
   loginAs,
   rowOf,
@@ -179,6 +181,50 @@ test.describe("데스크톱 페이지네이션", () => {
   });
 });
 
+test.describe("카탈로그 정렬", () => {
+  const firstRowCell = (page: Page, column: number) =>
+    page.locator("tbody tr").first().locator("td").nth(column);
+
+  test("머리글을 누르면 전체 목록 기준으로 정렬되고, 다음 페이지에도 유지된다", async ({ page }) => {
+    await page.goto("/games");
+    const header = page.getByRole("columnheader", { name: "난이도" });
+    await expect(page.getByRole("columnheader", { name: "이름" })).toHaveAttribute(
+      "aria-sort",
+      "ascending",
+    );
+    await expect(header).not.toHaveAttribute("aria-sort");
+
+    await header.getByRole("link").click();
+    await expect(page).toHaveURL(/sort=difficulty/);
+    await expect(header).toHaveAttribute("aria-sort", "ascending");
+    await expect(firstRowCell(page, 4)).toHaveText("쉬움");
+
+    await header.getByRole("link").click();
+    await expect(page).toHaveURL(/sort=difficulty&order=desc/);
+    await expect(header).toHaveAttribute("aria-sort", "descending");
+    await expect(firstRowCell(page, 4)).toHaveText("어려움");
+
+    await page.getByRole("link", { name: "2페이지" }).click();
+    await expect(page).toHaveURL(/sort=difficulty&order=desc&page=2/);
+    await expect(header).toHaveAttribute("aria-sort", "descending");
+
+    await header.getByRole("link").click();
+    await expect(page).toHaveURL(/\/games$/);
+    await expect(page.getByRole("columnheader", { name: "이름" })).toHaveAttribute(
+      "aria-sort",
+      "ascending",
+    );
+  });
+
+  test("알 수 없는 정렬 값은 무시한다", async ({ page }) => {
+    await page.goto("/games?sort=drop&order=desc");
+    await expect(page.getByRole("columnheader", { name: "이름" })).toHaveAttribute(
+      "aria-sort",
+      "ascending",
+    );
+  });
+});
+
 test.describe("모바일 무한 스크롤 (카탈로그)", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
@@ -188,18 +234,36 @@ test.describe("모바일 무한 스크롤 (카탈로그)", () => {
     await expect(page.locator("table")).toBeHidden();
     await expect(page.getByRole("navigation", { name: "페이지 이동" })).toBeHidden();
     // page 파라미터와 관계없이 첫 묶음부터 시작한다.
-    await expect(listItems(page)).toHaveCount(20);
+    await expect(listItemAt(page, 1)).toBeVisible();
 
     await scrollToEnd(page);
-    await expect(listItems(page)).toHaveCount(await totalFrom(page, /^총 \d+개$/));
+    await expectLastItemVisible(page);
+    const total = await totalFrom(page, /^총 \d+개$/);
+    // 전부 불러와도 화면 근처만 그린다.
+    expect(await listItems(page).count()).toBeLessThan(total);
+    await expect(listItemAt(page, 1)).toHaveCount(0);
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(listItemAt(page, 1)).toBeVisible();
+  });
+
+  test("초점이 있는 항목은 화면 밖으로 스크롤해도 지워지지 않는다", async ({ page }) => {
+    await page.goto("/games");
+    await waitForMobileList(page);
+    const menu = listItemAt(page, 1).getByRole("button").first();
+    await menu.focus();
+    await scrollToEnd(page);
+    await expect(listItemAt(page, 1)).toBeAttached();
+    await expect(menu).toBeFocused();
   });
 
   test("검색 결과도 이어서 불러온다", async ({ page }) => {
     await page.goto("/games?category=strategy");
     await waitForMobileList(page);
-    await expect(listItems(page)).toHaveCount(20);
+    const total = await totalFrom(page, /^총 \d+개$/);
+    expect(total).toBeGreaterThan(20);
     await scrollToEnd(page);
-    expect(await listItems(page).count()).toBeGreaterThan(20);
+    await expectLastItemVisible(page);
     for (const item of await listItems(page).all()) {
       await expect(item).toContainText("전략 게임");
     }

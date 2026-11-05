@@ -60,7 +60,7 @@ async function GamesContent({
         <>
           {/* 데스크톱(md 이상): 페이지 번호 */}
           <div className="hidden flex-col gap-4 md:flex">
-            <CatalogTable games={current.items} canEdit={canEdit} />
+            <CatalogTable games={current.items} canEdit={canEdit} filter={filter} />
             <ListPagination
               page={page}
               pageCount={pageCount}

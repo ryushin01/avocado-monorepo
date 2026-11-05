@@ -62,6 +62,8 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm lint` | ESLint |
 | `pnpm test` | 단위 테스트 (Vitest) |
 | `pnpm e2e` | E2E 테스트 (지금은 백오피스만) |
+
+푸시와 PR마다 GitHub Actions가 위 검사를 모두 실행합니다(`.github/workflows/ci.yml`).
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·아이콘을 홍보 사이트용 webp로 다시 생성 (`apps/web/public/images`) |
@@ -103,3 +105,4 @@ docs/
 - 백엔드 API와 실제 인증 (런처 조회 API도 아직 인증 없음)
 - 예약·대기: 백오피스 관리 화면, 런처의 예약 확인·대기 등록
 - 런처·홈페이지의 E2E 테스트
+- ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

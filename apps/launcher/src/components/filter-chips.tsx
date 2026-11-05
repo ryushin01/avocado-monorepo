@@ -12,7 +12,12 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
       replace
       scroll={false}
       aria-current={active ? "true" : undefined}
-      className={buttonVariants({ variant: active ? "default" : "outline", size: "lg" })}
+      // 손가락으로 누르기 쉽게 높이 48px 이상 (터치 권장 크기 44px)
+      className={buttonVariants({
+        variant: active ? "default" : "outline",
+        size: "lg",
+        className: "h-12 px-4 text-base",
+      })}
     >
       {children}
     </Link>
@@ -24,7 +29,7 @@ export function FilterChips({ filter }: { filter: KioskFilter }) {
   return (
     <div className="flex flex-col gap-3">
       <div role="group" aria-label="인원" className="flex flex-wrap items-center gap-2">
-        <span className="w-12 text-sm font-medium text-muted-foreground">인원</span>
+        <span className="w-12 text-base font-medium text-muted-foreground">인원</span>
         <Chip href={kioskFilterHref({ ...filter, players: undefined })} active={!filter.players}>
           전체
         </Chip>
@@ -35,7 +40,7 @@ export function FilterChips({ filter }: { filter: KioskFilter }) {
         ))}
       </div>
       <div role="group" aria-label="유형" className="flex flex-wrap items-center gap-2">
-        <span className="w-12 text-sm font-medium text-muted-foreground">유형</span>
+        <span className="w-12 text-base font-medium text-muted-foreground">유형</span>
         <Chip href={kioskFilterHref({ ...filter, category: undefined })} active={!filter.category}>
           전체
         </Chip>

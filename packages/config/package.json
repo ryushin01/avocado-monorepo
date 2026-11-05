@@ -10,10 +10,10 @@
   },
   "peerDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "*"
+    "eslint-config-next": "16.4.5"
   },
   "devDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.4.4"
+    "eslint-config-next": "16.4.5"
   }
 }

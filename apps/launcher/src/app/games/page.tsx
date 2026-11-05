@@ -16,7 +16,7 @@ export default function GamesPage({ searchParams }: PageProps<"/games">) {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
       <IdleReturn />
-      <Link href="/" className={buttonVariants({ variant: "ghost", size: "lg", className: "self-start" })}>
+      <Link href="/" className={buttonVariants({ variant: "ghost", size: "lg", className: "h-12 self-start px-4 text-base" })}>
         <ArrowLeft />
         처음으로
       </Link>

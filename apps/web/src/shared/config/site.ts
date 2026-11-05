@@ -2,6 +2,8 @@
 export const BRAND = {
   name: "아보카도 보드게임 카페",
   shortName: "아보카도",
+  /** 머리글의 로고 글자 */
+  wordmark: "avocado",
   tagline: "보드게임, 함께라서 더 즐겁게",
   description:
     "전략·테마·가족·파티 게임까지, 엄선한 보드게임을 가까운 매장에서 바로 즐겨보세요.",

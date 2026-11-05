@@ -8,7 +8,8 @@ export type NavIcon =
   | "inventory"
   | "plays"
   | "reservations"
-  | "staff";
+  | "staff"
+  | "audit";
 
 export type NavItem = {
   title: string;
@@ -36,6 +37,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   { title: "매장 관리", href: "/cafes", icon: "cafes", roles: ["admin"] },
   { title: "직원 관리", href: "/staff", icon: "staff", roles: ["admin"] },
+  { title: "변경 이력", href: "/audit", icon: "audit", roles: ["admin"] },
 ];
 
 export function getNavItemsFor(user: Pick<User, "role">) {

@@ -4,8 +4,10 @@ import { hash } from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { recordAudit } from "@/server/audit/data";
 import { getCurrentUser } from "@/server/auth/current-user";
-import { canManageOrganization, type UserInput } from "@/entities/user";
+import type { AuditAction } from "@/entities/audit";
+import { canManageOrganization, ROLE_LABELS, type UserInput } from "@/entities/user";
 import { passwordSchema, userInputSchema } from "@/entities/user/schema";
 import type { User } from "@/entities/user";
 import {
@@ -44,6 +46,7 @@ const revalidate = () => revalidatePath("/", "layout");
  */
 async function submitUserForm(
   formData: FormData,
+  action: AuditAction,
   passwordRequired: boolean,
   save: (input: UserInput, actor: User, passwordHash?: string) => Promise<User | UserSaveError>,
   done: (name: string) => string,
@@ -74,6 +77,18 @@ async function submitUserForm(
       : formError(values, ERROR_MESSAGES[result]);
   }
 
+  // 비밀번호는 값을 남기지 않고 재설정했다는 사실만 남긴다.
+  await recordAudit(actor, {
+    action,
+    targetName: result.name,
+    cafeId: result.cafeId,
+    detail: [
+      `역할 ${ROLE_LABELS[result.role]}`,
+      action === "staff.update" && passwordHash ? "임시 비밀번호 재설정" : undefined,
+    ]
+      .filter(Boolean)
+      .join(", "),
+  });
   revalidate();
   return { status: "success", message: done(result.name) };
 }
@@ -84,6 +99,7 @@ export async function createUserAction(
 ): Promise<FormState> {
   return submitUserForm(
     formData,
+    "staff.create",
     true,
     (input, _actor, passwordHash) => createUser(input, passwordHash!),
     (name) => `'${name}' 직원을 등록했습니다.`,
@@ -97,6 +113,7 @@ export async function updateUserAction(
 ): Promise<FormState> {
   return submitUserForm(
     formData,
+    "staff.update",
     false,
     (input, actor, passwordHash) => updateUser(id, input, actor.id, passwordHash),
     (name) => `'${name}' 정보를 수정했습니다.`,
@@ -108,6 +125,11 @@ export async function setUserActiveAction(id: string, active: boolean): Promise<
   if (!canManageOrganization(actor)) return { ok: false, message: FORBIDDEN };
   const result = await setUserActive(id, active, actor.id);
   if (typeof result === "string") return { ok: false, message: ERROR_MESSAGES[result] };
+  await recordAudit(actor, {
+    action: active ? "staff.reactivate" : "staff.deactivate",
+    targetName: result.name,
+    cafeId: result.cafeId,
+  });
   revalidate();
   return {
     ok: true,

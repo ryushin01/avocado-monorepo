@@ -13,6 +13,7 @@ describe("getNavItemsFor", () => {
       "/reservations",
       "/cafes",
       "/staff",
+      "/audit",
     ]);
   });
 

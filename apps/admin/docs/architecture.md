@@ -15,7 +15,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 | `InventoryItem` | `src/entities/inventory/model/types.ts` | 매장 하나가 보유한 게임 하나. `(cafeId, gameId)`가 키. 보유 수량과 상태 하나(`available`·`maintenance`·`retired`) |
 | `PlaySession` | `src/entities/play/model/types.ts` | 게임 한 번 대여. `startedAt`(이용 시작), `returnedAt`(반납, 없으면 이용 중), `playerCount`, `table`. 인기 순위를 계산한다. |
 | `Reservation` | `src/entities/reservation/model/types.ts` | 예약. 이름·휴대전화·인원·방문 시각·메모, 상태 `pending`(가예약)·`confirmed`(확정)·`seated`(입장)·`cancelled`(취소)·`no_show`(노쇼), 키오스크 도착 시각 `arrivedAt` |
-| `WaitlistEntry` | `src/entities/waitlist/model/types.ts` | 현장 대기. 그날 매장별 번호, 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
+| `WaitlistEntry` | `src/entities/waitlist/model/types.ts` | 현장 대기. 그날 매장별 번호(자정을 넘겨 줄에 남은 손님이 있으면 이어서 매김), 이름·휴대전화·인원, 상태 `waiting`·`called`·`seated`·`left`(이탈) |
 | `User` | `src/entities/user/model/roles.ts` | `admin` 또는 `staff`. 스태프는 `cafeId`로 소속 매장을 가진다. `active: false`는 퇴사. 로그인 계정이며 비밀번호는 bcrypt 해시로 `users.password_hash`에 둔다. |
 | `AuditEntry` | `src/entities/audit/model/types.ts` | 관리 작업 한 건. 시각·직원(그때 이름)·작업·대상 이름·매장·내용. 추가만 하고 고치거나 지우지 않는다. |
 

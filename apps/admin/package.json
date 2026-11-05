@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@avocado/domain": "workspace:*",
+    "@avocado/logger": "workspace:*",
     "@avocado/ui": "workspace:*",
     "@electric-sql/pglite": "0.5.15",
     "bcryptjs": "3.0.3",

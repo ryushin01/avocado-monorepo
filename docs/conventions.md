@@ -46,7 +46,7 @@
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석
-  - `components/sidebar.tsx`: `SidebarRail`을 드래그해 너비 조절(192~384px, 클릭은 접기·펼치기, 키보드는 좌우 화살표·Home·End), 너비를 `localStorage`에 저장, `SidebarWidthScript`로 새로고침 때 너비가 튀지 않게 함(사이드바를 쓰는 앱의 루트 레이아웃에 둠), `SidebarInset`에 `min-w-0`(넓은 사이드바에서 표가 페이지를 밀어내지 않게 함)
+  - `components/sidebar.tsx`: `SidebarRail`을 드래그해 너비 조절(192~384px, 클릭은 접기·펼치기, 키보드는 좌우 화살표·Home·End). 너비와 접힘 상태는 쿠키 대신 `localStorage`에 저장합니다(레이아웃이 정적이라 서버에서 쿠키를 읽을 수 없음). 사이드바를 쓰는 앱의 루트 레이아웃에 `SidebarWidthScript`(body 맨 앞)와 `SidebarStateScript`(children 바로 뒤)를 두어 새로고침 때 모양이 튀지 않게 합니다. `SidebarInset`의 `min-w-0`은 넓은 사이드바에서 표가 페이지를 밀어내지 않게 합니다
 - **문구는 한국어 존댓말**로 씁니다. 개수 단위는 게임 종류 "종", 박스 "개", 매장 "개"입니다.
 
 ## 차트
@@ -109,6 +109,14 @@
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
 - **작업을 마치면** 저장소 루트에서 `pnpm typecheck && pnpm lint && pnpm test && pnpm e2e && pnpm build`를 모두 통과시킵니다. Turborepo가 모든 앱·패키지에서 같은 이름의 스크립트를 실행합니다. `cacheComponents` 규칙 위반은 `build`에서만 드러나는 경우가 있습니다.
 
+## 오류 처리와 로그
+
+- **화면:** 앱마다 `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`가 있고 표시는 `shared/ui/error-notice.tsx`입니다. 백오피스는 `(backoffice)/error.tsx`도 두어 오류가 나도 사이드바가 남습니다. 런처의 오류·없는 화면은 손님이 떠나도 30초 뒤 처음 화면으로 돌아갑니다.
+- **Next.js 16의 오류 화면 prop은 `reset`이 아니라 `retry`입니다.** `error`는 `unknown`이라 `instanceof Error`로 좁힌 뒤 읽습니다.
+- **로그:** 서버 오류는 `@avocado/logger`가 한 줄 JSON으로 표준 오류에 남깁니다. 각 앱의 `src/instrumentation.ts`가 `onRequestError`로 넘기고, 백오피스 화면의 오류 번호는 로그의 `digest`와 같습니다.
+- **로그에 개인정보를 남기지 않습니다.** 요청 헤더와 쿼리 문자열(`phone4` 등)은 기록하지 않습니다. 직접 로그를 남길 때는 `logError`에 전화번호·이름·토큰을 넘기지 않습니다.
+- **잡아서 삼키는 오류는 로그를 남깁니다.** 손님 화면에 연결 문제로만 보이는 런처의 백오피스 호출 실패가 그 예입니다(`shared/api/backoffice.ts`).
+
 ## 코드 리뷰
 
 CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`이고, 이 문서의 규칙을 경로별 지침으로 넣어 두었습니다. 규칙을 바꾸면 그 파일도 함께 고칩니다.
@@ -117,6 +125,8 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 
 | 증상 | 원인 | 해결 |
 |---|---|---|
+| 서버 로그에 손님 전화번호가 찍힘 | Drizzle 오류 메시지에 쿼리 값(`params:`)이 들어 있고 Next.js가 이를 그대로 출력함 | 백오피스 `instrumentation.ts`의 `register`에서 `redactConsoleErrors()`로 가림 |
+| 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
 | 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
 | `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
 | 모바일에서 하이드레이션 불일치 | 사이드바 틀을 Suspense 안에 두면, 바깥이 먼저 하이드레이션되며 `useIsMobile`이 바뀐 뒤 사이드바가 하이드레이션됨 | 틀은 Suspense 밖, 사용자별 영역만 슬롯으로 Suspense |

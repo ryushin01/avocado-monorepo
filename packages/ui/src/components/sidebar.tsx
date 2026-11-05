@@ -25,13 +25,12 @@ import {
 } from "./tooltip"
 import { PanelLeftIcon } from "lucide-react"
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 const SIDEBAR_WIDTH_STORAGE_KEY = "sidebar_width"
+const SIDEBAR_OPEN_STORAGE_KEY = "sidebar_open"
 const SIDEBAR_WIDTH_SAVED_VAR = "--sidebar-width-saved"
 const SIDEBAR_WIDTH_DEFAULT_PX = 256
 const SIDEBAR_WIDTH_MIN = 192
@@ -43,13 +42,22 @@ const SIDEBAR_DRAG_THRESHOLD = 3
 const clampSidebarWidth = (width: number) =>
   Math.round(Math.min(SIDEBAR_WIDTH_MAX, Math.max(SIDEBAR_WIDTH_MIN, width)))
 
-const sidebarWidthListeners = new Set<() => void>()
+const sidebarStoreListeners = new Set<() => void>()
 
-function subscribeSidebarWidth(listener: () => void) {
-  sidebarWidthListeners.add(listener)
+function subscribeSidebarStore(listener: () => void) {
+  sidebarStoreListeners.add(listener)
   return () => {
-    sidebarWidthListeners.delete(listener)
+    sidebarStoreListeners.delete(listener)
   }
+}
+
+function writeSidebarStore(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // 저장하지 못해도 이번 화면에서는 Provider의 상태로 유지된다.
+  }
+  sidebarStoreListeners.forEach((listener) => listener())
 }
 
 function readSidebarWidth(): number | null {
@@ -61,13 +69,13 @@ function readSidebarWidth(): number | null {
   }
 }
 
-function saveSidebarWidth(width: number) {
+function readSidebarOpen(): boolean | null {
   try {
-    localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(width))
+    const saved = localStorage.getItem(SIDEBAR_OPEN_STORAGE_KEY)
+    return saved === null ? null : saved === "true"
   } catch {
-    // 저장하지 못해도 이번 화면에서는 바뀐 너비로 보인다.
+    return null
   }
-  sidebarWidthListeners.forEach((listener) => listener())
 }
 
 /**
@@ -76,6 +84,15 @@ function saveSidebarWidth(width: number) {
  */
 function SidebarWidthScript() {
   const script = `try{var w=Number(localStorage.getItem(${JSON.stringify(SIDEBAR_WIDTH_STORAGE_KEY)}));if(w>0){var s=document.createElement("style");s.textContent=":root{${SIDEBAR_WIDTH_SAVED_VAR}:"+Math.min(${SIDEBAR_WIDTH_MAX},Math.max(${SIDEBAR_WIDTH_MIN},w))+"px}";document.head.appendChild(s)}}catch(e){}`
+  return <script dangerouslySetInnerHTML={{ __html: script }} />
+}
+
+/**
+ * 접어 둔 사이드바를 하이드레이션 전에 접힌 모양으로 바꿔 새로고침할 때 펼쳐졌다 접히지 않게 한다.
+ * 사이드바 뒤에서 실행되어야 하므로 루트 레이아웃의 children 바로 다음에 둔다.
+ */
+function SidebarStateScript() {
+  const script = `try{if(localStorage.getItem(${JSON.stringify(SIDEBAR_OPEN_STORAGE_KEY)})==="false"){var e=document.querySelector('[data-slot="sidebar"]');if(e){e.setAttribute("data-state","collapsed");e.setAttribute("data-collapsible",e.getAttribute("data-collapsible-mode"))}}}catch(e){}`
   return <script dangerouslySetInnerHTML={{ __html: script }} />
 }
 
@@ -121,19 +138,27 @@ function SidebarProvider({
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
-  // This is the internal state of the sidebar.
-  // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
+  // 서버 HTML은 항상 defaultOpen으로 그리고, 저장한 값은 하이드레이션 뒤에 적용한다.
+  // 저장소를 쓸 수 없는 환경에서도 이번 화면에서는 동작하도록 Provider에도 값을 둔다.
+  const savedOpen = React.useSyncExternalStore(
+    subscribeSidebarStore,
+    readSidebarOpen,
+    () => null
+  )
+  const [localOpen, setLocalOpen] = React.useState<boolean | null>(null)
+  const open = openProp ?? localOpen ?? savedOpen ?? defaultOpen
   const savedWidth = React.useSyncExternalStore(
-    subscribeSidebarWidth,
+    subscribeSidebarStore,
     readSidebarWidth,
     () => null
   )
+  const [localWidth, setLocalWidth] = React.useState<number | null>(null)
   const [draggedWidth, setDraggedWidth] = React.useState<number | null>(null)
-  const width = draggedWidth ?? savedWidth
+  const width = draggedWidth ?? localWidth ?? savedWidth
   const commitWidth = React.useCallback((value: number) => {
-    saveSidebarWidth(clampSidebarWidth(value))
+    const next = clampSidebarWidth(value)
+    setLocalWidth(next)
+    writeSidebarStore(SIDEBAR_WIDTH_STORAGE_KEY, String(next))
   }, [])
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -141,11 +166,9 @@ function SidebarProvider({
       if (setOpenProp) {
         setOpenProp(openState)
       } else {
-        _setOpen(openState)
+        setLocalOpen(openState)
       }
-
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      writeSidebarStore(SIDEBAR_OPEN_STORAGE_KEY, String(openState))
     },
     [setOpenProp, open]
   )
@@ -287,8 +310,11 @@ function Sidebar({
   return (
     <div
       className="group peer hidden text-sidebar-foreground md:block"
+      // SidebarStateScript가 하이드레이션 전에 이 속성들을 바꿀 수 있다.
+      suppressHydrationWarning
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
+      data-collapsible-mode={collapsible}
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
@@ -908,6 +934,7 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  SidebarStateScript,
   SidebarWidthScript,
   useSidebar,
 }

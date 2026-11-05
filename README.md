@@ -12,9 +12,10 @@
 |---|---|---|
 | `@avocado/ui` | `packages/ui` | shadcn/ui 컴포넌트, 테마 CSS, 공통 훅 |
 | `@avocado/domain` | `packages/domain` | 게임 카탈로그(avocado 변환 데이터·썸네일), 유형·난이도, 백오피스↔런처 API 타입 |
-| `@avocado/config` | `packages/config` | 공통 tsconfig, ESLint 설정 |
+| `@avocado/logger` | `packages/logger` | 서버 오류 로그(한 줄 JSON, 개인정보 가림) |
+| `@avocado/config` | `packages/config` | 공통 tsconfig, ESLint 설정(FSD 경계 규칙 포함) |
 
-저장소: [github.com/ryushin01/avocado-monorepo](https://github.com/ryushin01/avocado-monorepo) (로컬 폴더 이름은 `avocado`). 원래 avocado 프로젝트(`ryushin01/avocado`)와는 별도 저장소입니다.
+저장소: [github.com/ryushin01/avocado-monorepo](https://github.com/ryushin01/avocado-monorepo). 원래 avocado 프로젝트(`ryushin01/avocado`)와는 별도 저장소입니다.
 
 > 백오피스 데이터는 PostgreSQL(Drizzle)에 저장합니다. 개발할 때는 설치 없이 Node 안에서 도는 PGlite를 쓰고(`apps/admin/.data`), 운영에서는 `DATABASE_URL`로 PostgreSQL에 붙습니다. 백오피스는 로그인(Auth.js 4, 이메일·비밀번호)이 필요하고, 개발용 계정은 [apps/admin/README.md](apps/admin/README.md)에 있습니다. 런처는 백오피스의 키오스크 API를 읽으므로 백오피스가 켜져 있어야 합니다.
 
@@ -91,6 +92,7 @@ apps/
 packages/
 ├─ ui/           shadcn/ui 컴포넌트와 테마
 ├─ domain/       카탈로그 데이터·썸네일, 공통 타입, avocado 변환 스크립트
+├─ logger/       서버 오류 로그
 └─ config/       tsconfig, ESLint
 docs/
 ├─ conventions.md  모든 앱 공통 작성 규칙
@@ -108,6 +110,7 @@ docs/
 ## 아직 하지 않은 것
 
 - 배포 설정과 CD (배포할 곳 미정, 점검 목록은 `docs/deployment.md`)
+- 외부 오류 모니터링과 알림 (지금은 표준 오류 로그까지, 붙일 곳은 각 앱의 `src/instrumentation.ts`)
 - 예약: 손님이 직접 하는 온라인 예약, 정원·테이블 배정, 문자 알림(대기 호출 등)
 - 홈페이지 E2E 테스트 (런처는 키오스크 흐름만 백오피스 E2E에서 확인)
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다

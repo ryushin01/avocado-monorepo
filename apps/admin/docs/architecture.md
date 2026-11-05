@@ -147,7 +147,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
 
 - **요청 시점 데이터는 `<Suspense>` 안에서 읽습니다.** 세션(현재 사용자), `searchParams`, DB 조회가 여기에 해당하고, 밖에서 읽으면 빌드가 실패합니다. 그래서 각 페이지는 `XxxPage`(정적 틀 + Suspense)와 `XxxContent`(async, 데이터 읽기)로 나뉩니다.
 - **DB 조회와 세션 확인은 `connection()`을 먼저 부릅니다.** 빌드 때 정적 HTML에 고정되지 않게 하고, Auth.js가 안에서 쓰는 난수 때문에 미리 렌더링이 멈추는 것을 막습니다(`data.ts`, `current-user.ts`).
-- **레이아웃 최상단에서 사용자를 기다리지 않습니다.** 사이드바 틀은 Suspense 밖에 두고, 사용자에 따라 달라지는 메뉴·계정 영역만 Suspense 슬롯으로 넣습니다. 틀까지 Suspense 안에 두면 모바일에서 하이드레이션 불일치가 납니다([conventions.md](conventions.md#알려진-함정) 참고).
+- **레이아웃 최상단에서 사용자를 기다리지 않습니다.** 사이드바 틀은 Suspense 밖에 두고, 사용자에 따라 달라지는 메뉴·계정 영역만 Suspense 슬롯으로 넣습니다. 틀까지 Suspense 안에 두면 모바일에서 하이드레이션 불일치가 납니다([conventions.md](../../../docs/conventions.md#알려진-함정) 참고).
 - **`forbidden()`** 은 `experimental.authInterrupts`로 켜 두었습니다. Suspense 안에서 불러도 `src/app/forbidden.tsx`가 보입니다.
 - **변경 후 갱신:** 서버 액션이 바꾼 데이터를 보여주는 경로를 `revalidatePath`로 갱신합니다.
   - 재고: `/inventory`, `/games`(보유 현황), `/`(대시보드), `/plays`(빌려줄 수 있는 게임)
@@ -155,6 +155,12 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
   - 매장·직원: 사이드바(계정 영역)와 모든 매장 선택에 쓰이므로 `revalidatePath("/", "layout")`
 - **현재 시각:** 렌더링 중에 `Date.now()`를 부르면 React lint(`react-hooks/purity`)에 걸립니다. 이용 중 경과 시간처럼 시각이 필요하면 `data.ts`에서 데이터와 함께 돌려줍니다(`listActivePlays`).
   - 화면이 열려 있는 동안 시간이 흘러야 하면 `useMinuteClock`(`src/shared/lib/use-minute-clock.ts`)을 씁니다. 서버가 준 시각으로 하이드레이션한 뒤 브라우저 시각으로 1분마다 갱신합니다(이용 중 경과 시간, `ElapsedTime`).
+
+## 오류 처리
+
+- `(backoffice)/error.tsx`가 화면 오류를 받아 사이드바를 남긴 채 안내하고, `app/error.tsx`는 그 밖의 화면(로그인 등), `global-error.tsx`는 루트 레이아웃 오류를 받습니다.
+- 서버 오류는 `src/instrumentation.ts`가 `@avocado/logger`로 남깁니다. 화면의 오류 번호로 로그(`digest`)를 찾습니다.
+- `register`의 `redactConsoleErrors()`가 Next.js 기본 오류 출력에서도 쿼리 값을 가립니다. Drizzle 오류 메시지에 손님 전화번호가 들어갈 수 있기 때문입니다.
 
 ## 목록 화면 패턴
 

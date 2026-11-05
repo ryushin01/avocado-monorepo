@@ -1,3 +1,4 @@
+import { GAME_SORT_KEYS } from "./sort";
 import { z } from "zod";
 
 import { firstParam } from "@/shared/lib/search-params";
@@ -57,6 +58,8 @@ export type GameInput = z.infer<typeof gameInputSchema>;
 export const gameListFilterSchema = z.object({
   q: z.string().trim().max(100).optional(),
   category: z.enum(GAME_CATEGORIES).optional(),
+  sort: z.enum(GAME_SORT_KEYS).optional(),
+  order: z.literal("desc").optional(),
 });
 
 /** URL 검색 파라미터 → 카탈로그 필터. 알 수 없는 값은 무시한다. */
@@ -65,8 +68,11 @@ export function parseGameListFilter(
 ): GameListFilter {
   const q = firstParam(params.q)?.trim();
   const category = z.enum(GAME_CATEGORIES).safeParse(firstParam(params.category));
+  const sort = z.enum(GAME_SORT_KEYS).safeParse(firstParam(params.sort));
   return {
     q: q || undefined,
     category: category.success ? category.data : undefined,
+    sort: sort.success ? sort.data : undefined,
+    order: sort.success && firstParam(params.order) === "desc" ? "desc" : undefined,
   };
 }

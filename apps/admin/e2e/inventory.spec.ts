@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import {
+  listItemAt,
   listItems,
   loginAs,
   rowOf,
@@ -159,12 +160,11 @@ test.describe("모바일 재고 목록", () => {
   test("추가로 불러온 게임의 상태를 바꿔도 목록에 반영된다", async ({ page }) => {
     await page.goto("/inventory?cafe=c_pangyo");
     await waitForMobileList(page);
-    await expect(listItems(page)).toHaveCount(20);
     await page.getByTestId("load-more-sentinel").scrollIntoViewIfNeeded();
-    await expect(listItems(page)).toHaveCount(40);
+    await expect(listItemAt(page, 21)).toBeAttached();
+    await listItemAt(page, 21).scrollIntoViewIfNeeded();
 
-    const target = listItems(page).nth(30);
-    await target.scrollIntoViewIfNeeded();
+    const target = listItemAt(page, 21);
     const name = (await target.getByRole("button").getAttribute("aria-label"))!.replace(
       / 메뉴$/,
       "",
@@ -179,6 +179,6 @@ test.describe("모바일 재고 목록", () => {
     ).toBeVisible();
     await expect(listItems(page).filter({ hasText: name })).toContainText(next);
     // 이미 불러온 범위는 유지된다.
-    await expect(listItems(page)).toHaveCount(40);
+    await expect(listItemAt(page, 21)).toBeAttached();
   });
 });

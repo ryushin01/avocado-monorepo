@@ -1,5 +1,7 @@
 import type { GameCategory, GameDifficulty } from "@avocado/domain/catalog";
 
+import type { GameSortKey } from "./sort";
+
 // 유형·난이도는 모든 앱이 함께 쓰는 공통 카탈로그 패키지에 있다.
 export {
   GAME_CATEGORIES,
@@ -36,6 +38,8 @@ export type BoardGame = {
 export type GameListFilter = {
   q?: string;
   category?: GameCategory;
+  sort?: GameSortKey;
+  order?: "desc";
 };
 
 /** 카탈로그 목록에서 함께 보여주는 매장 보유 현황 */

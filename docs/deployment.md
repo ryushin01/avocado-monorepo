@@ -96,7 +96,3 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 - [ ] 변경 이력(`audit_logs`) 보관 기간 정하기. 지금은 지우지 않습니다.
 - [ ] 시각은 DB에 UTC로 저장하고 화면은 한국 시각으로 보여 줍니다. 서버 시간대 설정과 상관없습니다.
 - [ ] 첫 배포 뒤 매장·게임 카탈로그를 실제 데이터로 등록 (데모 시드 대신)
-
-## 홍보 사이트 데모 (GitHub Pages)
-
-`apps/web`은 정적 페이지라 `main`에 머지하면 `.github/workflows/pages.yml`이 GitHub Pages에 올립니다. `STATIC_EXPORT=1`로 빌드하면 정적 내보내기와 저장소 하위 경로(`/avocado-monorepo`)를 쓰고, Cache Components, 보안 헤더, 이미지 최적화는 꺼집니다. Pages는 응답 헤더를 설정할 수 없어 CSP도 적용되지 않습니다. 백오피스와 키오스크는 서버와 DB가 필요해 이 방식으로 올릴 수 없습니다.

@@ -20,7 +20,7 @@ export function ErrorNotice({ error, retry }: { error: unknown; retry: () => voi
   }, [error]);
 
   return (
-    <main id="main" tabIndex={-1} className="scroll-mt-28 flex flex-1 items-center justify-center p-6">
+    <main id="main" tabIndex={-1} className="flex min-w-0 flex-1 scroll-mt-14 items-center justify-center p-6 lg:col-span-6 lg:scroll-mt-0">
       <Empty className="border bg-background">
         <EmptyHeader>
           <EmptyMedia variant="icon">

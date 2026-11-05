@@ -40,6 +40,14 @@ test("없는 게임·유형·주소는 안내 화면에서 홈으로 돌아간�
   await expect(page).toHaveURL(`${WEB_URL}/`);
 });
 
+test("없는 주소에서도 메뉴로 이동할 수 있다", async ({ page }) => {
+  await page.goto(`${WEB_URL}/없는-페이지`);
+  await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();
+  await page.getByRole("banner").getByRole("button", { name: "메뉴 열기" }).click();
+  await page.getByRole("dialog").getByRole("link", { name: "전략 게임", exact: true }).click();
+  await expect(page).toHaveURL(/\/games\/strategy$/);
+});
+
 test("홈페이지에도 보안 헤더가 있다", async ({ request }) => {
   const headers = (await request.get(WEB_URL)).headers();
   expect(headers["x-frame-options"]).toBe("DENY");

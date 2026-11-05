@@ -1,12 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
+import { getDb } from "@/db/server";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { canManageOrganization } from "@/lib/auth/permissions";
 import { createCafe, setCafeStatus, updateCafe } from "@/lib/cafes/data";
 import { cafeInputSchema } from "@/lib/cafes/schema";
 import type { Cafe } from "@/lib/cafes/types";
+import { createKioskDeviceRepository, type KioskDevice } from "@/lib/kiosk/devices";
 import {
   formDataToObject,
   formError,
@@ -88,4 +91,35 @@ export async function reopenCafeAction(id: string): Promise<ActionResult> {
   if (typeof result === "string") return { ok: false, message: NOT_FOUND };
   revalidate();
   return { ok: true, message: `'${result.name}' 운영을 다시 시작했습니다.` };
+}
+
+// ── 키오스크 기기 토큰 (관리자) ───────────────────────────────
+
+const kioskDevices = async () => createKioskDeviceRepository(await getDb());
+
+export async function listKioskDevicesAction(cafeId: string): Promise<KioskDevice[]> {
+  if (!canManageOrganization(await getCurrentUser())) return [];
+  return (await kioskDevices()).list(cafeId);
+}
+
+/** 새 기기 토큰. 원문은 이 응답에서만 볼 수 있다. */
+export async function issueKioskTokenAction(
+  cafeId: string,
+  name: string,
+): Promise<{ ok: true; token: string; device: KioskDevice } | { ok: false; message: string }> {
+  if (!canManageOrganization(await getCurrentUser())) return { ok: false, message: FORBIDDEN };
+  const parsed = z.string().trim().min(1, "기기 이름을 입력해주세요.").max(30, "기기 이름은 30자 이하여야 합니다.").safeParse(name);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
+  const result = await (await kioskDevices()).issue(cafeId, parsed.data, new Date());
+  if (result === "closed-cafe") return { ok: false, message: "폐점한 매장에는 발급할 수 없습니다." };
+  revalidate();
+  return { ok: true, ...result };
+}
+
+export async function revokeKioskDeviceAction(cafeId: string, id: string): Promise<ActionResult> {
+  if (!canManageOrganization(await getCurrentUser())) return { ok: false, message: FORBIDDEN };
+  const result = await (await kioskDevices()).revoke(cafeId, id, new Date());
+  if (result === "not-found") return { ok: false, message: "기기를 찾을 수 없거나 이미 폐기했습니다." };
+  revalidate();
+  return { ok: true, message: `'${result.name}' 토큰을 폐기했습니다. 그 기기는 더 이상 접속할 수 없습니다.` };
 }

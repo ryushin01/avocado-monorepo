@@ -10,9 +10,9 @@ import { toKioskGames } from "@/lib/kiosk/to-kiosk-games";
  * 운영 중인 매장만 응답하고, 없거나 폐점한 매장은 404. 토큰 확인은 lib/kiosk/auth.ts
  */
 export async function GET(request: Request, ctx: RouteContext<"/api/kiosk/cafes/[cafeId]/games">) {
-  const denied = rejectUnauthorizedKiosk(request);
-  if (denied) return denied;
   const { cafeId } = await ctx.params;
+  const denied = await rejectUnauthorizedKiosk(request, cafeId);
+  if (denied) return denied;
   const cafe = await findOpenCafe(cafeId);
   if (!cafe) return kioskError(404, "운영 중인 매장이 아닙니다.");
   const { items } = await listInventory(cafe.id);

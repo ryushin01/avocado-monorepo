@@ -4,6 +4,6 @@ import "server-only";
 export const LAUNCHER_CONFIG = {
   backofficeUrl: process.env.BACKOFFICE_URL ?? "http://localhost:3000",
   cafeId: process.env.LAUNCHER_CAFE_ID ?? "c_gangnam",
-  /** 백오피스에 KIOSK_API_TOKEN을 설정했다면 같은 값 */
+  /** 이 기기의 키오스크 토큰 (백오피스 매장 관리에서 발급, 그 매장에서만 쓸 수 있음) */
   apiToken: process.env.KIOSK_API_TOKEN ?? "",
 };

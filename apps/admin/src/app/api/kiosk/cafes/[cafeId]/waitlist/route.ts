@@ -12,9 +12,10 @@ import { waitlistInputSchema } from "@/lib/waitlist/schema";
 
 /** 지금 대기 팀 수, phone4를 주면 내 대기 순서 */
 export async function GET(request: Request, ctx: RouteContext<"/api/kiosk/cafes/[cafeId]/waitlist">) {
-  const denied = rejectUnauthorizedKiosk(request);
+  const { cafeId } = await ctx.params;
+  const denied = await rejectUnauthorizedKiosk(request, cafeId);
   if (denied) return denied;
-  const cafe = await findOpenCafe((await ctx.params).cafeId);
+  const cafe = await findOpenCafe(cafeId);
   if (!cafe) return kioskError(404, "운영 중인 매장이 아닙니다.");
 
   const raw = new URL(request.url).searchParams.get("phone4");
@@ -29,9 +30,10 @@ export async function GET(request: Request, ctx: RouteContext<"/api/kiosk/cafes/
 
 /** 키오스크 '대기 등록' */
 export async function POST(request: Request, ctx: RouteContext<"/api/kiosk/cafes/[cafeId]/waitlist">) {
-  const denied = rejectUnauthorizedKiosk(request);
+  const { cafeId } = await ctx.params;
+  const denied = await rejectUnauthorizedKiosk(request, cafeId);
   if (denied) return denied;
-  const cafe = await findOpenCafe((await ctx.params).cafeId);
+  const cafe = await findOpenCafe(cafeId);
   if (!cafe) return kioskError(404, "운영 중인 매장이 아닙니다.");
 
   const parsed = waitlistInputSchema.safeParse(await request.json().catch(() => null));

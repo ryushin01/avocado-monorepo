@@ -1,6 +1,6 @@
 "use client";
 
-import { DoorClosed, DoorOpen, MoreHorizontal, Pencil } from "lucide-react";
+import { DoorClosed, DoorOpen, KeyRound, MoreHorizontal, Pencil } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ import {
   updateCafeAction,
 } from "@/app/(backoffice)/cafes/actions";
 import { CafeFormDialog } from "@/components/cafes/cafe-form-dialog";
+import { KioskDevicesDialog } from "@/components/cafes/kiosk-devices-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,7 @@ import type { ActionResult } from "@/lib/form";
 export function CafeRowActions({ cafe }: { cafe: CafeOverview }) {
   const [editOpen, setEditOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
+  const [kioskOpen, setKioskOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const run = (action: () => Promise<ActionResult>, onDone?: () => void) =>
@@ -67,6 +69,10 @@ export function CafeRowActions({ cafe }: { cafe: CafeOverview }) {
             <Pencil />
             정보 수정
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setKioskOpen(true)}>
+            <KeyRound />
+            키오스크 토큰
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           {cafe.status === "open" ? (
             <DropdownMenuItem variant="destructive" onClick={() => setCloseOpen(true)}>
@@ -90,6 +96,15 @@ export function CafeRowActions({ cafe }: { cafe: CafeOverview }) {
         action={updateCafeAction.bind(null, cafe.id)}
         open={editOpen}
         onOpenChange={setEditOpen}
+      />
+
+      <KioskDevicesDialog
+        // 열 때마다 새로 그려, 발급 직후 보여준 토큰을 다음에 열 때 남기지 않는다.
+        key={kioskOpen ? "open" : "closed"}
+        cafeId={cafe.id}
+        cafeName={cafe.name}
+        open={kioskOpen}
+        onOpenChange={setKioskOpen}
       />
 
       <AlertDialog open={closeOpen} onOpenChange={setCloseOpen}>

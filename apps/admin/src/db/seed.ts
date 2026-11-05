@@ -9,6 +9,8 @@ import {
   fromReservation,
   fromWaitlistEntry,
 } from "./mappers";
+import { seedKioskDevice } from "@/lib/kiosk/devices";
+
 import * as schema from "./schema";
 import type { SeedData } from "./seed-data";
 
@@ -37,6 +39,11 @@ export async function insertSeedData(db: Database, data: SeedData, passwordHash?
     await insertAll(data.waitlist, (c) =>
       tx.insert(schema.waitlistEntries).values(c.map(fromWaitlistEntry)),
     );
+    // 개발용 키오스크 기기 (토큰 kio_dev_<매장 id>)
+    const openCafes = data.cafes.filter((c) => c.status === "open");
+    if (openCafes.length > 0) {
+      await tx.insert(schema.kioskDevices).values(openCafes.map((c) => seedKioskDevice(c.id, new Date())));
+    }
   });
 }
 

@@ -16,9 +16,9 @@ export async function POST(
   request: Request,
   ctx: RouteContext<"/api/kiosk/cafes/[cafeId]/reservations/[id]/check-in">,
 ) {
-  const denied = rejectUnauthorizedKiosk(request);
-  if (denied) return denied;
   const { cafeId, id } = await ctx.params;
+  const denied = await rejectUnauthorizedKiosk(request, cafeId);
+  if (denied) return denied;
   const cafe = await findOpenCafe(cafeId);
   if (!cafe) return kioskError(404, "운영 중인 매장이 아닙니다.");
   const body = bodySchema.safeParse(await request.json().catch(() => null));

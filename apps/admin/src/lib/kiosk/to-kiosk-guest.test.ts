@@ -1,8 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { rejectUnauthorizedKiosk } from "./auth";
 import { toKioskReservation, toKioskWaitlistEntry } from "./to-kiosk-guest";
 
 describe("키오스크로 보내는 손님 정보", () => {
@@ -39,23 +38,5 @@ describe("키오스크로 보내는 손님 정보", () => {
     });
     expect(JSON.stringify([reservation, entry])).not.toMatch(/0101|9999|철수|영희/);
     expect(entry).toMatchObject({ number: 3, maskedName: "이*희", status: "called", ahead: 0 });
-  });
-});
-
-describe("rejectUnauthorizedKiosk", () => {
-  afterEach(() => vi.unstubAllEnvs());
-  const req = (auth?: string) =>
-    new Request("http://x/api/kiosk", { headers: auth ? { authorization: auth } : {} });
-
-  it("토큰을 설정하지 않으면(개발) 모두 통과한다", () => {
-    vi.stubEnv("KIOSK_API_TOKEN", "");
-    expect(rejectUnauthorizedKiosk(req())).toBeNull();
-  });
-
-  it("토큰을 설정하면 같은 Bearer 토큰만 통과한다", () => {
-    vi.stubEnv("KIOSK_API_TOKEN", "secret");
-    expect(rejectUnauthorizedKiosk(req("Bearer secret"))).toBeNull();
-    expect(rejectUnauthorizedKiosk(req("Bearer nope"))?.status).toBe(401);
-    expect(rejectUnauthorizedKiosk(req())?.status).toBe(401);
   });
 });

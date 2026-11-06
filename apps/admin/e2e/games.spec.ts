@@ -296,8 +296,9 @@ test.describe("모바일 무한 스크롤 (카탈로그)", () => {
 
     // 서버 HTML은 맨 위 기준이라 20번째 항목이 없다. 이 항목이 보이면 마운트한 뒤 실제 스크롤 위치를 읽었다는 뜻이다.
     await expect(listItemAt(page, 20)).toBeAttached({ timeout: 30_000 });
-    // 항목 높이를 다시 재면 위치가 조금 바뀔 수 있다. 맨 위로 튀지 않았는지 본다.
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(target / 2);
+    // 위치가 그대로여야 한다. 측정에서는 차이가 없었지만, 환경마다 글꼴과 항목 높이가 달라 한 줄 안팎의 오차만 둔다.
+    const finalY = await page.evaluate(() => window.scrollY);
+    expect(Math.abs(finalY - scrolled)).toBeLessThanOrEqual(50);
     expect(errors).toEqual([]);
   });
 

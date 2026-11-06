@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { CATEGORY_INFO } from "@avocado/domain/catalog";
+import { buttonVariants } from "@avocado/ui/components/button";
 
 import { CategorySection } from "@/widgets/category-section";
 import { HeroCarousel } from "@/widgets/hero-carousel";
@@ -16,10 +19,16 @@ export default function HomePage() {
           className="relative h-[90svh] overflow-hidden rounded-lg border border-page lg:sticky lg:top-0 lg:col-span-2 lg:h-screen"
         >
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end gap-3 bg-gradient-to-b from-black/60 via-black/10 via-30% to-black/85 px-5 pb-20 text-white lg:px-[60px] lg:pb-28">
-            <h1 id="hero-title" className="text-3xl font-bold tracking-tighter xl:text-4xl">
+            <h1 id="hero-title" className="text-3xl font-bold tracking-tighter text-balance xl:text-4xl">
               {BRAND.tagline}
             </h1>
             <p className="text-sm tracking-tighter text-white/90 xl:text-base">{BRAND.description}</p>
+            <Link
+              href="/about#stores"
+              className={buttonVariants({ size: "lg", className: "pointer-events-auto mt-2 h-11 w-fit px-5" })}
+            >
+              가까운 매장 찾기
+            </Link>
           </div>
           <HeroCarousel />
         </section>

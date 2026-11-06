@@ -26,10 +26,18 @@ export function MainHeader({ menu }: { menu: ReactNode }) {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-30 grid h-12 grid-cols-2 transition-colors duration-300 motion-reduce:transition-none lg:h-20 lg:grid-cols-6 ${
-        past ? "bg-card text-card-foreground" : "text-white"
+        past
+          ? "bg-card text-card-foreground"
+          : "bg-gradient-to-b from-black/60 to-transparent text-white lg:bg-none"
       }`}
     >
-      <Link href="/" className="flex items-center pl-5 text-xl tracking-[8px] lg:col-span-2 lg:pl-[60px] lg:text-3xl">
+      {/* 사진이 밀려 올라가면 로고가 밝은 부분에 놓이므로 데스크톱에서는 로고 칸에도 어둠을 깐다. */}
+      <Link
+        href="/"
+        className={`flex items-center pl-5 text-xl tracking-[8px] lg:col-span-2 lg:pl-[60px] lg:text-3xl ${
+          past ? "" : "lg:bg-gradient-to-b lg:from-black/80 lg:via-black/55 lg:to-transparent"
+        }`}
+      >
         <span lang="en">{BRAND.wordmark}</span>
         <span className="sr-only"> 홈</span>
       </Link>

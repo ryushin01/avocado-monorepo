@@ -164,6 +164,21 @@ test.describe("데스크톱 페이지네이션", () => {
     await expect(page).toHaveURL(/\/games\?category=strategy$/);
   });
 
+  test("느린 기기에서 화면을 내린 채 하이드레이션돼도 오류 없이 페이지를 넘긴다", async ({ page }) => {
+    test.setTimeout(90_000);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    // 데스크톱에서도 숨겨진 모바일 목록이 함께 하이드레이션된다. 링크를 누르려고 내리면 스크롤 위치가 바뀐다.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 8 });
+
+    await page.goto("/games?category=strategy", { waitUntil: "commit" });
+    await page.getByRole("navigation", { name: "페이지 이동" }).getByRole("link", { name: "2페이지" }).click();
+
+    await expect(page).toHaveURL(/category=strategy&page=2/, { timeout: 30_000 });
+    expect(errors).toEqual([]);
+  });
+
   test("필터를 바꾸면 1페이지로 돌아간다", async ({ page }) => {
     await page.goto("/games?page=3");
     await page.getByRole("combobox", { name: "카테고리" }).click();
@@ -262,6 +277,39 @@ test.describe("모바일 무한 스크롤 (카탈로그)", () => {
     await expect(menu).toBeFocused();
   });
 
+  test("하이드레이션 전에 내려도 스크롤 위치를 지키고 그 위치의 항목을 그린다", async ({ page }) => {
+    test.setTimeout(60_000);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 8 });
+
+    await page.goto("/games", { waitUntil: "commit" });
+    // 스트리밍 중에는 목록이 숨은 영역에 먼저 그려지므로, 페이지가 길어져 실제로 보일 때까지 기다린다.
+    await listItems(page).first().waitFor({ state: "visible", timeout: 30_000 });
+    const target = 1000;
+    const scrolled = await page.evaluate((y) => {
+      window.scrollTo(0, y);
+      return window.scrollY;
+    }, target);
+    expect(scrolled).toBe(target);
+    await page.waitForLoadState("load");
+
+    await expect
+      .poll(() =>
+        listItems(page).evaluateAll(
+          (items) =>
+            items.filter((item) => {
+              const box = item.getBoundingClientRect();
+              return box.bottom > 0 && box.top < window.innerHeight;
+            }).length,
+        ),
+      )
+      .toBeGreaterThan(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(target);
+    expect(errors).toEqual([]);
+  });
+
   test("검색 결과도 이어서 불러온다", async ({ page }) => {
     await page.goto("/games?category=strategy");
     await waitForMobileList(page);
@@ -269,8 +317,9 @@ test.describe("모바일 무한 스크롤 (카탈로그)", () => {
     expect(total).toBeGreaterThan(20);
     await scrollToEnd(page);
     await expectLastItemVisible(page);
-    for (const item of await listItems(page).all()) {
-      await expect(item).toContainText("전략 게임");
-    }
+    // 가상화 목록은 스크롤에 따라 항목이 사라지므로, 한 번에 읽은 뒤 확인한다.
+    const items = await listItems(page).allTextContents();
+    expect(items.length).toBeGreaterThan(0);
+    for (const item of items) expect(item).toContain("전략 게임");
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { defaultRangeExtractor, useWindowVirtualizer } from "@tanstack/react-virtual";
+import { defaultRangeExtractor, useWindowVirtualizer, windowScroll } from "@tanstack/react-virtual";
 import { RotateCw } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
@@ -105,6 +105,7 @@ export function InfiniteList<T>({
     // 위쪽 영역의 높이는 데이터와 함께 바뀔 수 있어 불러올 때마다 다시 잰다.
   }, [items.length]);
 
+  const mountedRef = useRef(false);
   const virtualizer = useWindowVirtualizer({
     count: items.length,
     estimateSize: () => ESTIMATED_ITEM_HEIGHT,
@@ -113,6 +114,13 @@ export function InfiniteList<T>({
     scrollMargin,
     // 서버는 창 크기를 모르므로 모바일 크기로 가정해, 첫 항목들을 처음 HTML에 넣는다.
     initialRect: { width: 390, height: 844 },
+    // 기본값은 첫 렌더링에서 window.scrollY를 읽는다. 하이드레이션 전에 내렸거나 새로고침으로 위치가 복원되면
+    // 서버와 다른 항목을 그려 하이드레이션이 깨지고 그 사이의 클릭이 사라진다. 첫 렌더링은 맨 위 기준으로 그린다.
+    initialOffset: 0,
+    // 라이브러리는 마운트할 때 initialOffset으로 창을 옮기므로, 그 한 번은 막아 사용자의 스크롤 위치를 지킨다.
+    scrollToFn: (offset, options, instance) => {
+      if (mountedRef.current) windowScroll(offset, options, instance);
+    },
     getItemKey: (index) => getKey(items[index]),
     // 초점이 있는 항목은 화면 밖으로 나가도 지우지 않는다. 지우면 키보드 초점이 페이지 처음으로 튕긴다.
     rangeExtractor: (range) => {
@@ -123,6 +131,12 @@ export function InfiniteList<T>({
         : [...indexes, focused].sort((a, b) => a - b);
     },
   });
+
+  // 위 virtualizer의 마운트 처리 뒤에 실행된다. 실제 위치는 라이브러리의 스크롤 처리기가 읽게 한다.
+  useLayoutEffect(() => {
+    mountedRef.current = true;
+    if (window.scrollY !== 0) window.dispatchEvent(new Event("scroll"));
+  }, []);
 
   async function loadMore() {
     if (loadingRef.current) return;

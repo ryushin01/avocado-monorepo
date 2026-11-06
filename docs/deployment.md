@@ -106,4 +106,4 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 
 ## 홍보 사이트 데모 (Vercel)
 
-`apps/web`은 Vercel 프로젝트 `avocado-web`(루트 폴더 `apps/web`)에 연결되어 있습니다. `main`에 푸시하면 자동으로 운영 배포되고, PR마다 미리보기가 만들어집니다. 환경 변수는 필요 없습니다. 백오피스와 키오스크는 서버와 DB가 필요해 배포하지 않습니다.
+`apps/web`은 Vercel 프로젝트 `avocado-web`(루트 폴더 `apps/web`)에 연결되어 있습니다. `main`에 푸시하면 자동으로 운영 배포되고, PR마다 미리보기가 만들어집니다. 환경 변수는 필요 없습니다. 공유 정보와 `sitemap.xml`의 주소는 Vercel의 운영 주소를 쓰고, 다른 도메인을 연결하면 `SITE_URL`로 덮어씁니다. 백오피스와 키오스크는 서버와 DB가 필요해 배포하지 않습니다.

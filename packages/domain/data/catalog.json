@@ -4,43 +4,43 @@
       "key": "strategy",
       "label": "전략 게임",
       "bggType": "Strategy",
-      "description": "전략 게임은 전세계적으로 인기가 가장 많은 장르입니다."
+      "description": "자원과 수를 따져 가며 승리를 설계하는 게임입니다."
     },
     {
       "key": "thematic",
       "label": "테마 게임",
       "bggType": "Thematic",
-      "description": "테마 게임이 속삭이는 이야기의 바다로 빠져드실 준비가 되셨나요?"
+      "description": "이야기와 세계관에 빠져들어 함께 모험하는 게임입니다."
     },
     {
       "key": "family",
       "label": "가족 게임",
       "bggType": "Family",
-      "description": "저연령층이나 게임에 대한 이해도가 부족한 이들도 누구든지 쉽게 즐길 수 있는 게임입니다."
+      "description": "규칙이 쉬워 어린이부터 어른까지 함께 즐기는 게임입니다."
     },
     {
       "key": "party",
       "label": "파티 게임",
       "bggType": "Party",
-      "description": "시끌벅적한 분위기에서 사람들과 웃을 준비가 되셨나요?"
+      "description": "여럿이 모여 웃고 떠들며 즐기는 게임입니다."
     },
     {
       "key": "abstract",
       "label": "추상 전략 게임",
       "bggType": "Abstract",
-      "description": "추상 전략 게임으로 두뇌 대결을 벌여보세요!"
+      "description": "운보다 실력으로 두뇌 대결을 벌이는 게임입니다."
     },
     {
       "key": "wargame",
       "label": "워게임",
       "bggType": "Wargames",
-      "description": "영화에서만 보던 전쟁을 테이블 위에서!"
+      "description": "역사 속 전투를 테이블 위에서 지휘하는 게임입니다."
     },
     {
       "key": "customizable",
       "label": "컬렉터블 게임",
       "bggType": "Customizable",
-      "description": "무엇인가 수집하는 것이 취미라면!"
+      "description": "카드를 모으고 덱을 직접 구성해 겨루는 게임입니다."
     }
   ],
   "games": [

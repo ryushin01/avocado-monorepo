@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Button } from "@avocado/ui/components/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@avocado/ui/components/sheet";
 
-import { BRAND } from "@/shared/config/site";
+import { BRAND, SITE_LINKS } from "@/shared/config/site";
 
 import { useMenuCategories } from "./site-menu-provider";
 
@@ -60,6 +60,25 @@ export function SiteMenu() {
               <li key={key} className="border-b last:border-b-0">
                 <Link
                   href={`/games/${key}`}
+                  onClick={close}
+                  className="flex h-14 items-center justify-between text-base font-bold underline-offset-4 hover:underline lg:h-20 lg:text-xl"
+                >
+                  {label}
+                  <ArrowRight className="size-4 lg:size-6" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <nav
+          aria-label="사이트 안내"
+          className="rounded-lg border-y border-page bg-card px-5 py-3.5 text-card-foreground lg:px-[60px] lg:py-10"
+        >
+          <ul>
+            {SITE_LINKS.map(({ href, label }) => (
+              <li key={href} className="border-b last:border-b-0">
+                <Link
+                  href={href}
                   onClick={close}
                   className="flex h-14 items-center justify-between text-base font-bold underline-offset-4 hover:underline lg:h-20 lg:text-xl"
                 >

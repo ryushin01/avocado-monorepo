@@ -16,7 +16,9 @@ import { CATEGORY_BANNERS } from "@/shared/config/site";
 import { GameTile } from "@/entities/game/ui";
 
 const PREVIEW_COUNT = 10;
-const ARROW = "size-10 bg-card/90 disabled:hidden";
+// 끝에 닿은 쪽 버튼은 감추고 클릭도 아래 카드로 넘긴다. 키보드로 초점이 오면 보여 주고, 그때는 클릭을 카드로 넘기지 않는다.
+const ARROW =
+  "size-10 bg-card/90 aria-disabled:pointer-events-none aria-disabled:opacity-0 aria-disabled:focus-visible:pointer-events-auto aria-disabled:focus-visible:opacity-50";
 
 /** 홈 화면의 유형 소개: 설명, 순위 상위 게임 넘겨 보기, 전체 목록 링크 */
 export function CategorySection({ category }: { category: CategoryInfo }) {
@@ -26,9 +28,11 @@ export function CategorySection({ category }: { category: CategoryInfo }) {
     <section aria-labelledby={`category-${category.key}`}>
       <div className="flex flex-col gap-12 rounded-lg border border-page bg-card px-5 py-12 text-card-foreground lg:px-12 lg:py-24">
         <div className="flex flex-col gap-4">
-          <h2 id={`category-${category.key}`} className="text-4xl">
-            <span lang="en">{category.bggType.toUpperCase()}</span>
-            <span className="sr-only"> {category.label}</span>
+          <h2 id={`category-${category.key}`} className="flex flex-col gap-1 text-4xl">
+            <span lang="en" className="text-sm tracking-[4px] text-muted-foreground">
+              {category.bggType.toUpperCase()}
+            </span>
+            {category.label}
           </h2>
           <p className="tracking-tighter text-muted-foreground">{category.description}</p>
         </div>
@@ -61,13 +65,14 @@ export function CategorySection({ category }: { category: CategoryInfo }) {
         </Link>
       </div>
       {banner && (
-        <div className="relative h-[50vw] overflow-hidden rounded-lg border border-page lg:h-[20vw]">
+        <div className="relative h-[50vw] overflow-hidden rounded-lg border border-page lg:h-[28vw]">
           <Image
             src={banner.src}
             alt={banner.alt}
             fill
             sizes="(min-width: 1024px) 67vw, 100vw"
             className="object-cover"
+            style={{ objectPosition: banner.position }}
           />
         </div>
       )}

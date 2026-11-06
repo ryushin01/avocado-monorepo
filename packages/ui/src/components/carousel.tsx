@@ -30,6 +30,10 @@ type CarouselContextProps = {
   canScrollNext: boolean
 } & CarouselProps
 
+// 끝에 닿아도 disabled를 쓰지 않는다. disabled가 되면 누르던 버튼에서 키보드 초점이 사라진다.
+const CAROUSEL_BUTTON =
+  "absolute touch-manipulation rounded-full aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
 function useCarousel() {
@@ -105,6 +109,31 @@ function Carousel({
       api?.off("select", onSelect)
     }
   }, [api, onSelect])
+
+  React.useEffect(() => {
+    if (!api) return
+    // 화면 밖 슬라이드의 링크는 탭 순서에서 뺀다. 지금 초점이 있는 슬라이드만은 초점을 잃지 않게 남긴다.
+    const syncInert = () => {
+      const inView = api.slidesInView()
+      // 아직 관찰 결과가 없으면 모두 화면 밖으로 잘못 칠 수 있다.
+      if (inView.length === 0) return
+      api.slideNodes().forEach((slide, index) => {
+        slide.inert =
+          !inView.includes(index) && !slide.contains(document.activeElement)
+      })
+    }
+    // 첫 관찰 결과가 이 effect보다 먼저 나왔을 수 있어 한 번 맞춘다.
+    syncInert()
+    api.on("slidesInView", syncInert)
+    // 초점 때문에 남겨 둔 화면 밖 슬라이드는 초점이 떠날 때 다시 뺀다.
+    const root = api.rootNode()
+    root.addEventListener("focusout", syncInert)
+
+    return () => {
+      api.off("slidesInView", syncInert)
+      root.removeEventListener("focusout", syncInert)
+    }
+  }, [api])
 
   return (
     <CarouselContext.Provider
@@ -187,13 +216,13 @@ function CarouselPrevious({
       variant={variant}
       size={size}
       className={cn(
-        "absolute touch-manipulation rounded-full",
+        CAROUSEL_BUTTON,
         orientation === "horizontal"
           ? "inset-y-0 -left-12 my-auto"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
         className
       )}
-      disabled={!canScrollPrev}
+      aria-disabled={!canScrollPrev}
       onClick={scrollPrev}
       {...props}
     >
@@ -217,13 +246,13 @@ function CarouselNext({
       variant={variant}
       size={size}
       className={cn(
-        "absolute touch-manipulation rounded-full",
+        CAROUSEL_BUTTON,
         orientation === "horizontal"
           ? "inset-y-0 -right-12 my-auto"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
         className
       )}
-      disabled={!canScrollNext}
+      aria-disabled={!canScrollNext}
       onClick={scrollNext}
       {...props}
     >

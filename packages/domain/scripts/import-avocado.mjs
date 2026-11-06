@@ -20,15 +20,15 @@ const TYPE_TO_CATEGORY = {
   Wargames: "wargame",
   Customizable: "customizable",
 };
-// 유형별 데이터 파일 (유형 설명을 읽는다)
-const TYPE_FILES = {
-  Strategy: "boardgameStrategyTypeData.json",
-  Thematic: "boardgameThematicTypeData.json",
-  Family: "boardgameFamilyTypeData.json",
-  Party: "boardgamePartyTypeData.json",
-  Abstract: "boardgameAbstractTypeData.json",
-  Wargames: "boardgameWargamesTypeData.json",
-  Customizable: "boardgameCustomizableTypeData.json",
+// 유형 설명. avocado 원본은 말투가 제각각이라 여기서 통일한다.
+const TYPE_DESCRIPTIONS = {
+  Strategy: "자원과 수를 따져 가며 승리를 설계하는 게임입니다.",
+  Thematic: "이야기와 세계관에 빠져들어 함께 모험하는 게임입니다.",
+  Family: "규칙이 쉬워 어린이부터 어른까지 함께 즐기는 게임입니다.",
+  Party: "여럿이 모여 웃고 떠들며 즐기는 게임입니다.",
+  Abstract: "운보다 실력으로 두뇌 대결을 벌이는 게임입니다.",
+  Wargames: "역사 속 전투를 테이블 위에서 지휘하는 게임입니다.",
+  Customizable: "카드를 모으고 덱을 직접 구성해 겨루는 게임입니다.",
 };
 
 const read = (file) => JSON.parse(readFileSync(path.join(dataDir, file), "utf8"));
@@ -63,7 +63,7 @@ const categories = types.map((t) => ({
   key: TYPE_TO_CATEGORY[t.type],
   label: t.name,
   bggType: t.type,
-  description: read(TYPE_FILES[t.type]).description,
+  description: TYPE_DESCRIPTIONS[t.type],
 }));
 
 const games = read("boardgameAllData.json").result.map((item) => {

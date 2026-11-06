@@ -6,7 +6,7 @@ import { Skeleton } from "@avocado/ui/components/skeleton";
 
 import { GameImage } from "./game-image";
 
-const COVER_SLOT = "inset-x-4 top-4 bottom-16 rounded-md";
+const COVER_SLOT = "inset-x-4 top-4 bottom-20 rounded-md";
 
 /** 표지 카드 (avocado 목록 카드). 10위 안이면 배지를 붙인다. */
 export function GameTile({ game, sizes }: { game: CatalogGame; sizes: string }) {
@@ -21,13 +21,13 @@ export function GameTile({ game, sizes }: { game: CatalogGame; sizes: string }) 
         fill
         sizes={sizes}
         skeletonClassName={COVER_SLOT}
-        className="object-contain px-4 pt-4 pb-16 transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        className="object-contain px-4 pt-4 pb-20 transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       />
       {game.rank <= 10 && (
         <Image src="/images/top-ten.png" alt="10위권" width={40} height={40} className="absolute top-2 left-2" />
       )}
       <span className="absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/90 via-black/75 to-transparent p-4 pt-10 text-white">
-        <span className="truncate font-bold">{game.name}</span>
+        <span className="line-clamp-2 font-bold">{game.name}</span>
         <span className="text-sm text-white/90">
           {game.rank}위 · {game.yearReleased}
         </span>

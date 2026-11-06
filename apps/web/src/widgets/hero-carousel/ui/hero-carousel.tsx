@@ -71,6 +71,8 @@ export function HeroCarousel() {
           variant="outline"
           size="icon"
           aria-label={playing ? "자동 넘김 정지" : "자동 넘김 재생"}
+          // 캐러셀이 준비되기 전에 누르면 클릭이 사라지므로 그때까지 막는다.
+          disabled={!api}
           onClick={() => (playing ? plugins[0].stop() : plugins[0].play())}
           className={CONTROL}
         >

@@ -161,6 +161,48 @@ test("슬라이드 끝에 닿아도 키보드 초점이 다음 버튼에 남고,
     .toBe("true");
   await expect(next).toBeFocused();
   await expect(next).toHaveCSS("opacity", "0.5");
+
+  // 초점이 있어 보이는 버튼을 눌러도 아래 게임 카드로 넘어가지 않는다.
+  // Playwright의 click()은 aria-disabled 요소를 기다리기만 하므로 실제 마우스로 누른다.
+  const box = (await next.boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page).toHaveURL(`${WEB_URL}/`);
+});
+
+test("숨겨진 화살표는 클릭을 아래 카드로 넘긴다", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(WEB_URL);
+  const section = page.locator('section[aria-labelledby^="category-"]').first();
+  const previous = section.getByRole("button", { name: "이전 슬라이드" });
+  await expect(previous).toHaveAttribute("aria-disabled", "true");
+  await expect(previous).toHaveCSS("pointer-events", "none");
+});
+
+test("초점을 둔 채 화면 밖으로 넘어간 슬라이드는 초점이 떠나면 탭 순서에서 빠진다", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(WEB_URL);
+  const section = page.locator('section[aria-labelledby^="category-"]').first();
+  const firstSlide = section.locator('[data-slot="carousel-item"]').first();
+  await expect(section.locator('[data-slot="carousel-item"][inert]').first()).toBeAttached();
+
+  await firstSlide.getByRole("link").focus();
+  const moved = () => firstSlide.evaluate((el) => el.getBoundingClientRect().right);
+  const carouselLeft = await section
+    .locator('[data-slot="carousel-content"]')
+    .evaluate((el) => el.getBoundingClientRect().left);
+  await expect
+    .poll(
+      async () => {
+        await page.keyboard.press("ArrowRight");
+        return moved();
+      },
+      { timeout: 10_000 },
+    )
+    .toBeLessThan(carouselLeft);
+  await expect(firstSlide.getByRole("link")).toBeFocused();
+
+  await section.getByRole("link", { name: /전체 목록 보기/ }).focus();
+  await expect(firstSlide).toHaveAttribute("inert");
 });
 
 test("큰 사진의 버튼에서 매장 안내로 가고, 메뉴에서 가맹 문의로 간다", async ({ page }) => {

@@ -32,7 +32,7 @@ type CarouselContextProps = {
 
 // 끝에 닿아도 disabled를 쓰지 않는다. disabled가 되면 누르던 버튼에서 키보드 초점이 사라진다.
 const CAROUSEL_BUTTON =
-  "absolute touch-manipulation rounded-full aria-disabled:pointer-events-none aria-disabled:opacity-50"
+  "absolute touch-manipulation rounded-full aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
@@ -125,9 +125,13 @@ function Carousel({
     // 첫 관찰 결과가 이 effect보다 먼저 나왔을 수 있어 한 번 맞춘다.
     syncInert()
     api.on("slidesInView", syncInert)
+    // 초점 때문에 남겨 둔 화면 밖 슬라이드는 초점이 떠날 때 다시 뺀다.
+    const root = api.rootNode()
+    root.addEventListener("focusout", syncInert)
 
     return () => {
       api.off("slidesInView", syncInert)
+      root.removeEventListener("focusout", syncInert)
     }
   }, [api])
 

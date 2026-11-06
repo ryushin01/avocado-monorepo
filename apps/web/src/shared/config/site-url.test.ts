@@ -11,6 +11,11 @@ describe("siteUrl", () => {
     expect(siteUrl()).toBe("https://avocado.example");
   });
 
+  it("끝의 슬래시를 뺀다", () => {
+    vi.stubEnv("SITE_URL", "https://avocado.example/");
+    expect(siteUrl()).toBe("https://avocado.example");
+  });
+
   it("SITE_URL이 없으면 Vercel 운영 주소에 https를 붙인다", () => {
     vi.stubEnv("SITE_URL", "");
     vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "avocado.vercel.app");

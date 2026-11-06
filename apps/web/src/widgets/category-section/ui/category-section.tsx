@@ -16,8 +16,9 @@ import { CATEGORY_BANNERS } from "@/shared/config/site";
 import { GameTile } from "@/entities/game/ui";
 
 const PREVIEW_COUNT = 10;
-// 끝에 닿은 쪽 버튼은 감추되, 키보드로 초점이 오면 보여 준다.
-const ARROW = "size-10 bg-card/90 aria-disabled:opacity-0 aria-disabled:focus-visible:opacity-50";
+// 끝에 닿은 쪽 버튼은 감추고 클릭도 아래 카드로 넘긴다. 키보드로 초점이 오면 보여 주고, 그때는 클릭을 카드로 넘기지 않는다.
+const ARROW =
+  "size-10 bg-card/90 aria-disabled:pointer-events-none aria-disabled:opacity-0 aria-disabled:focus-visible:pointer-events-auto aria-disabled:focus-visible:opacity-50";
 
 /** 홈 화면의 유형 소개: 설명, 순위 상위 게임 넘겨 보기, 전체 목록 링크 */
 export function CategorySection({ category }: { category: CategoryInfo }) {

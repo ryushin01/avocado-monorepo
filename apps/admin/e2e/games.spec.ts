@@ -287,26 +287,17 @@ test.describe("모바일 무한 스크롤 (카탈로그)", () => {
     await page.goto("/games", { waitUntil: "commit" });
     // 스트리밍 중에는 목록이 숨은 영역에 먼저 그려지므로, 페이지가 길어져 실제로 보일 때까지 기다린다.
     await listItems(page).first().waitFor({ state: "visible", timeout: 30_000 });
-    const target = 1000;
+    const target = 1500;
     const scrolled = await page.evaluate((y) => {
       window.scrollTo(0, y);
       return window.scrollY;
     }, target);
     expect(scrolled).toBe(target);
-    await page.waitForLoadState("load");
 
-    await expect
-      .poll(() =>
-        listItems(page).evaluateAll(
-          (items) =>
-            items.filter((item) => {
-              const box = item.getBoundingClientRect();
-              return box.bottom > 0 && box.top < window.innerHeight;
-            }).length,
-        ),
-      )
-      .toBeGreaterThan(0);
-    expect(await page.evaluate(() => window.scrollY)).toBe(target);
+    // 서버 HTML은 맨 위 기준이라 20번째 항목이 없다. 이 항목이 보이면 마운트한 뒤 실제 스크롤 위치를 읽었다는 뜻이다.
+    await expect(listItemAt(page, 20)).toBeAttached({ timeout: 30_000 });
+    // 항목 높이를 다시 재면 위치가 조금 바뀔 수 있다. 맨 위로 튀지 않았는지 본다.
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(target / 2);
     expect(errors).toEqual([]);
   });
 

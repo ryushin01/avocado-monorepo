@@ -121,6 +121,27 @@ test("큰 사진의 자동 넘김을 멈추고 다시 켤 수 있다", async ({ 
   await expect(hero.getByRole("button", { name: "자동 넘김 정지" })).toBeVisible();
 });
 
+test("자동 넘김 버튼은 화면이 준비된 뒤에 눌리므로 클릭이 사라지지 않는다", async ({ page }) => {
+  // 화면 스크립트를 붙잡아 하이드레이션 전 상태를 만든다.
+  let release = () => {};
+  const scriptsHeld = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/_next/static/**/*.js", async (route) => {
+    await scriptsHeld;
+    await route.continue().catch(() => {}); // 테스트가 먼저 끝나면 남은 요청은 버려진다.
+  });
+
+  await page.goto(WEB_URL, { waitUntil: "commit" });
+  const hero = page.locator("#hero");
+  const pause = hero.getByRole("button", { name: "자동 넘김 정지" });
+  await expect(pause).toBeDisabled();
+
+  release();
+  await pause.click();
+  await expect(hero.getByRole("button", { name: "자동 넘김 재생" })).toBeVisible();
+});
+
 test("표지가 오기 전에는 스켈레톤을 보여 주고 오면 치운다", async ({ page }) => {
   let release = () => {};
   const arrived = new Promise<void>((resolve) => {

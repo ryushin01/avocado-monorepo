@@ -52,7 +52,7 @@
 - **shadcn 컴포넌트를 고친 곳**(다시 `add --overwrite`하면 사라지므로 주의, 모두 `packages/ui/src` 아래)
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
-  - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석
+  - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석. 끝에 닿은 버튼은 초점이 사라지지 않게 `disabled` 대신 `aria-disabled`를 쓰고, 화면 밖 슬라이드는 탭 순서에서 빠지도록 `inert`를 겁니다
   - `dialog`, `sheet`, `breadcrumb`, `spinner`, `carousel`, `pagination`, `sidebar`: 화면 낭독기가 읽는 영어 기본 문구를 한국어로 바꿈
   - `components/sidebar.tsx`: `SidebarRail`을 드래그해 너비 조절(192~384px, 클릭은 접기·펼치기, 키보드는 좌우 화살표·Home·End). 너비와 접힘 상태는 쿠키 대신 `localStorage`에 저장합니다(레이아웃이 정적이라 서버에서 쿠키를 읽을 수 없음). 사이드바를 쓰는 앱의 루트 레이아웃에 `SidebarWidthScript`(body 맨 앞)와 `SidebarStateScript`(children 바로 뒤)를 두어 새로고침 때 모양이 튀지 않게 합니다. `SidebarInset`의 `min-w-0`은 넓은 사이드바에서 표가 페이지를 밀어내지 않게 합니다
 - **문구는 한국어 존댓말**로 씁니다. 개수 단위는 게임 종류 "종", 박스 "개", 매장 "개"입니다.

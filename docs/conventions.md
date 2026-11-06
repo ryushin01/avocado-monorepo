@@ -149,6 +149,7 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 | 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
 | 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
 | `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
+| 느린 기기에서 페이지 번호 등을 눌러도 반응이 없고 React 오류 #418이 남 | `useWindowVirtualizer`는 첫 렌더링에서 `window.scrollY`를 읽어, 하이드레이션 전에 스크롤하면 서버와 다른 항목을 그림. 항목 수가 달라지면 `useId` 값도 달라짐. `md:hidden` 목록도 데스크톱에서 하이드레이션되므로 함께 해당됨 | `initialOffset: 0`으로 첫 렌더링을 맞추되, 라이브러리가 마운트할 때 창을 그 위치로 옮기므로 `scrollToFn`에서 그 한 번을 막음 (`shared/ui/infinite-list.tsx`) |
 | 모바일에서 하이드레이션 불일치 | 사이드바 틀을 Suspense 안에 두면, 바깥이 먼저 하이드레이션되며 `useIsMobile`이 바뀐 뒤 사이드바가 하이드레이션됨 | 틀은 Suspense 밖, 사용자별 영역만 슬롯으로 Suspense |
 | 빌드 실패: `Math.random()` in a Client Component | shadcn `SidebarMenuSkeleton`이 무작위 너비를 씀 | 고정 너비로 `Skeleton`을 직접 그림 |
 | Base UI "default value of an uncontrolled Select changed" 경고 | `await` 뒤 `setState`가 액션 결과와 따로 커밋됨 | 다시 마운트용 카운터를 액션 상태 안에 둠 (`useDialogForm`) |

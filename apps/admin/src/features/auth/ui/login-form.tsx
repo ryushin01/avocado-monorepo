@@ -3,7 +3,7 @@
 import { Loader2, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { type FormEvent, useState, useTransition } from "react";
+import { type FormEvent, useState, useSyncExternalStore, useTransition } from "react";
 
 import { Button } from "@avocado/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@avocado/ui/components/field";
@@ -11,11 +11,16 @@ import { Input } from "@avocado/ui/components/input";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 
+const subscribeNothing = () => () => {};
+
 /** 이메일·비밀번호 로그인. 성공하면 원래 가려던 화면(callbackUrl)으로 간다. */
 export function LoginForm({ callbackUrl, initialError }: { callbackUrl: string; initialError?: string }) {
   const router = useRouter();
   const [error, setError] = useState(initialError);
   const [pending, startTransition] = useTransition();
+  // 하이드레이션 전에 제출하면 onSubmit이 없어 브라우저가 폼을 GET으로 보내 비밀번호가 주소에 실린다.
+  // 그래서 준비될 때까지 버튼을 막는다(기본 버튼이 비활성이면 Enter로도 제출되지 않는다).
+  const hydrated = useSyncExternalStore(subscribeNothing, () => true, () => false);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -40,7 +45,7 @@ export function LoginForm({ callbackUrl, initialError }: { callbackUrl: string; 
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
         <FormErrorAlert message={error} />
         <Field>
@@ -51,7 +56,7 @@ export function LoginForm({ callbackUrl, initialError }: { callbackUrl: string; 
           <FieldLabel htmlFor="login-password">비밀번호</FieldLabel>
           <Input id="login-password" name="password" type="password" autoComplete="current-password" required />
         </Field>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending || !hydrated}>
           {pending ? <Loader2 className="animate-spin" /> : <LogIn />}
           로그인
         </Button>

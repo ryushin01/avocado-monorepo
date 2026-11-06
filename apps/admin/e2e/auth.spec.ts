@@ -1,9 +1,38 @@
 import { expect, test } from "@playwright/test";
 
-import { signIn } from "./helpers";
+import { DEV_PASSWORD, signIn, USERS } from "./helpers";
 
 // 로그인하지 않은 브라우저로 시작한다.
 test.use({ storageState: { cookies: [], origins: [] } });
+
+test("화면이 준비되기 전에는 제출되지 않아 비밀번호가 주소에 남지 않고, 준비되면 로그인한다", async ({ page }) => {
+  // 화면 스크립트를 붙잡아 하이드레이션 전 상태를 만든다.
+  let release = () => {};
+  const scriptsHeld = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/_next/static/**/*.js", async (route) => {
+    await scriptsHeld;
+    await route.continue().catch(() => {}); // 테스트가 먼저 끝나면 남은 요청은 버려진다.
+  });
+  const requested: string[] = [];
+  page.on("request", (request) => requested.push(request.url()));
+
+  await page.goto("/login", { waitUntil: "commit" });
+  const submit = page.getByRole("button", { name: "로그인" });
+  await page.getByLabel("이메일").fill(USERS.hongdaeStaff.email);
+  await page.getByLabel("비밀번호").fill(DEV_PASSWORD);
+  await expect(submit).toBeDisabled();
+  await page.getByLabel("비밀번호").press("Enter");
+  // 브라우저 기본 제출이 일어났다면 이 사이에 요청이 나간다.
+  await page.waitForTimeout(500);
+  expect(requested.filter((url) => url.includes(DEV_PASSWORD))).toEqual([]);
+
+  release();
+  await submit.click();
+  await expect(page.getByRole("button", { name: "박스태프 계정 메뉴" })).toBeVisible();
+  expect(requested.filter((url) => url.includes(DEV_PASSWORD))).toEqual([]);
+});
 
 test("로그인하지 않으면 로그인 화면으로 가고, 틀린 비밀번호는 안내한다", async ({ page }) => {
   await page.goto("/inventory");

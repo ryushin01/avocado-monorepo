@@ -24,6 +24,7 @@ import { Skeleton } from "@avocado/ui/components/skeleton";
 
 import { PageHeader } from "@/widgets/site-header";
 import { GameImage } from "@/entities/game/ui";
+import { pageMetadata } from "@/shared/lib/page-metadata";
 
 export function generateStaticParams() {
   return CATALOG_GAMES.map((g) => ({ bggId: String(g.bggId) }));
@@ -34,7 +35,13 @@ const gameOf = async (params: PageProps<"/game/[bggId]">["params"]) =>
 
 export async function generateMetadata({ params }: PageProps<"/game/[bggId]">): Promise<Metadata> {
   const game = await gameOf(params);
-  return game ? { title: game.name, description: `${game.name} (${game.englishName}) 게임 정보` } : {};
+  return game
+    ? pageMetadata({
+        title: game.name,
+        description: `${game.name} (${game.englishName}) 게임 정보`,
+        path: `/game/${game.bggId}`,
+      })
+    : {};
 }
 
 const PANEL =
@@ -188,6 +195,12 @@ async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params"
                 <p className="text-sm text-muted-foreground">
                   매장마다 보유 게임이 다릅니다. 방문 전 매장에 문의하시면 정확히 안내해드립니다.
                 </p>
+                <Link
+                  href="/about#stores"
+                  className="mt-2 inline-flex min-h-11 items-center text-sm font-bold underline underline-offset-4"
+                >
+                  매장 안내 보기
+                </Link>
               </div>
             </section>
           </div>

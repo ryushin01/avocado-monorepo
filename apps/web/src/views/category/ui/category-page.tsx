@@ -10,6 +10,7 @@ import { Skeleton } from "@avocado/ui/components/skeleton";
 import { PageHeader } from "@/widgets/site-header";
 import { GameTile, GameTileSkeleton } from "@/entities/game/ui";
 import { GAME_SORT_LABELS, GAME_SORTS, parseGameSort, sortGames } from "@/entities/game";
+import { pageMetadata } from "@/shared/lib/page-metadata";
 
 const findCategory = (key: string) => CATEGORY_INFO.find((c) => c.key === key);
 
@@ -21,7 +22,9 @@ export async function generateMetadata({
   params,
 }: PageProps<"/games/[category]">): Promise<Metadata> {
   const category = findCategory((await params).category);
-  return category ? { title: category.label, description: category.description } : {};
+  return category
+    ? pageMetadata({ title: category.label, description: category.description, path: `/games/${category.key}` })
+    : {};
 }
 
 const BACK_HOME = { href: "/", label: "홈으로" };

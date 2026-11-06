@@ -139,3 +139,69 @@ test("표지가 오기 전에는 스켈레톤을 보여 주고 오면 치운다"
   await expect(firstTile.getByTestId("game-image-skeleton")).toHaveCount(0);
   await expect(firstTile.locator("img").first()).toHaveJSProperty("complete", true);
 });
+
+test("슬라이드 끝에 닿아도 키보드 초점이 다음 버튼에 남고, 화면 밖 슬라이드는 탭 순서에서 빠진다", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(WEB_URL);
+  const section = page.locator('section[aria-labelledby^="category-"]').first();
+  const next = section.getByRole("button", { name: "다음 슬라이드" });
+
+  // 표지 슬라이드가 준비되면 화면 밖 슬라이드에 inert가 걸린다.
+  await expect(section.locator('[data-slot="carousel-item"][inert]').first()).toBeAttached();
+
+  await next.focus();
+  await expect
+    .poll(
+      async () => {
+        await page.keyboard.press("Enter");
+        return next.getAttribute("aria-disabled");
+      },
+      { timeout: 10_000 },
+    )
+    .toBe("true");
+  await expect(next).toBeFocused();
+  await expect(next).toHaveCSS("opacity", "0.5");
+});
+
+test("큰 사진의 버튼에서 매장 안내로 가고, 메뉴에서 가맹 문의로 간다", async ({ page }) => {
+  await page.goto(WEB_URL);
+  await page.locator("#hero").getByRole("link", { name: "가까운 매장 찾기" }).click();
+  await expect(page).toHaveURL(/\/about#stores$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const stores = page.locator("#stores");
+  await expect(stores.getByRole("heading", { level: 2, name: "매장 안내" })).toBeInViewport();
+  await expect(stores.getByRole("listitem")).toHaveCount(5);
+  await expect(page.getByText("모두 가상의 정보입니다")).toBeVisible();
+
+  await page.getByRole("banner").getByRole("button", { name: "메뉴 열기" }).click();
+  await page.getByRole("dialog").getByRole("link", { name: "가맹 문의" }).click();
+  await expect(page).toHaveURL(/\/about#franchise$/);
+  await expect(page.getByRole("link", { name: "메일로 문의하기" })).toHaveAttribute("href", /^mailto:/);
+});
+
+test("소개 화면은 모바일에서 가로로 넘치지 않고 머리글이 매장 제목을 가리지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${WEB_URL}/about#stores`);
+  const heading = page.getByRole("heading", { level: 2, name: "매장 안내" });
+  await expect(heading).toBeInViewport();
+  const headerBottom = (await page.getByRole("banner").boundingBox())!;
+  await expect
+    .poll(async () => (await heading.boundingBox())!.y)
+    .toBeGreaterThanOrEqual(headerBottom.y + headerBottom.height);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBe(0);
+});
+
+test("검색과 공유에 필요한 정보를 내보낸다", async ({ page, request }) => {
+  expect((await request.get(`${WEB_URL}/robots.txt`)).status()).toBe(200);
+  const sitemap = await request.get(`${WEB_URL}/sitemap.xml`);
+  expect(sitemap.status()).toBe(200);
+  expect(await sitemap.text()).toContain("/about</loc>");
+
+  await page.goto(`${WEB_URL}/games/strategy?sort=rating`);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/games\/strategy$/);
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /전략 게임/);
+  await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute("content", /\/images\/og\.jpg$/);
+});

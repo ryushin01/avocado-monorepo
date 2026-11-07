@@ -64,7 +64,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 
 Sentry로 보내는 내용은 오류와 스택 정보이고, 쿠키, 헤더, 쿼리 문자열, 사용자 정보, 방문 세션, 이동·클릭 기록은 모으지 않습니다(`apps/web/src/shared/config/sentry.ts`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다.
 
-PostHog로는 페이지 이동과 Web Vitals(LCP, INP, CLS, FCP, TTFB)만 보냅니다(`apps/web/src/shared/config/analytics.ts`). 쿠키와 브라우저 저장소를 쓰지 않고, 사람을 식별하지 않으며(`person_profiles: "never"`), 자동 클릭 수집과 화면 녹화를 끄고, Do Not Track을 따릅니다. 보내기 직전에 모든 이벤트의 주소 속성(`$current_url` 등)에서 쿼리 문자열과 해시를 빼고, 쿼리에서 뽑은 검색 엔진 검색어(`ph_keyword`)와 캠페인 값(`utm_*`, `gclid` 등)은 보내지 않습니다. 키가 있을 때만 스크립트를 내려받고, 브라우저는 같은 주소의 `/ingest`로 보내 `next.config.ts`의 rewrites가 PostHog로 넘깁니다.
+PostHog로는 페이지 이동과 Web Vitals(LCP, INP, CLS, FCP, TTFB)만 보냅니다(`apps/web/src/shared/config/analytics.ts`). 쿠키와 브라우저 저장소를 쓰지 않고, 사람을 식별하지 않으며(`person_profiles: "never"`), 자동 클릭 수집과 화면 녹화를 끄고, Do Not Track을 따릅니다. 보내기 직전에 모든 이벤트의 주소 속성(`$current_url` 등)에서 쿼리 문자열과 해시를 빼고, 쿼리에서 뽑은 검색 엔진 검색어(`ph_keyword`)와 캠페인 값(`utm_*`, `gclid`, `gbraid`, `mc_cid` 등)은 수집 단계에서 끄고(`save_campaign_params: false`) 보내기 직전에 한 번 더 뺍니다. 키가 있을 때만 스크립트를 내려받고, 브라우저는 같은 주소의 `/ingest`로 보내 `next.config.ts`의 rewrites가 PostHog로 넘깁니다.
 
 ## 빌드와 실행
 

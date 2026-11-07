@@ -15,7 +15,8 @@ export function analyticsUpstream(origin = host) {
 type EventProperties = Record<string, unknown> | undefined;
 
 // $initial_, $session_entry_ 같은 접두사가 붙은 이름도 끝이 같으면 걸린다.
-const QUERY_DERIVED = /(ph_keyword|utm_[a-z_]+|[a-z]*clid)$/i;
+// 캠페인 수집은 꺼 두었고, 이 목록은 SDK가 바뀌어도 새지 않게 한 번 더 막는 장치다.
+const QUERY_DERIVED = /(ph_keyword|utm_[a-z_]+|[a-z]*clid|[a-z]*braid|mc_[a-z]+|_kx|irclid|rdt_cid|ttclid)$/i;
 
 function withoutQuery(properties: EventProperties) {
   if (!properties) return properties;
@@ -65,6 +66,9 @@ export const posthogOptions = {
   advanced_disable_flags: true,
   respect_dnt: true,
   save_referrer: false,
+  // 주소의 캠페인 값(utm_*, gclid, gbraid, mc_cid 등)을 속성으로 뽑아내지 않습니다.
+  save_campaign_params: false,
+  mask_personal_data_properties: true,
   capture_exceptions: false,
   before_send: stripUrlQueries,
 } satisfies Partial<PostHogConfig>;

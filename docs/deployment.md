@@ -53,14 +53,18 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 
 ### 홈페이지 (`apps/web`)
 
-게임 이미지는 `cf.geekdo-images.com`에서 불러옵니다. 아래 변수는 모두 선택이며, 없으면 Sentry로 아무것도 보내지 않습니다.
+게임 이미지는 `cf.geekdo-images.com`에서 불러옵니다. 아래 변수는 모두 선택이며, 없으면 Sentry와 PostHog로 아무것도 보내지 않습니다.
 
 | 변수 | 설명 |
 |---|---|
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry 프로젝트의 DSN입니다. 브라우저에도 노출되는 값이며 비밀 값이 아닙니다. 빌드할 때 넣습니다. |
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | 빌드할 때 소스맵을 올립니다. `SENTRY_AUTH_TOKEN`은 비밀 값입니다. |
+| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog 프로젝트 키입니다. 브라우저에도 노출되는 값이며 비밀 값이 아닙니다. 빌드할 때 넣습니다. |
+| `NEXT_PUBLIC_POSTHOG_HOST` | PostHog 주소입니다. 없으면 `https://us.i.posthog.com`(EU는 `https://eu.i.posthog.com`). 빌드할 때 넣습니다. |
 
 Sentry로 보내는 내용은 오류와 스택 정보이고, 쿠키, 헤더, 쿼리 문자열, 사용자 정보, 방문 세션, 이동·클릭 기록은 모으지 않습니다(`apps/web/src/shared/config/sentry.ts`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다.
+
+PostHog로는 페이지 이동과 Web Vitals(LCP, INP, CLS, FCP, TTFB)만 보냅니다(`apps/web/src/shared/config/analytics.ts`). 쿠키와 브라우저 저장소를 쓰지 않고, 사람을 식별하지 않으며(`person_profiles: "never"`), 자동 클릭 수집과 화면 녹화를 끄고, Do Not Track을 따릅니다. 경로에서 쿼리 문자열은 뺍니다. 키가 있을 때만 스크립트를 내려받고, 브라우저는 같은 주소의 `/ingest`로 보내 `next.config.ts`의 rewrites가 PostHog로 넘깁니다.
 
 ## 빌드와 실행
 

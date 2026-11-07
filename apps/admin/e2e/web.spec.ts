@@ -100,8 +100,11 @@ test("모바일에서 머리글은 사진을 지나면 흰 바탕이 되고 가�
   const banner = page.getByRole("banner");
   const background = () => banner.evaluate((el) => getComputedStyle(el).backgroundColor);
   const before = await background();
-  await page.evaluate(() => window.scrollTo(0, 2000));
-  await expect.poll(background).not.toBe(before);
+  // 첫 스크롤이 레이아웃이 끝나기 전이면 끝까지 내려가지 못할 수 있어, 바뀔 때까지 다시 내린다.
+  await expect(async () => {
+    await page.evaluate(() => window.scrollTo(0, 2000));
+    expect(await background()).not.toBe(before);
+  }).toPass({ timeout: 10_000 });
 
   for (const path of ["", "/games/strategy", "/game/174430"]) {
     await page.goto(`${WEB_URL}${path}`);
@@ -140,6 +143,21 @@ test("자동 넘김 버튼은 화면이 준비된 뒤에 눌리므로 클릭이 
   release();
   await pause.click();
   await expect(hero.getByRole("button", { name: "자동 넘김 재생" })).toBeVisible();
+});
+
+test("유형마다 카드를 건너뛰는 링크로 전체 목록 링크까지 바로 간다", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(WEB_URL);
+  const section = page.locator('section[aria-labelledby="category-strategy"]');
+  const skip = section.getByRole("link", { name: "전략 게임 카드 건너뛰기" });
+  await skip.focus();
+  await expect(skip).toBeInViewport();
+  await page.keyboard.press("Enter");
+  await expect(section.getByRole("link", { name: /전체 목록 보기/ })).toBeFocused();
+
+  // 다음 Tab은 다음 유형의 건너뛰기 링크로 간다.
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "테마 게임 카드 건너뛰기" })).toBeFocused();
 });
 
 test("표지가 오기 전에는 스켈레톤을 보여 주고 오면 치운다", async ({ page }) => {

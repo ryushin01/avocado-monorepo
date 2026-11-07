@@ -27,6 +27,8 @@ describe("posthogOptions", () => {
       autocapture: false,
       disable_session_recording: true,
       respect_dnt: true,
+      save_campaign_params: false,
+      mask_personal_data_properties: true,
     });
   });
 });
@@ -56,6 +58,9 @@ describe("stripUrlQueries", () => {
         utm_term: "보드게임 카페",
         $session_entry_utm_source: "newsletter",
         gclid: "abc",
+        gbraid: "g",
+        $session_entry_wbraid: "w",
+        mc_cid: "m",
       },
       $set_once: { $initial_current_url: "https://avocado.example/?q=x", $initial_utm_campaign: "봄" },
     });

@@ -24,6 +24,7 @@ const ARROW =
 export function CategorySection({ category }: { category: CategoryInfo }) {
   const games = catalogGamesIn(category.key).slice(0, PREVIEW_COUNT);
   const banner = CATEGORY_BANNERS[category.key];
+  const listLinkId = `category-${category.key}-list`;
   return (
     <section aria-labelledby={`category-${category.key}`}>
       <div className="flex flex-col gap-12 rounded-lg border border-page bg-card px-5 py-12 text-card-foreground lg:px-12 lg:py-24">
@@ -36,25 +37,35 @@ export function CategorySection({ category }: { category: CategoryInfo }) {
           </h2>
           <p className="tracking-tighter text-muted-foreground">{category.description}</p>
         </div>
-        <Carousel
-          opts={{ align: "start" }}
-          aria-label={`${category.label} 순위 상위 게임`}
-          className="-mx-5 bg-page lg:mx-0"
-        >
-          <CarouselContent className="ml-0">
-            {games.map((game) => (
-              <CarouselItem key={game.bggId} className="basis-5/6 pl-0 md:basis-1/3 xl:basis-1/4 2xl:basis-1/5">
-                <GameTile
-                  game={game}
-                  sizes="(min-width: 1536px) 14vw, (min-width: 1280px) 17vw, (min-width: 768px) 33vw, 84vw"
-                />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className={`left-2 ${ARROW}`} />
-          <CarouselNext className={`right-2 ${ARROW}`} />
-        </Carousel>
+        {/* 키보드 사용자가 유형마다 카드와 화살표를 모두 지나지 않아도 되게 한다. 초점을 받으면 나타난다. */}
+        <div className="relative">
+          <a
+            href={`#${listLinkId}`}
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-10 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-md focus:outline-none focus:ring-3 focus:ring-ring"
+          >
+            {category.label} 카드 건너뛰기
+          </a>
+          <Carousel
+            opts={{ align: "start" }}
+            aria-label={`${category.label} 순위 상위 게임`}
+            className="-mx-5 bg-page lg:mx-0"
+          >
+            <CarouselContent className="ml-0">
+              {games.map((game) => (
+                <CarouselItem key={game.bggId} className="basis-5/6 pl-0 md:basis-1/3 xl:basis-1/4 2xl:basis-1/5">
+                  <GameTile
+                    game={game}
+                    sizes="(min-width: 1536px) 14vw, (min-width: 1280px) 17vw, (min-width: 768px) 33vw, 84vw"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className={`left-2 ${ARROW}`} />
+            <CarouselNext className={`right-2 ${ARROW}`} />
+          </Carousel>
+        </div>
         <Link
+          id={listLinkId}
           href={`/games/${category.key}`}
           className="flex items-center gap-3 tracking-tighter underline-offset-4 hover:underline"
         >

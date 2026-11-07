@@ -16,6 +16,7 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 - avocado의 색(어두운 바탕, 흰 패널, 주황 강조색 `#ff5100`)을 `src/app/globals.css`에서 공통 테마 위에 덮어씁니다.
 - 레이아웃도 avocado를 따릅니다. 데스크톱에서는 왼쪽 패널이 화면 높이로 고정되고 오른쪽만 스크롤됩니다(홈 6칸 중 2칸, 목록·상세 8칸 중 2칸). 모바일 목록·상세는 `grid` 대신 `flex`입니다. 격자 칸 안의 `sticky`는 그 칸을 벗어나지 못해 머리글이 고정되지 않기 때문입니다.
 - 메뉴는 전체 화면 Sheet이고, 표지는 도착할 때까지 스켈레톤을 보여 줍니다(`entities/game/ui/game-image.tsx`).
+- 유형마다 키보드용 카드 건너뛰기 링크가 있습니다. 평소에는 숨어 있다가 초점을 받으면 나타납니다.
 - 검색·공유 설정은 `src/app/robots.ts`, `sitemap.ts`, `public/images/og.jpg`와 `src/shared/lib/page-metadata.ts`에 있습니다. 사이트 주소는 `SITE_URL`, 없으면 Vercel의 운영 주소를 읽습니다(`src/shared/config/site-url.ts`).
 - 글꼴은 D2Coding 일부 글자만 담은 파일을 함께 배포합니다([src/app/fonts](src/app/fonts/README.md)).
 

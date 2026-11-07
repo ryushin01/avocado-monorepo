@@ -3,6 +3,8 @@ packages:
   - packages/*
 allowBuilds:
   esbuild: true
+  # posthog-js가 쓰는 core-js의 설치 스크립트는 후원 안내만 출력하므로 돌리지 않는다.
+  core-js: false
 # 개발 도구에만 쓰이는 의존성의 보안 경고 대응
 overrides:
   "minimatch@>=7 <11.0.1": ^11.0.1

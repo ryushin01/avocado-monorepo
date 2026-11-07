@@ -8,6 +8,7 @@ import { SiteFooter } from "@/widgets/site-footer";
 import { SiteMenuProvider } from "@/widgets/site-header";
 import { BRAND, SHARE_IMAGE } from "@/shared/config/site";
 import { siteUrl } from "@/shared/config/site-url";
+import { WebVitals } from "@/shared/lib/analytics";
 
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="flex flex-1 flex-col">{children}</div>
         </SiteMenuProvider>
         <SiteFooter />
+        <WebVitals />
       </body>
     </html>
   );

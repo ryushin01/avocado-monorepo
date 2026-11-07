@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { analyticsUpstream, posthogOptions, toVitalEvent } from "./analytics";
+import { analyticsUpstream, posthogOptions, stripUrlQueries, toVitalEvent } from "./analytics";
 
 describe("toVitalEvent", () => {
   it("CLS는 소수 셋째 자리까지, 나머지는 밀리초 정수로 보낸다", () => {
@@ -38,5 +38,29 @@ describe("analyticsUpstream", () => {
       assets: "https://eu-assets.i.posthog.com",
     });
     expect(analyticsUpstream("https://posthog.example.com").assets).toBe("https://posthog.example.com");
+    expect(analyticsUpstream("https://us.i.example.com").assets).toBe("https://us.i.example.com");
+  });
+});
+
+describe("stripUrlQueries", () => {
+  it("주소를 담는 속성에서 쿼리와 해시를 빼고 다른 속성은 그대로 둔다", () => {
+    const event = stripUrlQueries({
+      event: "$pageview",
+      properties: {
+        $current_url: "https://avocado.example/games?q=전화번호#top",
+        $session_entry_url: "https://avocado.example/?ref=mail",
+        $pathname: "/games",
+        metric: "LCP",
+      },
+      $set_once: { $initial_current_url: "https://avocado.example/?q=x" },
+    });
+    expect(event?.properties).toEqual({
+      $current_url: "https://avocado.example/games",
+      $session_entry_url: "https://avocado.example/",
+      $pathname: "/games",
+      metric: "LCP",
+    });
+    expect(event?.$set_once).toEqual({ $initial_current_url: "https://avocado.example/" });
+    expect(stripUrlQueries(null)).toBeNull();
   });
 });

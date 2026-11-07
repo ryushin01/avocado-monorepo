@@ -6,9 +6,35 @@ const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
 /** 브라우저는 같은 주소의 이 경로로 보내고, next.config.ts가 PostHog로 넘긴다(CSP connect-src 'self' 유지). */
 export const ANALYTICS_PATH = "/ingest";
 
-/** PostHog 수집 주소와 정적 파일 주소. us.i.posthog.com이면 us-assets.i.posthog.com을 함께 쓴다. */
+/** PostHog 수집 주소와 정적 파일 주소. PostHog 클라우드(us, eu)만 정적 파일 주소가 따로 있고, 직접 운영하는 주소는 그대로 쓴다. */
 export function analyticsUpstream(origin = host) {
-  return { api: origin, assets: origin.replace(/:\/\/(us|eu)\.i\./, "://$1-assets.i.") };
+  const cloud = /^https:\/\/(us|eu)\.i\.posthog\.com\/?$/.exec(origin);
+  return { api: origin, assets: cloud ? `https://${cloud[1]}-assets.i.posthog.com` : origin };
+}
+
+type EventProperties = Record<string, unknown> | undefined;
+
+function withoutQuery(properties: EventProperties) {
+  if (!properties) return properties;
+  const cleaned: Record<string, unknown> = { ...properties };
+  for (const [name, value] of Object.entries(cleaned)) {
+    // $current_url, $session_entry_url, $referrer처럼 주소를 담는 속성에서 쿼리와 해시를 뺀다.
+    if (typeof value === "string" && /(url|referrer)$/i.test(name)) cleaned[name] = value.split(/[?#]/)[0];
+  }
+  return cleaned;
+}
+
+/** 보내기 직전에 모든 이벤트의 주소 속성을 정리한다. 검색어 같은 입력이 쿼리에 실려 나가지 않게 한다. */
+export function stripUrlQueries<T extends { properties?: EventProperties; $set?: EventProperties; $set_once?: EventProperties }>(
+  event: T | null,
+): T | null {
+  if (!event) return event;
+  return {
+    ...event,
+    properties: withoutQuery(event.properties),
+    ...(event.$set && { $set: withoutQuery(event.$set) }),
+    ...(event.$set_once && { $set_once: withoutQuery(event.$set_once) }),
+  };
 }
 
 /** 키가 없으면(로컬, 테스트, 키를 넣지 않은 배포) 분석 스크립트를 내려받지도 않는다. */
@@ -32,6 +58,7 @@ export const posthogOptions = {
   respect_dnt: true,
   save_referrer: false,
   capture_exceptions: false,
+  before_send: stripUrlQueries,
 } satisfies Partial<PostHogConfig>;
 
 export const posthogKey = key ?? "";

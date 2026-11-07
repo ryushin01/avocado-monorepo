@@ -14,10 +14,18 @@ export function analyticsUpstream(origin = host) {
 
 type EventProperties = Record<string, unknown> | undefined;
 
+// $initial_, $session_entry_ 같은 접두사가 붙은 이름도 끝이 같으면 걸린다.
+const QUERY_DERIVED = /(ph_keyword|utm_[a-z_]+|[a-z]*clid)$/i;
+
 function withoutQuery(properties: EventProperties) {
   if (!properties) return properties;
   const cleaned: Record<string, unknown> = { ...properties };
   for (const [name, value] of Object.entries(cleaned)) {
+    // 주소의 쿼리에서 뽑아낸 값(검색 엔진 검색어 ph_keyword, utm_term 같은 캠페인 값, gclid 같은 클릭 id)은 통째로 뺀다.
+    if (QUERY_DERIVED.test(name)) {
+      delete cleaned[name];
+      continue;
+    }
     // $current_url, $session_entry_url, $referrer처럼 주소를 담는 속성에서 쿼리와 해시를 뺀다.
     if (typeof value === "string" && /(url|referrer)$/i.test(name)) cleaned[name] = value.split(/[?#]/)[0];
   }

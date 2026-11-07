@@ -43,7 +43,7 @@ describe("analyticsUpstream", () => {
 });
 
 describe("stripUrlQueries", () => {
-  it("주소를 담는 속성에서 쿼리와 해시를 빼고 다른 속성은 그대로 둔다", () => {
+  it("주소를 담는 속성에서 쿼리와 해시를, 쿼리에서 뽑은 검색어·캠페인 값을 빼고 다른 속성은 그대로 둔다", () => {
     const event = stripUrlQueries({
       event: "$pageview",
       properties: {
@@ -51,8 +51,13 @@ describe("stripUrlQueries", () => {
         $session_entry_url: "https://avocado.example/?ref=mail",
         $pathname: "/games",
         metric: "LCP",
+        ph_keyword: "전화번호",
+        $session_entry_ph_keyword: "전화번호",
+        utm_term: "보드게임 카페",
+        $session_entry_utm_source: "newsletter",
+        gclid: "abc",
       },
-      $set_once: { $initial_current_url: "https://avocado.example/?q=x" },
+      $set_once: { $initial_current_url: "https://avocado.example/?q=x", $initial_utm_campaign: "봄" },
     });
     expect(event?.properties).toEqual({
       $current_url: "https://avocado.example/games",

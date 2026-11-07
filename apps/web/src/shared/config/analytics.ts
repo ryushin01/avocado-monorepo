@@ -14,35 +14,62 @@ export function analyticsUpstream(origin = host) {
 
 type EventProperties = Record<string, unknown> | undefined;
 
-// $initial_, $session_entry_ 같은 접두사가 붙은 이름도 끝이 같으면 걸린다.
-// 캠페인 수집은 꺼 두었고, 이 목록은 SDK가 바뀌어도 새지 않게 한 번 더 막는 장치다.
-const QUERY_DERIVED = /(ph_keyword|utm_[a-z_]+|[a-z]*clid|[a-z]*braid|mc_[a-z]+|_kx|irclid|rdt_cid|ttclid)$/i;
+// 알려진 캠페인·광고 식별자. 주소가 이벤트에 함께 오지 않아도 이름만으로 뺀다.
+const KNOWN_QUERY_PARAMS = /^(ph_keyword|utm_[a-z_]+|[a-z]*clid|[a-z]*braid|gad_[a-z_]+|mc_[a-z]+|_kx|rdt_cid)$/i;
+const isUrlProperty = (name: string) => /(url|referrer)$/i.test(name);
+// SDK는 쿼리 값을 키, $session_entry_키, $initial_키 같은 이름으로 옮겨 담는다.
+// `$browser`처럼 접두사 없이 $로 시작하는 이름은 SDK가 직접 만든 값이라 쿼리와 무관하다.
+// 수집에 꼭 필요한 이름은 쿼리 키와 같아도 지우지 않는다.
+const REQUIRED = new Set(["token", "distinct_id"]);
+function derivedName(name: string): string | null {
+  const prefixed = /^\$(session_entry_|initial_)(.+)$/.exec(name);
+  if (prefixed) return (prefixed[2] as string).toLowerCase();
+  if (name.startsWith("$") || REQUIRED.has(name)) return null;
+  return name.toLowerCase();
+}
 
-function withoutQuery(properties: EventProperties) {
-  if (!properties) return properties;
-  const cleaned: Record<string, unknown> = { ...properties };
-  for (const [name, value] of Object.entries(cleaned)) {
-    // 주소의 쿼리에서 뽑아낸 값(검색 엔진 검색어 ph_keyword, utm_term 같은 캠페인 값, gclid 같은 클릭 id)은 통째로 뺀다.
-    if (QUERY_DERIVED.test(name)) {
-      delete cleaned[name];
-      continue;
+function queryKeysOf(groups: EventProperties[]) {
+  const keys = new Set<string>();
+  for (const properties of groups) {
+    for (const [name, value] of Object.entries(properties ?? {})) {
+      if (typeof value !== "string" || !isUrlProperty(name) || !value.includes("?")) continue;
+      try {
+        for (const key of new URL(value, "https://placeholder.invalid").searchParams.keys()) keys.add(key.toLowerCase());
+      } catch {
+        // 주소가 아니면 넘어간다.
+      }
     }
-    // $current_url, $session_entry_url, $referrer처럼 주소를 담는 속성에서 쿼리와 해시를 뺀다.
-    if (typeof value === "string" && /(url|referrer)$/i.test(name)) cleaned[name] = value.split(/[?#]/)[0];
+  }
+  return keys;
+}
+
+function withoutQuery(properties: EventProperties, queryKeys: Set<string>) {
+  if (!properties) return properties;
+  const cleaned: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(properties)) {
+    const base = derivedName(name);
+    // 주소의 쿼리에서 뽑아낸 값(검색어, 캠페인 값, 광고 클릭 id 등)은 통째로 뺀다.
+    if (base !== null && (queryKeys.has(base) || KNOWN_QUERY_PARAMS.test(base))) continue;
+    // $current_url, $session_entry_url, $referrer처럼 주소를 담는 속성에서는 쿼리와 해시를 뺀다.
+    cleaned[name] = typeof value === "string" && isUrlProperty(name) ? value.split(/[?#]/)[0] : value;
   }
   return cleaned;
 }
 
-/** 보내기 직전에 모든 이벤트의 주소 속성을 정리한다. 검색어 같은 입력이 쿼리에 실려 나가지 않게 한다. */
+/**
+ * 보내기 직전에 모든 이벤트를 정리한다. 검색어 같은 입력이 쿼리나 쿼리에서 뽑힌 속성으로 나가지 않게 한다.
+ * 이름 목록만으로 막으면 SDK가 새 이름을 뽑을 때 새므로, 이벤트에 담긴 주소의 쿼리 키를 모아 같은 이름을 모두 뺀다.
+ */
 export function stripUrlQueries<T extends { properties?: EventProperties; $set?: EventProperties; $set_once?: EventProperties }>(
   event: T | null,
 ): T | null {
   if (!event) return event;
+  const keys = queryKeysOf([event.properties, event.$set, event.$set_once]);
   return {
     ...event,
-    properties: withoutQuery(event.properties),
-    ...(event.$set && { $set: withoutQuery(event.$set) }),
-    ...(event.$set_once && { $set_once: withoutQuery(event.$set_once) }),
+    properties: withoutQuery(event.properties, keys),
+    ...(event.$set && { $set: withoutQuery(event.$set, keys) }),
+    ...(event.$set_once && { $set_once: withoutQuery(event.$set_once, keys) }),
   };
 }
 

@@ -2,13 +2,22 @@ import { securityHeaders } from "@avocado/config/security-headers";
 import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
+import { ANALYTICS_PATH, analyticsUpstream } from "./src/shared/config/analytics";
+
 // 게임 표지는 Next.js 이미지 최적화를 거쳐 같은 주소에서 나간다.
 const headers = securityHeaders();
+const upstream = analyticsUpstream();
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactCompiler: true,
   headers: async () => [{ source: "/(.*)", headers }],
+  // 방문 통계도 같은 주소로 받아 PostHog로 넘긴다. PostHog API는 끝에 /가 붙은 경로를 쓰므로 리디렉트하지 않는다.
+  skipTrailingSlashRedirect: true,
+  rewrites: async () => [
+    { source: `${ANALYTICS_PATH}/static/:path*`, destination: `${upstream.assets}/static/:path*` },
+    { source: `${ANALYTICS_PATH}/:path*`, destination: `${upstream.api}/:path*` },
+  ],
   cacheComponents: true,
   partialPrefetching: true,
   images: {

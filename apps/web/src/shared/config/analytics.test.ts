@@ -74,3 +74,52 @@ describe("stripUrlQueries", () => {
     expect(stripUrlQueries(null)).toBeNull();
   });
 });
+
+describe("stripUrlQueries 쿼리 키 추적", () => {
+  it("주소의 쿼리 키에서 나온 속성은 이름을 몰라도 접두사와 함께 뺀다", () => {
+    const event = stripUrlQueries({
+      event: "$pageview",
+      properties: {
+        $current_url: "https://avocado.example/",
+        $session_entry_url: "https://avocado.example/?gad_source=전화번호&newcampaign=x",
+        $session_entry_gad_source: "전화번호",
+        $session_entry_newcampaign: "x",
+        newcampaign: "x",
+        $browser: "Chrome",
+      },
+      $set_once: { $initial_newcampaign: "x", $initial_browser: "Chrome" },
+    });
+    expect(event?.properties).toEqual({
+      $current_url: "https://avocado.example/",
+      $session_entry_url: "https://avocado.example/",
+      $browser: "Chrome",
+    });
+    expect(event?.$set_once).toEqual({ $initial_browser: "Chrome" });
+  });
+
+  it("주소가 함께 오지 않아도 알려진 광고 식별자는 뺀다", () => {
+    expect(stripUrlQueries({ properties: { $session_entry_gad_source: "1", gad_campaignid: "2", metric: "LCP" } })?.properties).toEqual({
+      metric: "LCP",
+    });
+  });
+
+  it("SDK가 직접 만든 $ 속성과 수집에 필요한 속성은 쿼리 키와 이름이 같아도 남긴다", () => {
+    const event = stripUrlQueries({
+      properties: {
+        $current_url: "https://avocado.example/?session_id=1&token=2&browser=3",
+        $session_id: "s",
+        $browser: "Chrome",
+        token: "phc_key",
+        distinct_id: "d",
+        browser: "3",
+      },
+    });
+    expect(event?.properties).toEqual({
+      $current_url: "https://avocado.example/",
+      $session_id: "s",
+      $browser: "Chrome",
+      token: "phc_key",
+      distinct_id: "d",
+    });
+  });
+});

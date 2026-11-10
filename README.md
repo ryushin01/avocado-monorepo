@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml)
 
-**[홍보 사이트 데모 보기](https://avocado-web-three.vercel.app/)** · 백오피스와 키오스크는 서버와 DB가 필요해 [로컬에서 실행](#시작하기)합니다.
+**[홍보 사이트 데모 보기](https://avocado-web-ryushin01.vercel.app/)** · 백오피스와 키오스크는 서버와 DB가 필요해 [로컬에서 실행](#시작하기)합니다.
 
 > **프로젝트 상태:** 포트폴리오 프로젝트입니다. 데모는 홍보 사이트만 공개합니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
 

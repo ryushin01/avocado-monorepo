@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 
 import { HERO_IMAGES } from "@/shared/config/site";
 
@@ -23,7 +24,12 @@ export function StoreTour() {
         </div>
         <ol className="store-tour-track">
           {HERO_IMAGES.map((image, i) => (
-            <li key={image.src} className="store-tour-room">
+            <li
+              key={image.src}
+              className="store-tour-room"
+              // 몇 번째 사진인지 알려 주어, 세로 스크롤 진행에서 이 사진이 가운데 오는 구간을 계산한다.
+              style={{ "--i": i, "--n": HERO_IMAGES.length } as CSSProperties}
+            >
               <div className="store-tour-photo">
                 <Image src={image.src} alt={image.alt} fill sizes="(min-width: 1024px) 50vw, 85vw" className="object-cover" />
               </div>

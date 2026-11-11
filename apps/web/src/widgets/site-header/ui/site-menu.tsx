@@ -39,8 +39,7 @@ export function SiteMenu() {
         <SheetTitle className="sr-only">사이트 메뉴</SheetTitle>
         <div className="sticky top-0 z-10 flex items-center justify-between rounded-b-lg border-b border-page bg-card pr-1 pl-5 text-card-foreground lg:pr-[60px] lg:pl-[60px]">
           <Link href="/" onClick={close} className="text-xl tracking-[8px] lg:text-3xl">
-            <span lang="en">{BRAND.wordmark}</span>
-            <span className="sr-only"> 홈</span>
+            <Image src="/brand/logo.png" alt={`${BRAND.wordmark} 홈`} width={40} height={40} className="size-8 lg:size-10" />
           </Link>
           <Button
             variant="ghost"

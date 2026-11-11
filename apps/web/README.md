@@ -18,7 +18,7 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 - 메뉴는 전체 화면 Sheet이고, 표지는 도착할 때까지 스켈레톤을 보여 줍니다(`entities/game/ui/game-image.tsx`).
 - 유형마다 키보드용 카드 건너뛰기 링크가 있습니다. 평소에는 숨어 있다가 초점을 받으면 나타납니다.
 - 검색·공유 설정은 `src/app/robots.ts`, `sitemap.ts`, `public/images/og.jpg`와 `src/shared/lib/page-metadata.ts`에 있습니다. 사이트 주소는 `SITE_URL`, 없으면 Vercel의 운영 주소를 읽습니다(`src/shared/config/site-url.ts`).
-- 글꼴은 D2Coding 일부 글자만 담은 파일을 함께 배포합니다([src/app/fonts](src/app/fonts/README.md)).
+- 글꼴은 제목 주아(Jua), 본문 고운돋움(Gowun Dodum), 영문·숫자 Lato, 숫자 옆 한글 해바라기(Sunflower)입니다. `next/font/google`이 빌드할 때 받아 함께 배포하므로 보안 헤더(`font-src 'self'`)를 바꾸지 않아도 됩니다.
 
 ```bash
 pnpm dev:web   # 루트에서. http://localhost:3002

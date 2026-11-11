@@ -7,6 +7,8 @@ import { PageHeader } from "@/widgets/site-header";
 import { BRAND, FRANCHISE_CONTACT, STORES } from "@/shared/config/site";
 import { pageMetadata } from "@/shared/lib/page-metadata";
 
+import { StoreTour } from "./store-tour";
+
 export const metadata = pageMetadata({
   title: "브랜드 소개",
   description: `${BRAND.name}의 브랜드 소개, 매장 안내, 가맹 문의`,
@@ -42,7 +44,7 @@ export default function AboutPage() {
     <div className="flex flex-1 flex-col lg:grid lg:grid-cols-8">
       <PageHeader title="ABOUT" back={{ href: "/", label: "홈으로" }} />
       <main id="main" tabIndex={-1} className="min-w-0 scroll-mt-14 lg:col-span-6 lg:scroll-mt-0">
-        <div className="flex flex-col gap-16 rounded-lg border border-page bg-card px-5 py-10 text-card-foreground lg:min-h-screen lg:px-[60px] lg:py-[100px]">
+        <div className="flex flex-col gap-16 rounded-lg border border-page bg-card px-5 py-10 text-card-foreground lg:px-[60px] lg:py-[100px]">
           <section className="flex flex-col gap-4">
             <h1 className="text-3xl font-bold text-balance md:text-4xl">{BRAND.tagline}</h1>
             <p className="max-w-2xl tracking-tighter text-muted-foreground">
@@ -60,6 +62,11 @@ export default function AboutPage() {
             </ul>
           </section>
 
+        </div>
+
+        <StoreTour />
+
+        <div className="flex flex-col gap-16 rounded-lg border border-page bg-card px-5 py-10 text-card-foreground lg:px-[60px] lg:py-[100px]">
           <section id="stores" aria-labelledby="stores-title" className={SECTION}>
             <h2 id="stores-title" className="text-2xl font-bold">
               매장 안내

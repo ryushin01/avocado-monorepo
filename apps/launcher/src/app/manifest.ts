@@ -11,12 +11,11 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "fullscreen",
     background_color: "#f3f7ea",
     theme_color: "#f3f7ea",
-    // 아보카도는 마스크 안전 영역 안에 있고 배경이 가장자리까지 채워져 있어 maskable로도 쓴다.
+    // maskable은 바탕을 가장자리까지 채우고 아보카도를 안전 영역(가운데 72%) 안에 둔 판을 따로 쓴다.
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
-      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-      { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+      { src: "/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

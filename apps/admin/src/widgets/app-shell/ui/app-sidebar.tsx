@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dices } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { NAV_ICONS } from "../model/nav-icons";
@@ -36,8 +35,8 @@ export function AppSidebar({ nav, footer }: { nav: ReactNode; footer: ReactNode 
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <Dices className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#f3f7ea]">
+                <img src="/brand/logo.png" alt="" width={24} height={24} />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">보드게임 카페</span>

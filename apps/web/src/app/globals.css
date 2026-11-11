@@ -11,16 +11,20 @@
 }
 
 @theme inline {
-  /* 폴백: 글꼴을 받기 전이나 받지 못하면 운영체제의 한글 고딕으로 */
+  /*
+   * 대체 글꼴: 웹 글꼴을 받기 전이나 받지 못해도 놀이 분위기가 남도록 고른다.
+   * 제목은 둥근 글꼴(맥·오피스의 Arial Rounded MT Bold), 영문 본문은 부드러운 산세리프(Helvetica Neue, Segoe UI),
+   * 한글은 각 운영체제의 고딕(Apple SD Gothic Neo, Malgun Gothic, Noto Sans CJK KR).
+   */
   --font-sans:
-    var(--font-lato), var(--font-gowun-dodum), "Apple SD Gothic Neo",
-    "Malgun Gothic", "Noto Sans KR", sans-serif;
+    var(--font-lato), var(--font-gowun-dodum), "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
   --font-heading:
-    var(--font-jua), "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
-    sans-serif;
+    var(--font-jua), "Arial Rounded MT Bold", "Apple SD Gothic Neo",
+    "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
   --font-stat:
-    var(--font-lato), var(--font-sunflower), "Apple SD Gothic Neo",
-    "Malgun Gothic", sans-serif;
+    var(--font-lato), var(--font-sunflower), "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --color-page: #111111;
   --color-brand-green: #76cc1c;
 }

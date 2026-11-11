@@ -129,3 +129,4 @@ docs/
 | [백오피스](apps/admin/README.md) | 기능, 개발용 계정 |
 | [백오피스 구조](apps/admin/docs/architecture.md) | 도메인 모델, 권한, 키오스크 API, 렌더링 규칙 |
 | [런처](apps/launcher/README.md), [홍보 사이트](apps/web/README.md) | 앱별 안내 |
+| [시퀀스 다이어그램](docs/sequence-diagrams.md) | 키오스크 예약 확인·도착 알림, 현장 대기 등록, 대여와 반납 |

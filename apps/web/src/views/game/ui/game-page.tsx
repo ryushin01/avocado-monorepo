@@ -216,7 +216,7 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Star; label: string; 
         <Icon className="size-4" />
         {label}
       </dt>
-      <dd className="font-bold tabular-nums">{value}</dd>
+      <dd className="font-stat font-bold tabular-nums">{value}</dd>
     </div>
   );
 }

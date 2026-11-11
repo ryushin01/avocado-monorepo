@@ -96,7 +96,7 @@ async function SortedGames({
             {GAME_SORT_LABELS[s]}
           </Link>
         ))}
-        <span className="ml-auto text-sm text-muted-foreground tabular-nums">{games.length}종</span>
+        <span className="ml-auto font-stat text-sm text-muted-foreground tabular-nums">{games.length}종</span>
       </nav>
       <ul className="-mx-5 grid grid-cols-2 bg-page md:grid-cols-3 lg:mx-0 xl:grid-cols-4 2xl:grid-cols-5">
         {games.map((game) => (

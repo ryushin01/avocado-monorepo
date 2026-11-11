@@ -11,6 +11,26 @@
 }
 
 @theme inline {
+  /* 폴백: 글꼴을 받기 전이나 받지 못하면 운영체제의 한글 고딕으로 */
+  --font-sans:
+    var(--font-lato), var(--font-gowun-dodum), "Apple SD Gothic Neo",
+    "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --font-heading:
+    var(--font-jua), "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    sans-serif;
+  --font-stat:
+    var(--font-lato), var(--font-sunflower), "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
   --color-page: #111111;
   --color-brand-green: #76cc1c;
+}
+
+/* 주아는 굵기가 하나라, font-bold에서 브라우저가 가짜 굵기를 만들지 않게 한다. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-synthesis-weight: none;
+  }
 }

@@ -50,6 +50,8 @@ export function LoginForm({ callbackUrl, initialError }: { callbackUrl: string; 
         <FormErrorAlert message={error} />
         <Field>
           <FieldLabel htmlFor="login-email">이메일</FieldLabel>
+          {/* 로그인만 하는 화면이라 첫 입력란에 바로 초점을 준다. */}
+          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
           <Input id="login-email" name="email" type="email" autoComplete="username" required autoFocus />
         </Field>
         <Field>

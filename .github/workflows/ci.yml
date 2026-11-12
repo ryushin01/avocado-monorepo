@@ -50,6 +50,8 @@ jobs:
           retention-days: 7
 
       - run: pnpm build
+      - run: pnpm --filter @avocado/web size
+      - run: pnpm --filter @avocado/web lhci
 
       - name: Playwright 브라우저 설치
         run: pnpm --filter @avocado/admin exec playwright install --with-deps chromium
@@ -59,6 +61,10 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-results
-          path: apps/admin/test-results/
+          name: reports
+          # .lighthouseci는 숨김 폴더라 따로 켜야 올라간다.
+          include-hidden-files: true
+          path: |
+            apps/admin/test-results/
+            apps/web/.lighthouseci/
           retention-days: 7

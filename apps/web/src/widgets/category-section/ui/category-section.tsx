@@ -76,13 +76,13 @@ export function CategorySection({ category }: { category: CategoryInfo }) {
         </Link>
       </div>
       {banner && (
-        <div className="relative h-[50vw] overflow-hidden rounded-lg border border-page lg:h-[28vw]">
+        <div className="space-reveal relative h-[50vw] overflow-hidden rounded-lg border border-page lg:h-[28vw]">
           <Image
             src={banner.src}
             alt={banner.alt}
             fill
             sizes="(min-width: 1024px) 67vw, 100vw"
-            className="object-cover"
+            className="space-reveal-image object-cover"
             style={{ objectPosition: banner.position }}
           />
         </div>

@@ -34,11 +34,10 @@ const number = new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 });
 
 export const formatNumber = (n: number) => number.format(n);
 
-/** "11월 3일" */
-export const formatShortDate = (date: string) =>
-  new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric", timeZone: "UTC" }).format(
-    new Date(`${date}T00:00:00Z`),
-  );
+const shortDate = new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric", timeZone: "UTC" });
+
+/** "11월 3일". 차트에서 여러 번 부르므로 포맷 객체는 한 번만 만든다. */
+export const formatShortDate = (date: string) => shortDate.format(new Date(`${date}T00:00:00Z`));
 
 /** "11. 3." 축 눈금용 */
 export const formatTickDate = (date: string) => {

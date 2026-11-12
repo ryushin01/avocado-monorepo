@@ -7,7 +7,8 @@ import {
   CardTitle,
 } from "@avocado/ui/components/card";
 
-const numberFormat = new Intl.NumberFormat("ko-KR");
+import { formatNumber } from "@/shared/lib/format";
+
 
 /** 숫자 하나를 크게 보여주는 요약 칸 */
 export function StatTile({
@@ -31,7 +32,7 @@ export function StatTile({
           {label}
         </CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums">
-          {numberFormat.format(value)}
+          {formatNumber(value)}
           <span className="ml-0.5 text-base font-normal text-muted-foreground">
             {unit}
           </span>

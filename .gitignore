@@ -62,3 +62,4 @@ apps/*/public/images/game-placeholder.png
 
 # Playwright 로그인 상태 (e2e/auth.setup.ts가 매번 만든다)
 apps/admin/e2e/.auth/
+.lighthouseci

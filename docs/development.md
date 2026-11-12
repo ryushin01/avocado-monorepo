@@ -53,3 +53,13 @@ pnpm import:avocado-media /path/to/avocado   # 홍보 사이트 사진
 ```
 
 카탈로그 이미지는 `packages/domain/assets`에만 커밋합니다. 각 앱의 `dev`·`build` 스크립트가 맨 앞에서 자기 `public/images`로 복사합니다(복사본은 git 제외).
+
+## 품질 예산
+
+- **접근성 린트:** `@avocado/config/eslint-next`가 `eslint-config-next`의 jsx-a11y 플러그인에서 recommended 규칙을 모두 켭니다(Next 기본은 몇 개만). 가로 스크롤용 `role="region"` + `tabIndex={0}`은 허용합니다.
+  - `packages/ui`의 shadcn/ui 원본 부품(`label.tsx`, `input-group.tsx`)은 CLI로 다시 받으면 덮어써지므로 파일 대신 `packages/ui/eslint.config.mjs`에서 예외로 둡니다.
+  - 백오피스의 사용량 히트맵(APG 그리드, 칸이 초점을 받음)과 로그인 화면의 첫 입력란 `autoFocus`는 그 줄에만 이유를 남기고 예외로 둡니다.
+- **번들 크기:** `pnpm --filter @avocado/web size`가 홍보 사이트의 전체 JS 450 kB, CSS 70 kB(gzip)를 넘으면 실패합니다. 기준은 `apps/web/.size-limit.json`에 있습니다.
+- **Lighthouse:** `pnpm --filter @avocado/web lhci`가 첫 화면·카테고리·게임 상세·소개를 데스크톱 기준 3번씩 재서 성능 90·접근성 100·권장 사항 95·SEO 90점, LCP 2.5초·TBT 200ms·CLS 0.1 이하인지 확인합니다. 기준은 `apps/web/lighthouserc.json`에 있습니다.
+
+두 검사 모두 프로덕션 빌드가 먼저 있어야 하며, CI는 `pnpm build` 뒤에 돌립니다.

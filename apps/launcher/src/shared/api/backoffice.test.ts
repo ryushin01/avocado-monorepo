@@ -23,15 +23,23 @@ describe("백오피스 API 호출", () => {
   });
 
   it("매장 경로로 토큰을 보내고 응답을 돌려준다", async () => {
-    const fetchMock = vi.fn(async () => json(200, { games: [] }));
+    const body = { cafe: { id: "c_test", name: "강남점" }, games: [], generatedAt: "2026-11-13T00:00:00.000Z" };
+    const fetchMock = vi.fn(async () => json(200, body));
     vi.stubGlobal("fetch", fetchMock);
 
-    expect(await fetchCafeGames()).toEqual({ ok: true, data: { games: [] } });
+    expect(await fetchCafeGames()).toEqual({ ok: true, data: body });
 
     const [url, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
     expect(url.pathname).toBe("/api/kiosk/cafes/c_test/games");
     expect(init.headers).toMatchObject({ authorization: "Bearer kio_secret_token" });
     expect(logs()).toEqual([]);
+  });
+
+  it("응답이 약속한 모양과 다르면 손님 화면이 깨지는 대신 연결 문제로 알리고 기록한다", async () => {
+    vi.stubGlobal("fetch", async () => json(200, { games: "oops" }));
+
+    expect(await fetchCafeGames()).toEqual({ ok: false, reason: "unreachable" });
+    expect(logs()).toEqual([expect.objectContaining({ event: "backoffice_invalid_response" })]);
   });
 
   it("404는 매장 없음으로 알리고 장애로 기록하지 않는다", async () => {

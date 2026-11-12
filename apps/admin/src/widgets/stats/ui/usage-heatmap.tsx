@@ -72,6 +72,8 @@ export function UsageHeatmap({
   return (
     <div className="flex flex-col gap-3">
       <div className="overflow-x-auto">
+        {/* APG 그리드 패턴: 초점은 칸(gridcell)이 roving tabindex로 받고, 화살표 키는 그리드에서 한꺼번에 처리한다. */}
+        {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
         <div
           role="grid"
           aria-label="요일·시간대별 이용 시작 횟수"

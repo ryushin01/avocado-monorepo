@@ -10,7 +10,9 @@
     "typecheck": "next typegen && tsc7 --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "import:avocado-media": "node scripts/import-avocado-media.mjs"
+    "import:avocado-media": "node scripts/import-avocado-media.mjs",
+    "size": "size-limit",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "@avocado/config": "workspace:*",

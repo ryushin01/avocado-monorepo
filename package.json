@@ -19,6 +19,9 @@
     "import:avocado-media": "pnpm --filter @avocado/web import:avocado-media"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.16.0",
+    "@size-limit/file": "^14.3.0",
+    "size-limit": "^14.3.0",
     "turbo": "^2"
   },
   "engines": {

@@ -24,6 +24,8 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `LAUNCHER_CAFE_ID` | `c_gangnam` | 이 키오스크가 놓인 매장 |
 | `KIOSK_API_TOKEN` | `kio_dev_c_gangnam` (예시) | 이 기기의 키오스크 토큰. 백오피스 매장 관리 > 키오스크 토큰에서 매장·기기마다 발급합니다. 운영에서는 필수, 개발 DB에는 매장마다 `kio_dev_<매장 id>`가 있습니다 |
 
+런처가 백오피스에서 받는 응답은 `packages/domain/src/kiosk.ts`의 zod 스키마(`KioskCafeGamesSchema` 등)로 확인합니다. 타입도 이 스키마에서 `z.infer`로 만들어 백오피스와 런처가 같은 계약을 씁니다. 성공(2xx) 응답의 본문이 스키마와 다르면 런처가 `backoffice_invalid_response`를 기록하고 연결 문제(`unreachable`)로 안내합니다. 오류 응답은 이 로그 없이 상태 코드대로 처리합니다. 404는 `not-found`, 그 밖의 4xx는 `rejected`(401·403 제외)이고, 401·403·5xx는 `backoffice_error`를 남깁니다. 오류 본문은 형식이 맞을 때만 함께 넘깁니다.
+
 ## 스크립트
 
 | 명령 | 설명 |

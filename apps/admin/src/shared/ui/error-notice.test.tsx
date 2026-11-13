@@ -26,7 +26,10 @@ describe("ErrorNotice", () => {
   });
 
   it("이미 main 안에 그릴 때는 main을 겹치지 않는다", () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const { container, rerender } = render(<ErrorNotice error={new Error("x")} retry={() => {}} />);
+    // 오류는 개발자 도구에 남긴다(문의를 받았을 때 원인 확인용).
+    expect(log).toHaveBeenCalled();
     expect(container.querySelector("main#main")).not.toBeNull();
     rerender(<ErrorNotice error={new Error("x")} retry={() => {}} insideMain />);
     expect(container.querySelector("main")).toBeNull();

@@ -17,10 +17,10 @@ import type {
 } from "@/entities/inventory";
 
 /** 인원수 구간. 마지막은 "max명 이상"이다. */
-export const PLAYER_BUCKETS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+const PLAYER_BUCKETS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /** 최소 플레이 시간 구간(분). 각 구간의 상한, 마지막은 상한 없음. */
-export const PLAY_TIME_BUCKETS = [
+const PLAY_TIME_BUCKETS = [
   { label: "30분 이하", max: 30 },
   { label: "31–60분", max: 60 },
   { label: "61–90분", max: 90 },
@@ -207,7 +207,7 @@ export function createInventoryRepository(db: Database): InventoryRepository {
 }
 
 /** 매장·재고·게임으로 대시보드 요약을 계산한다 (DB와 무관한 순수 함수). */
-export function summarizeRows(
+function summarizeRows(
   scoped: Cafe[],
   items: InventoryItem[],
   games: Map<string, BoardGame>,

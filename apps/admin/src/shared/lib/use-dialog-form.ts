@@ -65,3 +65,6 @@ export function useDialogForm(
     },
   };
 }
+
+/** useDialogForm이 돌려주는 폼 상태. 공용 입력 칸이 받는다. */
+export type DialogForm = ReturnType<typeof useDialogForm>;

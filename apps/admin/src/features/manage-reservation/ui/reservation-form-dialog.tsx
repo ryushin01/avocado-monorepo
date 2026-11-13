@@ -1,15 +1,11 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import type { ReactElement } from "react";
 
-import { Button } from "@avocado/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,6 +27,9 @@ import { useDialogForm } from "@/shared/lib/use-dialog-form";
 import { formatPhone } from "@/entities/guest";
 import { toKstDate } from "@/shared/lib/kst-time";
 import type { Reservation } from "@/entities/reservation";
+import { FormTextField } from "@/shared/ui/form-text-field";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
+import { errorIdOf, fieldA11y } from "@/shared/lib/field-a11y";
 
 const STATUS_ITEMS = [
   { value: "confirmed", label: "확정" },
@@ -78,18 +77,7 @@ export function ReservationFormDialog({
   });
 
   const field = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
-    <Field data-invalid={form.invalid(name)}>
-      <FieldLabel htmlFor={`reservation-${name}`}>{label}</FieldLabel>
-      <Input
-        id={`reservation-${name}`}
-        name={name}
-        autoComplete="off"
-        defaultValue={form.text(name)}
-        aria-invalid={form.invalid(name)}
-        {...props}
-      />
-      <FieldError errors={form.errors(name)} />
-    </Field>
+    <FormTextField formState={form} idPrefix="reservation" name={name} label={label} {...props} />
   );
 
   return (
@@ -118,7 +106,11 @@ export function ReservationFormDialog({
               <Field data-invalid={form.invalid("status")}>
                 <FieldLabel htmlFor="reservation-status">상태</FieldLabel>
                 <Select name="status" items={STATUS_ITEMS} defaultValue={form.text("status")}>
-                  <SelectTrigger id="reservation-status" className="w-full">
+                  <SelectTrigger
+                    id="reservation-status"
+                    className="w-full"
+                    {...fieldA11y("reservation-status", form.invalid("status"))}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -129,7 +121,7 @@ export function ReservationFormDialog({
                     ))}
                   </SelectContent>
                 </Select>
-                <FieldError errors={form.errors("status")} />
+                <FieldError id={errorIdOf("reservation-status")} errors={form.errors("status")} />
               </Field>
             )}
             <Field data-invalid={form.invalid("memo")}>
@@ -139,18 +131,12 @@ export function ReservationFormDialog({
                 name="memo"
                 rows={2}
                 defaultValue={form.text("memo")}
-                aria-invalid={form.invalid("memo")}
+                {...fieldA11y("reservation-memo", form.invalid("memo"))}
               />
-              <FieldError errors={form.errors("memo")} />
+              <FieldError id={errorIdOf("reservation-memo")} errors={form.errors("memo")} />
             </Field>
           </FieldGroup>
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>취소</DialogClose>
-            <Button type="submit" disabled={form.pending}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              {reservation ? "저장" : "등록"}
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel={reservation ? "저장" : "등록"} pending={form.pending} />
         </form>
       </DialogContent>
     </Dialog>

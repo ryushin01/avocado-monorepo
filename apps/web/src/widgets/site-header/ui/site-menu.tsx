@@ -50,48 +50,42 @@ export function SiteMenu() {
             <X className="size-6 lg:size-8" />
           </Button>
         </div>
-        <nav
-          aria-label="게임 유형"
-          className="rounded-lg border-y border-page bg-card px-5 py-3.5 text-card-foreground lg:px-[60px] lg:py-10"
-        >
-          <ul>
-            {categories.map(({ key, label }) => (
-              <li key={key} className="border-b last:border-b-0">
-                <Link
-                  href={`/games/${key}`}
-                  onClick={close}
-                  className="flex h-14 items-center justify-between text-base font-bold underline-offset-4 hover:underline lg:h-20 lg:text-xl"
-                >
-                  {label}
-                  <ArrowRight className="size-4 lg:size-6" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <nav
-          aria-label="사이트 안내"
-          className="rounded-lg border-y border-page bg-card px-5 py-3.5 text-card-foreground lg:px-[60px] lg:py-10"
-        >
-          <ul>
-            {SITE_LINKS.map(({ href, label }) => (
-              <li key={href} className="border-b last:border-b-0">
-                <Link
-                  href={href}
-                  onClick={close}
-                  className="flex h-14 items-center justify-between text-base font-bold underline-offset-4 hover:underline lg:h-20 lg:text-xl"
-                >
-                  {label}
-                  <ArrowRight className="size-4 lg:size-6" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <MenuLinks
+          label="게임 유형"
+          links={categories.map(({ key, label }) => ({ href: `/games/${key}`, label }))}
+          onNavigate={close}
+        />
+        <MenuLinks label="사이트 안내" links={SITE_LINKS} onNavigate={close} />
         <div className="relative h-[100px] shrink-0 overflow-hidden rounded-lg lg:h-[200px]">
           <Image src="/images/banners/strategy.webp" alt="" fill sizes="100vw" className="object-cover" />
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** 메뉴 판 안의 링크 묶음. 묶음마다 이름(aria-label)이 다른 nav 랜드마크다. */
+function MenuLinks({
+  label,
+  links,
+  onNavigate,
+}: {
+  label: string;
+  links: readonly { href: string; label: string }[];
+  onNavigate: () => void;
+}) {
+  return (
+    <nav aria-label={label} className="rounded-lg border-y border-page bg-card px-5 py-3.5 text-card-foreground lg:px-[60px] lg:py-10">
+      <ul>
+        {links.map((link) => (
+          <li key={link.href} className="border-b last:border-b-0">
+            <Link href={link.href} onClick={onNavigate} className="flex h-14 items-center justify-between text-base font-bold underline-offset-4 hover:underline lg:h-20 lg:text-xl">
+              {link.label}
+              <ArrowRight className="size-4 lg:size-6" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

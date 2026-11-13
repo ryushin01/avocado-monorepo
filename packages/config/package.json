@@ -12,12 +12,12 @@
   },
   "peerDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.4.5",
+    "eslint-config-next": "16.4.6",
     "typescript": "~6.0.3"
   },
   "devDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.4.5",
+    "eslint-config-next": "16.4.6",
     "typescript": "~6.0.3"
   },
   "bin": {

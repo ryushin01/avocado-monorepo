@@ -75,7 +75,7 @@
 | 테스트 | Vitest 5, Testing Library, Playwright | 규칙은 단위 테스트로, 화면 흐름은 프로덕션 빌드 대상 E2E로 확인합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙, jsx-a11y), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
 | 성능 예산 | size-limit, Lighthouse CI(홍보 사이트) | 번들 크기와 Lighthouse 점수가 기준 아래로 떨어지면 PR을 막습니다 |
-| 배포 | Vercel(홍보 사이트) | `main`에 머지하면 자동 배포되고, PR마다 미리보기 주소가 생깁니다 |
+| 배포 | Vercel(홍보 사이트) | `main`에 머지하면 자동 배포됩니다(PR 미리보기 배포는 껐음) |
 | 모니터링 | Sentry(홍보 사이트) | 브라우저와 서버 오류를 모읍니다. 개인정보는 모으지 않고, DSN이 없으면 동작하지 않습니다 |
 | 분석 | PostHog, Web Vitals(홍보 사이트) | 실제 방문자의 LCP·INP·CLS와 페이지 이동을 모읍니다. 쿠키 없이 사람을 식별하지 않고, 키가 없으면 동작하지 않습니다 |
 

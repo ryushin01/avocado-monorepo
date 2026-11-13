@@ -1,25 +1,23 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import type { ReactElement } from "react";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
-import { Button } from "@avocado/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@avocado/ui/components/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@avocado/ui/components/field";
+import { FieldGroup } from "@avocado/ui/components/field";
 import { Input } from "@avocado/ui/components/input";
 import type { Cafe } from "@/entities/cafe";
 import type { FormState } from "@/shared/lib/form";
+import { FormTextField } from "@/shared/ui/form-text-field";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
 
 function toFormValues(cafe?: Cafe) {
   return {
@@ -56,23 +54,8 @@ export function CafeFormDialog({
     onSuccess: () => onOpenChange(false),
   });
 
-  const textField = (
-    name: string,
-    label: string,
-    props: React.ComponentProps<typeof Input> = {},
-  ) => (
-    <Field data-invalid={form.invalid(name)}>
-      <FieldLabel htmlFor={`cafe-${name}`}>{label}</FieldLabel>
-      <Input
-        id={`cafe-${name}`}
-        name={name}
-        autoComplete="off"
-        defaultValue={form.text(name)}
-        aria-invalid={form.invalid(name)}
-        {...props}
-      />
-      <FieldError errors={form.errors(name)} />
-    </Field>
+  const textField = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
+    <FormTextField formState={form} idPrefix="cafe" name={name} label={label} {...props} />
   );
 
   return (
@@ -100,15 +83,7 @@ export function CafeFormDialog({
             })}
           </FieldGroup>
 
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              취소
-            </DialogClose>
-            <Button type="submit" disabled={form.pending}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              {submitLabel}
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
         </form>
       </DialogContent>
     </Dialog>

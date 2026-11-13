@@ -29,6 +29,17 @@ describe("sentryOptions", () => {
       urlQueryParams: false,
     });
   });
+
+  it("오류 내용이 아닌 콜백 인수·거부 객체의 필드·주소 # 뒤는 지운다", async () => {
+    const { beforeSend } = await load("https://key@example.ingest.sentry.io/1");
+    expect(
+      beforeSend({
+        type: undefined,
+        extra: { arguments: ["입력"], __serialized__: { email: "a@b.c" }, other: 1 },
+        request: { url: "https://a.b/menu#token" },
+      }),
+    ).toEqual({ type: undefined, extra: { other: 1 }, request: { url: "https://a.b/menu" } });
+  });
 });
 
 describe("withoutVisitorTracking", () => {

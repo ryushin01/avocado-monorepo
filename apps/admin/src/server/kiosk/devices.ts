@@ -12,7 +12,7 @@ import type { KioskDevice } from "@/entities/kiosk-device";
 export const hashKioskToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
 /** 새 토큰: kio_ + 무작위 32글자 */
-export const generateKioskToken = () => `kio_${randomBytes(24).toString("base64url")}`;
+const generateKioskToken = () => `kio_${randomBytes(24).toString("base64url")}`;
 
 const prefixOf = (token: string) => `${token.slice(0, 8)}…`;
 

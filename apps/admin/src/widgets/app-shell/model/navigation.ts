@@ -18,7 +18,7 @@ export type NavItem = {
   roles: readonly Role[];
 };
 
-export const NAV_ITEMS: readonly NavItem[] = [
+const NAV_ITEMS: readonly NavItem[] = [
   { title: "대시보드", href: "/", icon: "dashboard", roles: ["admin", "staff"] },
   { title: "통계", href: "/stats", icon: "stats", roles: ["admin", "staff"] },
   { title: "보드게임", href: "/games", icon: "games", roles: ["admin", "staff"] },

@@ -1,7 +1,4 @@
 export {
   CatalogInfiniteList,
 } from "./ui/catalog-infinite-list";
-export {
-  formatHolding,
-  CatalogTable,
-} from "./ui/catalog-table";
+export { CatalogTable } from "./ui/catalog-table";

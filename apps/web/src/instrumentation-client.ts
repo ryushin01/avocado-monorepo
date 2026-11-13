@@ -1,11 +1,6 @@
-import * as Sentry from "@sentry/nextjs";
-
-import { sentryOptions, withoutVisitorTracking } from "@/shared/config/sentry";
 import { initAnalytics } from "@/shared/lib/analytics";
+import { initMonitoring } from "@/shared/lib/monitoring";
 
-Sentry.init({ ...sentryOptions, integrations: withoutVisitorTracking });
-
-// 분석은 화면을 그리는 데 필요 없으므로 기다리지 않는다.
+// 오류 모니터링(DSN이 있을 때만)과 분석은 화면을 그리는 데 필요 없으므로 첫 화면 뒤에 따로 받는다.
+initMonitoring();
 void initAnalytics();
-
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

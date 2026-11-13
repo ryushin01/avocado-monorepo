@@ -136,3 +136,16 @@ docs/
 | [백오피스 구조](apps/admin/docs/architecture.md) | 도메인 모델, 권한, 키오스크 API, 렌더링 규칙 |
 | [런처](apps/launcher/README.md), [홍보 사이트](apps/web/README.md) | 앱별 안내 |
 | [시퀀스 다이어그램](docs/sequence-diagrams.md) | 키오스크 예약 확인·도착 알림, 현장 대기 등록, 대여와 반납 |
+
+## 출처
+
+| 자료 | 저작자 | 사용 허락 | 원본 |
+|---|---|---|---|
+| Geist · Geist Mono 글꼴 | The Geist Project Authors(Vercel) | SIL OFL 1.1 | [vercel/geist-font](https://github.com/vercel/geist-font) |
+| Gowun Dodum(고운돋움) 글꼴 | The Gowun Dodum Project Authors(류양희) | SIL OFL 1.1 | [yangheeryu/Gowun-Dodum](https://github.com/yangheeryu/Gowun-Dodum) |
+| Jua(주아) 글꼴 | The BM JUA Project Authors(우아한형제들) | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Jua) |
+| Lato 글꼴 | Łukasz Dziedzic(tyPoland) | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Lato) |
+| Sunflower 글꼴 | The Sunflower Project Authors | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Sunflower) |
+| 보드게임 상자 그림(게임 썸네일) | 각 게임의 출판사 | 출판사 저작물 | [BoardGameGeek](https://boardgamegeek.com) (avocado 데이터의 게임별 `bggId`) |
+
+홍보 사이트의 사진·아이콘은 원작 avocado 프로젝트의 자료를 줄여 옮겼고(`pnpm import:avocado-media`), 매장·직원·손님 데이터는 가상 데이터입니다.

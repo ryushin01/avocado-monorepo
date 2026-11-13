@@ -16,6 +16,8 @@ beforeEach(() => {
     addEventListener: (type: string, listener: (event: unknown) => void) => listeners.set(type, listener),
     removeEventListener: (type: string) => listeners.delete(type),
   });
+  // 페이지를 다 받은 상태로 둔다(받기는 load 이후 한가할 때 시작).
+  vi.stubGlobal("document", { readyState: "complete" });
 });
 afterEach(() => {
   vi.unstubAllGlobals();

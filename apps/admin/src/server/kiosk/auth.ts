@@ -13,7 +13,7 @@ import { createKioskDeviceRepository, hashKioskToken, type KioskVerifyResult } f
  * 뒷자리는 1만 가지뿐이라, 토큰이 유출돼도 빠르게 훑어보지 못하게 한다.
  * 분당 30번이면 1만 가지를 다 시도하는 데 5시간 넘게 걸리고, 손님 사용에는 부족하지 않다.
  */
-export const KIOSK_GUEST_LIMIT = { limit: 30, windowMs: 60_000 };
+const KIOSK_GUEST_LIMIT = { limit: 30, windowMs: 60_000 };
 
 /**
  * 키오스크 API 접근 규칙 (DB와 무관한 순수 함수).

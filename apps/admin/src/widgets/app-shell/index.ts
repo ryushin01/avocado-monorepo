@@ -1,13 +1,4 @@
-export {
-  NAV_ICONS,
-} from "./model/nav-icons";
-export {
-  NAV_ITEMS,
-  getNavItemsFor,
-  findNavItem,
-  type NavIcon,
-  type NavItem,
-} from "./model/navigation";
+export { getNavItemsFor } from "./model/navigation";
 export {
   AppSidebar,
   SidebarNav,

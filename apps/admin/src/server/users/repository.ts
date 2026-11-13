@@ -36,7 +36,7 @@ export interface UserRepository {
   changeOwnPassword(id: string, passwordHash: string): Promise<boolean>;
 }
 
-export const byUserOrder = (a: User, b: User) =>
+const byUserOrder = (a: User, b: User) =>
   Number(b.active) - Number(a.active) ||
   Number(a.role !== "admin") - Number(b.role !== "admin") ||
   a.name.localeCompare(b.name, "ko");

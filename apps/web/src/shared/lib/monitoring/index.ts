@@ -14,7 +14,7 @@ const keep = (error: unknown, type?: string) => {
 };
 
 /**
- * DSN이 있을 때만 Sentry를 첫 화면 뒤에 따로 받는다. DSN이 없는 배포(로컬, 미리보기)는 받지 않는다.
+ * DSN이 있을 때만 Sentry를 첫 화면 뒤(load 이후 한가할 때)에 따로 받는다. DSN이 없는 배포(로컬, 미리보기)는 받지 않는다.
  * 받는 동안 난 오류는 MAX_EARLY_ERRORS까지 모았다가 처리되지 않은 오류로 보낸다.
  */
 export function initMonitoring() {
@@ -27,7 +27,8 @@ export function initMonitoring() {
     window.removeEventListener("error", onError);
     window.removeEventListener("unhandledrejection", onRejection);
   };
-  sentry = import("./sentry")
+  sentry = afterFirstPaint()
+    .then(() => import("./sentry"))
     .then((Sentry) => {
       Sentry.init({ ...sentryOptions, integrations: withoutVisitorTracking });
       stopBuffering();
@@ -45,6 +46,21 @@ export function initMonitoring() {
       early.length = 0;
       return null;
     });
+}
+
+/**
+ * 페이지를 다 받은 뒤(load) 브라우저가 한가할 때 풀린다. 첫 화면을 그리는 동안 Sentry를 받느라 대역폭을 나눠 쓰지 않게 한다.
+ * requestIdleCallback이 없는 브라우저(Safari 등)는 바로 다음 차례에 푼다.
+ */
+function afterFirstPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    const idle = () =>
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(() => resolve(), { timeout: 3000 })
+        : setTimeout(resolve, 0);
+    if (document.readyState === "complete") idle();
+    else window.addEventListener("load", idle, { once: true });
+  });
 }
 
 /** 오류 화면(error.tsx)이 받은 오류를 보낸다. Sentry를 받는 중이면 한도 안에서 모아 두었다가 보낸다. */

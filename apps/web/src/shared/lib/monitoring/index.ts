@@ -50,22 +50,24 @@ export function initMonitoring() {
 
 /**
  * 페이지를 다 받은 뒤(load) 브라우저가 한가할 때 풀린다. 첫 화면을 그리는 동안 Sentry를 받느라 대역폭을 나눠 쓰지 않게 한다.
- * requestIdleCallback이 없는 브라우저(Safari 등)는 바로 다음 차례에 푼다. load가 10초 안에 오지 않으면 그때 푼다.
+ * requestIdleCallback이 없는 브라우저(Safari 등)는 바로 다음 차례에 푼다. load가 10초 안에 오지 않으면 그때 바로 푼다.
  */
 function afterFirstPaint(): Promise<void> {
   return new Promise((resolve) => {
-    let started = false;
-    const idle = () => {
-      if (started) return;
-      started = true;
-      if ("requestIdleCallback" in window) window.requestIdleCallback(() => resolve(), { timeout: 3000 });
-      else setTimeout(resolve, 0);
-    };
+    const idle = () =>
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(() => resolve(), { timeout: 3000 })
+        : setTimeout(resolve, 0);
     if (document.readyState === "complete") idle();
     else {
-      window.addEventListener("load", idle, { once: true });
-      // 끝나지 않는 요청(스트림, 멈춘 이미지 등)이 load를 붙잡아도 Sentry를 영영 못 받는 일은 없게 한다.
-      setTimeout(idle, 10_000);
+      // 끝나지 않는 요청(스트림, 멈춘 이미지 등)이 load를 붙잡아도 10초가 지나면 바로 받기 시작한다.
+      // load가 먼저 오면 이 기한을 거두고 한가할 때를 기다린다.
+      const deadline = setTimeout(resolve, 10_000);
+      const onLoad = () => {
+        clearTimeout(deadline);
+        idle();
+      };
+      window.addEventListener("load", onLoad, { once: true });
     }
   });
 }

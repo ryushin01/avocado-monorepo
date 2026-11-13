@@ -38,8 +38,9 @@ export function initMonitoring() {
       }
       return Sentry;
     })
-    // Sentry를 받지 못해도 사이트는 그대로 돈다. 모아 둔 오류는 버린다.
-    .catch(() => {
+    // Sentry를 받지 못해도 사이트는 그대로 돈다. 모아 둔 오류는 버리고, 원인은 개발자 도구에 남긴다.
+    .catch((error: unknown) => {
+      console.warn("오류 모니터링(Sentry)을 불러오지 못했습니다.", error);
       stopBuffering();
       early.length = 0;
       return null;

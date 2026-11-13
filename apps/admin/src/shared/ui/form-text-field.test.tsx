@@ -34,4 +34,19 @@ describe("FormTextField", () => {
     expect(input).toHaveAccessibleDescription("전화번호 형식이 아닙니다.");
     expect(input).toHaveAttribute("aria-errormessage", "cafe-phone-error");
   });
+
+  it("id를 넘기면 라벨과 오류 문구도 그 id로 잇는다", () => {
+    render(
+      <FormTextField
+        formState={formState({ name: ["이름을 입력해 주세요."] })}
+        idPrefix="cafe"
+        id="custom-name"
+        name="name"
+        label="매장 이름"
+      />,
+    );
+    const input = screen.getByLabelText("매장 이름");
+    expect(input).toHaveAttribute("id", "custom-name");
+    expect(input).toHaveAccessibleDescription("이름을 입력해 주세요.");
+  });
 });

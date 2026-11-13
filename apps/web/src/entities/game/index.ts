@@ -1,7 +1,1 @@
-export {
-  GAME_SORTS,
-  GAME_SORT_LABELS,
-  parseGameSort,
-  sortGames,
-  type GameSort,
-} from "./model/sort-games";
+export { GAME_SORTS, GAME_SORT_LABELS, parseGameSort, sortGames } from "./model/sort-games";

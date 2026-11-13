@@ -1,14 +1,14 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 import { PageHeader } from "@/widgets/site-header";
+import { captureException } from "@/shared/lib/monitoring";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 
 export default function Error({ error, retry }: { error: unknown; retry: () => void }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    captureException(error);
   }, [error]);
 
   return (

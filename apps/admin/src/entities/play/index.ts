@@ -15,6 +15,5 @@ export {
   type PopularityPeriod,
   type PopularGame,
   type PopularityRanking,
-  type PlayUsage,
   type PlayUsageSummary,
 } from "./model/types";

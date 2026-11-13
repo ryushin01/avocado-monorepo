@@ -28,6 +28,7 @@
   - `@/entities/<이름>/ui`: 표시 컴포넌트.
   - `@/entities/<이름>/schema`: zod 검증. 서버 코드(서버 액션, 페이지의 URL 파싱)에서 씁니다.
 - **`index.ts`에서는 이름을 하나씩 내보냅니다.** `"use client"` 모듈은 `export *`로 내보낼 수 없습니다.
+- **공개 API에는 슬라이스 밖에서 쓰는 것만 내보냅니다.** 슬라이스 안에서만 쓰는 액션·대화상자·상수는 내보내지 않습니다. 쓰지 않는 내보내기는 `npx knip`으로 찾을 수 있습니다(교차 공개 API `@x`의 `export *`는 knip이 놓치므로 지우기 전에 확인).
 - **백오피스의 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.** `views`, `app`, `features/*/api`만 가져오고, 서버 코드는 `entities`의 model·schema와 `shared/lib`만 가져옵니다. 나머지 화면 조각은 props로 데이터를 받습니다.
 - **새 슬라이스는 처음부터 만들지 않아도 됩니다.** 한 화면에서만 쓰면 그 `views` 안에 두고, 여러 곳에서 쓰게 될 때 내립니다.
 
@@ -96,6 +97,8 @@
   - `<form key={form.formKey}>`를 꼭 붙이세요. 다시 마운트해야 `defaultValue`가 복원됩니다.
 - **`onSubmit`만 있는 폼은 하이드레이션 전에 브라우저가 GET으로 제출합니다.** 입력값이 주소에 실리므로, 비밀번호·개인정보를 받는 폼은 Server Action(`action`)을 쓰거나 로그인 폼처럼 준비될 때까지 제출 버튼을 막고 `method="post"`를 둡니다.
 - **검증은 zod 스키마 하나로 서버에서 합니다.** 폼에는 `noValidate`를 붙여 브라우저 기본 검증을 끄고, 서버 오류 메시지를 일관되게 보여줍니다.
+- **글자 칸은 `FormTextField`, 대화상자 아래 버튼은 `DialogFormFooter`**(`shared/ui`)를 씁니다. 라벨·값 복원·오류 문구 연결과 처리 중 막기를 한곳에서 맞춥니다.
+- **오류 문구와 도움말은 칸에 잇습니다.** 선택 상자·여러 줄 칸·체크박스처럼 직접 만드는 칸은 `fieldA11y(칸 id, 잘못됐는지, { described })`(`shared/lib/field-a11y.ts`)를 펼쳐 넣고, 짝이 되는 `FieldError`·`FieldDescription`에 `errorIdOf(칸 id)`·`descriptionIdOf(칸 id)`를 id로 줍니다. 잘못된 값일 때만 `aria-invalid`를 붙이고, 오류 문구는 `aria-errormessage`와 `aria-describedby`로 함께 잇습니다(KWCAG 7.3.1).
 
 ## 테스트
 

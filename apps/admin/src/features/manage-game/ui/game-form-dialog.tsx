@@ -1,18 +1,14 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import type { ReactElement } from "react";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
-import { Button } from "@avocado/ui/components/button";
 import { Checkbox } from "@avocado/ui/components/checkbox";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -41,6 +37,9 @@ import {
   GAME_DIFFICULTY_LABELS,
   type BoardGame,
 } from "@/entities/game";
+import { FormTextField } from "@/shared/ui/form-text-field";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
+import { errorIdOf, fieldA11y } from "@/shared/lib/field-a11y";
 
 const DIFFICULTY_ITEMS = GAME_DIFFICULTIES.map((d) => ({
   value: d,
@@ -103,23 +102,8 @@ export function GameFormDialog({
   const { text, list, invalid } = form;
   const fieldError = form.errors;
 
-  const textField = (
-    name: string,
-    label: string,
-    props: React.ComponentProps<typeof Input> = {},
-  ) => (
-    <Field data-invalid={invalid(name)}>
-      <FieldLabel htmlFor={`game-${name}`}>{label}</FieldLabel>
-      <Input
-        id={`game-${name}`}
-        name={name}
-        autoComplete="off"
-        defaultValue={text(name)}
-        aria-invalid={invalid(name)}
-        {...props}
-      />
-      <FieldError errors={fieldError(name)} />
-    </Field>
+  const textField = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
+    <FormTextField formState={form} idPrefix="game" name={name} label={label} {...props} />
   );
 
   const numberField = (name: string, label: string) =>
@@ -155,7 +139,7 @@ export function GameFormDialog({
                       name="categories"
                       value={category}
                       defaultChecked={list("categories").includes(category)}
-                      aria-invalid={invalid("categories")}
+                      {...fieldA11y("game-categories", invalid("categories"))}
                     />
                     <FieldLabel
                       htmlFor={`game-category-${category}`}
@@ -166,7 +150,7 @@ export function GameFormDialog({
                   </Field>
                 ))}
               </div>
-              <FieldError errors={fieldError("categories")} />
+              <FieldError id={errorIdOf("game-categories")} errors={fieldError("categories")} />
             </FieldSet>
 
             <div className="grid grid-cols-2 gap-4">
@@ -180,7 +164,7 @@ export function GameFormDialog({
                   <SelectTrigger
                     id="game-difficulty"
                     className="w-full"
-                    aria-invalid={invalid("difficulty")}
+                    {...fieldA11y("game-difficulty", invalid("difficulty"))}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -192,7 +176,7 @@ export function GameFormDialog({
                     ))}
                   </SelectContent>
                 </Select>
-                <FieldError errors={fieldError("difficulty")} />
+                <FieldError id={errorIdOf("game-difficulty")} errors={fieldError("difficulty")} />
               </Field>
               {numberField("minPlayers", "최소 인원")}
               {numberField("maxPlayers", "최대 인원")}
@@ -201,15 +185,7 @@ export function GameFormDialog({
             </div>
           </FieldGroup>
 
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              취소
-            </DialogClose>
-            <Button type="submit" disabled={form.pending}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              {submitLabel}
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
         </form>
       </DialogContent>
     </Dialog>

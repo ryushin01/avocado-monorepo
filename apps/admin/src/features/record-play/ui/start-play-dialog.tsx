@@ -17,10 +17,8 @@ import {
 } from "@avocado/ui/components/combobox";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,6 +33,8 @@ import {
 import { Input } from "@avocado/ui/components/input";
 import { formatPlayers } from "@/entities/game/ui";
 import type { RentableGame } from "@/entities/play";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
+import { errorIdOf, fieldA11y } from "@/shared/lib/field-a11y";
 
 export function StartPlayDialog({
   cafeId,
@@ -99,7 +99,7 @@ export function StartPlayDialog({
                   <ComboboxInput
                     id="play-game"
                     placeholder="게임 이름 검색"
-                    aria-invalid={form.invalid("gameId")}
+                    {...fieldA11y("play-game", form.invalid("gameId"))}
                     className="w-full"
                   />
                   <ComboboxContent>
@@ -117,7 +117,7 @@ export function StartPlayDialog({
                   </ComboboxContent>
                 </Combobox>
               )}
-              <FieldError errors={form.errors("gameId")} />
+              <FieldError id={errorIdOf("play-game")} errors={form.errors("gameId")} />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field data-invalid={form.invalid("playerCount")}>
@@ -129,9 +129,9 @@ export function StartPlayDialog({
                   inputMode="numeric"
                   min={1}
                   defaultValue={form.text("playerCount")}
-                  aria-invalid={form.invalid("playerCount")}
+                  {...fieldA11y("play-player-count", form.invalid("playerCount"))}
                 />
-                <FieldError errors={form.errors("playerCount")} />
+                <FieldError id={errorIdOf("play-player-count")} errors={form.errors("playerCount")} />
               </Field>
               <Field data-invalid={form.invalid("table")}>
                 <FieldLabel htmlFor="play-table">테이블 (선택)</FieldLabel>
@@ -141,9 +141,9 @@ export function StartPlayDialog({
                   autoComplete="off"
                   placeholder="예: 3번"
                   defaultValue={form.text("table")}
-                  aria-invalid={form.invalid("table")}
+                  {...fieldA11y("play-table", form.invalid("table"))}
                 />
-                <FieldError errors={form.errors("table")} />
+                <FieldError id={errorIdOf("play-table")} errors={form.errors("table")} />
               </Field>
             </div>
             <FieldDescription>
@@ -151,15 +151,7 @@ export function StartPlayDialog({
             </FieldDescription>
           </FieldGroup>
 
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              취소
-            </DialogClose>
-            <Button type="submit" disabled={form.pending || loading}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              이용 시작
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel="이용 시작" pending={form.pending} disabled={loading} />
         </form>
       </DialogContent>
     </Dialog>

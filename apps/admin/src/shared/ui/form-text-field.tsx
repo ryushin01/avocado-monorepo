@@ -22,9 +22,11 @@ export function FormTextField({
   idPrefix,
   name,
   label,
+  id: givenId,
   ...props
 }: FormTextFieldProps) {
-  const id = `${idPrefix}-${name}`;
+  // id를 따로 넘기면 그것을 라벨·오류 문구 연결에도 그대로 쓴다.
+  const id = givenId ?? `${idPrefix}-${name}`;
   const invalid = form.invalid(name);
   return (
     <Field data-invalid={invalid}>

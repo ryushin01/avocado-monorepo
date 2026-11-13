@@ -20,6 +20,7 @@ beforeEach(() => {
   vi.stubGlobal("document", { readyState: "complete" });
 });
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   vi.resetModules();
@@ -59,5 +60,16 @@ describe("initMonitoring", () => {
     await vi.waitFor(() => expect(sentry.captureException).toHaveBeenCalledTimes(20));
     captureException(new Error("준비된 뒤"));
     expect(sentry.captureException).toHaveBeenCalledTimes(21);
+  });
+
+  it("load가 10초 안에 오지 않아도 그때 Sentry를 받는다", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("document", { readyState: "loading" });
+    const { initMonitoring } = await load("https://key@o1.ingest.sentry.io/1");
+    initMonitoring();
+    await vi.advanceTimersByTimeAsync(9_000);
+    expect(sentry.init).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.waitFor(() => expect(sentry.init).toHaveBeenCalledOnce());
   });
 });

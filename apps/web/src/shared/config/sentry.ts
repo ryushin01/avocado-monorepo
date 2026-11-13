@@ -1,3 +1,5 @@
+import type { ErrorEvent } from "@sentry/nextjs";
+
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
 /**
@@ -15,6 +17,20 @@ export const sentryOptions = {
     httpBodies: [],
     urlQueryParams: false,
     stackFrameVariables: false,
+  },
+  /**
+   * 오류 내용이 아닌 것은 지운다.
+   * - extra.arguments: 감싼 콜백이 던진 오류에 붙는 그 콜백의 인수(입력 이벤트 등)
+   * - extra.__serialized__: Error가 아닌 일반 객체로 거부된 Promise의 필드 값(이메일·토큰 등이 들 수 있음)
+   * - 주소의 # 뒤(로그인 토큰 등)
+   */
+  beforeSend(event: ErrorEvent) {
+    if (event.extra) {
+      delete event.extra.arguments;
+      delete event.extra.__serialized__;
+    }
+    if (event.request?.url) event.request.url = event.request.url.split("#")[0];
+    return event;
   },
 };
 

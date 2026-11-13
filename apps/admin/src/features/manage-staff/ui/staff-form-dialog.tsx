@@ -1,17 +1,13 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { useState, type ReactElement } from "react";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
-import { Button } from "@avocado/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -33,6 +29,9 @@ import {
 } from "@avocado/ui/components/select";
 import { ROLE_LABELS, ROLES, type Role, type User } from "@/entities/user";
 import type { FormState } from "@/shared/lib/form";
+import { FormTextField } from "@/shared/ui/form-text-field";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
+import { descriptionIdOf, errorIdOf, fieldA11y } from "@/shared/lib/field-a11y";
 
 export type CafeOption = { value: string; label: string };
 
@@ -89,15 +88,7 @@ export function StaffFormDialog({
           </DialogHeader>
           {/* form이 다시 마운트될 때(제출 후) 역할 선택도 입력값으로 되돌린다. */}
           <StaffFields form={form} cafes={cafes} lockRole={lockRole} isNew={!user} />
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              취소
-            </DialogClose>
-            <Button type="submit" disabled={form.pending}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              {submitLabel}
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
         </form>
       </DialogContent>
     </Dialog>
@@ -119,18 +110,7 @@ function StaffFields({
   const [role, setRole] = useState<Role>(form.text("role") === "admin" ? "admin" : "staff");
 
   const textField = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
-    <Field data-invalid={form.invalid(name)}>
-      <FieldLabel htmlFor={`staff-${name}`}>{label}</FieldLabel>
-      <Input
-        id={`staff-${name}`}
-        name={name}
-        autoComplete="off"
-        defaultValue={form.text(name)}
-        aria-invalid={form.invalid(name)}
-        {...props}
-      />
-      <FieldError errors={form.errors(name)} />
-    </Field>
+    <FormTextField formState={form} idPrefix="staff" name={name} label={label} {...props} />
   );
 
   return (
@@ -146,14 +126,14 @@ function StaffFields({
           name="password"
           type="password"
           autoComplete="new-password"
-          aria-invalid={form.invalid("password")}
+          {...fieldA11y("staff-password", form.invalid("password"), { described: true })}
         />
-        <FieldDescription>
+        <FieldDescription id={descriptionIdOf("staff-password")}>
           {isNew
             ? "8자 이상. 직원에게 따로 알려주세요. 직원은 처음 로그인할 때 본인 비밀번호로 바꿉니다."
             : "비밀번호를 잊은 직원에게 임시 비밀번호를 정해 줍니다. 직원은 다음 로그인 때 바꿔야 합니다. 비워 두면 그대로 둡니다."}
         </FieldDescription>
-        <FieldError errors={form.errors("password")} />
+        <FieldError id={errorIdOf("staff-password")} errors={form.errors("password")} />
       </Field>
       <Field data-invalid={form.invalid("role")}>
         <FieldLabel htmlFor="staff-role">역할</FieldLabel>
@@ -164,7 +144,11 @@ function StaffFields({
           onValueChange={(v) => setRole(v === "admin" ? "admin" : "staff")}
           disabled={lockRole}
         >
-          <SelectTrigger id="staff-role" className="w-full" aria-invalid={form.invalid("role")}>
+          <SelectTrigger
+            id="staff-role"
+            className="w-full"
+            {...fieldA11y("staff-role", form.invalid("role"), { described: true })}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -177,12 +161,12 @@ function StaffFields({
         </Select>
         {/* 비활성 Select는 값을 보내지 않으므로 숨은 값으로 보낸다. */}
         {lockRole && <input type="hidden" name="role" value={role} />}
-        <FieldDescription>
+        <FieldDescription id={descriptionIdOf("staff-role")}>
           {lockRole
             ? "자기 자신의 역할은 바꿀 수 없습니다."
             : "관리자는 모든 매장을, 스태프는 소속 매장만 관리합니다."}
         </FieldDescription>
-        <FieldError errors={form.errors("role")} />
+        <FieldError id={errorIdOf("staff-role")} errors={form.errors("role")} />
       </Field>
       {role === "staff" && (
         <Field data-invalid={form.invalid("cafeId")}>
@@ -191,7 +175,7 @@ function StaffFields({
             <SelectTrigger
               id="staff-cafe"
               className="w-full"
-              aria-invalid={form.invalid("cafeId")}
+              {...fieldA11y("staff-cafe", form.invalid("cafeId"))}
             >
               <SelectValue placeholder="매장 선택" />
             </SelectTrigger>
@@ -203,7 +187,7 @@ function StaffFields({
               ))}
             </SelectContent>
           </Select>
-          <FieldError errors={form.errors("cafeId")} />
+          <FieldError id={errorIdOf("staff-cafe")} errors={form.errors("cafeId")} />
         </Field>
       )}
     </FieldGroup>

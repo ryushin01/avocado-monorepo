@@ -1,17 +1,13 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 
 import { editInventoryAction } from "../api/actions";
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
-import { Button } from "@avocado/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@avocado/ui/components/dialog";
@@ -29,6 +25,8 @@ import {
   INVENTORY_STATUS_LABELS,
   type InventoryEntry,
 } from "@/entities/inventory";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
+import { errorIdOf, fieldA11y } from "@/shared/lib/field-a11y";
 
 const STATUS_ITEMS = INVENTORY_STATUSES.map((s) => ({
   value: s,
@@ -74,9 +72,9 @@ export function InventoryEditDialog({
                 inputMode="numeric"
                 min={1}
                 defaultValue={form.text("quantity")}
-                aria-invalid={form.invalid("quantity")}
+                {...fieldA11y("inventory-quantity", form.invalid("quantity"))}
               />
-              <FieldError errors={form.errors("quantity")} />
+              <FieldError id={errorIdOf("inventory-quantity")} errors={form.errors("quantity")} />
             </Field>
             <Field data-invalid={form.invalid("status")}>
               <FieldLabel htmlFor="inventory-status">상태</FieldLabel>
@@ -85,7 +83,11 @@ export function InventoryEditDialog({
                 items={STATUS_ITEMS}
                 defaultValue={form.text("status")}
               >
-                <SelectTrigger id="inventory-status" className="w-full">
+                <SelectTrigger
+                  id="inventory-status"
+                  className="w-full"
+                  {...fieldA11y("inventory-status", form.invalid("status"))}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -96,19 +98,11 @@ export function InventoryEditDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <FieldError errors={form.errors("status")} />
+              <FieldError id={errorIdOf("inventory-status")} errors={form.errors("status")} />
             </Field>
           </FieldGroup>
 
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              취소
-            </DialogClose>
-            <Button type="submit" disabled={form.pending}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              저장
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel="저장" pending={form.pending} />
         </form>
       </DialogContent>
     </Dialog>

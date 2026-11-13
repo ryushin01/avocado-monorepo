@@ -17,10 +17,8 @@ import {
 } from "@avocado/ui/components/combobox";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -28,6 +26,8 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@avocado/ui/components/field";
 import { Input } from "@avocado/ui/components/input";
 import type { BoardGame } from "@/entities/game";
+import { DialogFormFooter } from "@/shared/ui/dialog-form-footer";
+import { errorIdOf, fieldA11y } from "@/shared/lib/field-a11y";
 
 export function AddInventoryDialog({
   cafeId,
@@ -92,7 +92,7 @@ export function AddInventoryDialog({
                   <ComboboxInput
                     id="inventory-game"
                     placeholder="게임 이름 검색"
-                    aria-invalid={form.invalid("gameId")}
+                    {...fieldA11y("inventory-game", form.invalid("gameId"))}
                     className="w-full"
                   />
                   <ComboboxContent>
@@ -112,7 +112,7 @@ export function AddInventoryDialog({
                   </ComboboxContent>
                 </Combobox>
               )}
-              <FieldError errors={form.errors("gameId")} />
+              <FieldError id={errorIdOf("inventory-game")} errors={form.errors("gameId")} />
             </Field>
             <Field data-invalid={form.invalid("quantity")}>
               <FieldLabel htmlFor="inventory-add-quantity">보유 수량</FieldLabel>
@@ -123,21 +123,13 @@ export function AddInventoryDialog({
                 inputMode="numeric"
                 min={1}
                 defaultValue={form.text("quantity")}
-                aria-invalid={form.invalid("quantity")}
+                {...fieldA11y("inventory-add-quantity", form.invalid("quantity"))}
               />
-              <FieldError errors={form.errors("quantity")} />
+              <FieldError id={errorIdOf("inventory-add-quantity")} errors={form.errors("quantity")} />
             </Field>
           </FieldGroup>
 
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              취소
-            </DialogClose>
-            <Button type="submit" disabled={form.pending || loading}>
-              {form.pending && <Loader2 className="animate-spin" />}
-              추가
-            </Button>
-          </DialogFooter>
+          <DialogFormFooter submitLabel="추가" pending={form.pending} disabled={loading} />
         </form>
       </DialogContent>
     </Dialog>

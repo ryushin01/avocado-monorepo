@@ -1,2 +1,2 @@
-export { initAnalytics, track } from "./analytics";
+export { initAnalytics } from "./analytics";
 export { WebVitals } from "./web-vitals";

@@ -62,9 +62,15 @@ describe("initMonitoring", () => {
     expect(sentry.captureException).toHaveBeenCalledTimes(21);
   });
 
-  it("load가 10초 안에 오지 않아도 그때 Sentry를 받는다", async () => {
+  it("load가 10초 안에 오지 않으면 한가할 때를 기다리지 않고 10초에 Sentry를 받는다", async () => {
     vi.useFakeTimers();
     vi.stubGlobal("document", { readyState: "loading" });
+    // 한가한 때가 오지 않는 브라우저: 기한에 다시 requestIdleCallback을 기다리면 받지 못한다.
+    vi.stubGlobal("window", {
+      addEventListener: (type: string, listener: (event: unknown) => void) => listeners.set(type, listener),
+      removeEventListener: (type: string) => listeners.delete(type),
+      requestIdleCallback: () => 0,
+    });
     const { initMonitoring } = await load("https://key@o1.ingest.sentry.io/1");
     initMonitoring();
     await vi.advanceTimersByTimeAsync(9_000);

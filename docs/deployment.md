@@ -62,7 +62,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `NEXT_PUBLIC_POSTHOG_KEY` | PostHog 프로젝트 키입니다. 브라우저에도 노출되는 값이며 비밀 값이 아닙니다. 빌드할 때 넣습니다. |
 | `NEXT_PUBLIC_POSTHOG_HOST` | PostHog 주소입니다. 없으면 `https://us.i.posthog.com`(EU는 `https://eu.i.posthog.com`). 빌드할 때 넣습니다. |
 
-Sentry로 보내는 내용은 오류와 스택 정보이고, 쿠키, 헤더, 쿼리 문자열, 사용자 정보, 방문 세션, 이동·클릭 기록은 모으지 않습니다. 오류에 붙는 콜백 인수, 일반 객체로 거부된 Promise의 필드 값, 주소의 `#` 뒤도 보내기 전에 지웁니다(`apps/web/src/shared/config/sentry.ts`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다. 브라우저 SDK는 DSN이 있을 때만 첫 화면 뒤(load 뒤 한가할 때, load가 10초 안에 오지 않으면 그때)에 따로 받고(`apps/web/src/shared/lib/monitoring`), 받는 동안 난 오류는 20개까지 모았다가 보냅니다. 처음부터 받던 때보다 홈의 첫 로딩 JS가 259 kB에서 201 kB(gzip, 옛 브라우저용 `noModule` 폴리필 제외)로 줄었습니다.
+Sentry로 보내는 내용은 오류와 스택 정보이고, 쿠키, 헤더, 쿼리 문자열, 사용자 정보, 방문 세션, 이동·클릭 기록은 모으지 않습니다. 오류에 붙는 콜백 인수, 일반 객체로 거부된 Promise의 필드 값, 주소의 `#` 뒤도 보내기 전에 지웁니다(`apps/web/src/shared/config/sentry.ts`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다. 브라우저 SDK는 DSN이 있을 때만 첫 화면 뒤(load 뒤 한가할 때, load가 10초 안에 오지 않으면 그때 바로)에 따로 받고(`apps/web/src/shared/lib/monitoring`), 받는 동안 난 오류는 20개까지 모았다가 보냅니다. 처음부터 받던 때보다 홈의 첫 로딩 JS가 259 kB에서 201 kB(gzip, 옛 브라우저용 `noModule` 폴리필 제외)로 줄었습니다.
 
 PostHog로는 페이지 이동과 Web Vitals(LCP, INP, CLS, FCP, TTFB)만 보냅니다(`apps/web/src/shared/config/analytics.ts`). 쿠키와 브라우저 저장소를 쓰지 않고, 사람을 식별하지 않으며(`person_profiles: "never"`), 자동 클릭 수집과 화면 녹화를 끄고, Do Not Track을 따릅니다. 보내기 직전에 모든 이벤트의 주소 속성(`$current_url` 등)에서 쿼리 문자열과 해시를 빼고, 그 쿼리 키에서 뽑힌 속성(`키`, `$session_entry_키`, `$initial_키`)과 알려진 광고·캠페인 식별자(`utm_*`, `gclid`, `gad_source` 등)도 뺍니다. 캠페인 수집은 SDK 설정에서도 끕니다(`save_campaign_params: false`). 키가 있을 때만 스크립트를 내려받고, 브라우저는 같은 주소의 `/ingest`로 보내 `next.config.ts`의 rewrites가 PostHog로 넘깁니다.
 

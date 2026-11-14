@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -16,7 +15,8 @@ export function PageHeader({ title, back }: { title: ReactNode; back?: { href: s
     <header className="sticky top-0 z-20 w-full rounded-b-lg border border-page bg-card text-card-foreground lg:col-span-2 lg:h-screen lg:rounded-lg">
       <div className="flex flex-wrap items-center lg:content-start lg:gap-y-10 lg:px-8 lg:py-[60px] xl:px-[60px]">
         <Link href="/" className="hidden basis-full text-3xl tracking-[8px] lg:block">
-          <Image src="/brand/logo.png" alt={`${BRAND.wordmark} 홈`} width={40} height={40} className="size-8 lg:size-10" />
+          <span lang="en">{BRAND.wordmark}</span>
+          <span className="sr-only"> 홈</span>
         </Link>
         <div
           lang="en"

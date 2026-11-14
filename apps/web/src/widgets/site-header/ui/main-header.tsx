@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
 
@@ -39,7 +38,8 @@ export function MainHeader({ menu }: { menu: ReactNode }) {
           past ? "" : "lg:bg-gradient-to-b lg:from-black/80 lg:via-black/55 lg:to-transparent"
         }`}
       >
-        <Image src="/brand/logo.png" alt={`${BRAND.wordmark} 홈`} width={40} height={40} className="size-8 lg:size-10" />
+        <span lang="en">{BRAND.wordmark}</span>
+        <span className="sr-only"> 홈</span>
       </Link>
       <div className="flex items-center justify-end lg:col-span-4 lg:rounded-lg lg:border lg:border-page lg:bg-card lg:pr-[60px] lg:text-card-foreground">
         {menu}

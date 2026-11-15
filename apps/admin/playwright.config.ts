@@ -28,6 +28,17 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/admin.json" },
       dependencies: ["setup"],
     },
+    // README 화면 촬영(pnpm screenshots). 검사가 아니라 화면 파일을 덮어쓰므로 SCREENSHOTS=1일 때만 넣습니다.
+    ...(process.env.SCREENSHOTS
+      ? [
+          {
+            name: "screenshots",
+            testMatch: /readme\.screenshots\.ts/,
+            use: { ...devices["Desktop Chrome"] },
+            dependencies: ["setup"],
+          },
+        ]
+      : []),
   ],
   // Next.js 권장대로 프로덕션 빌드로 테스트한다. 개발 서버는 메모리가 차면 스스로 다시 켜져
   // (devMemoryThresholdRestart) 메모리 DB가 초기화되고 접속이 잠깐 끊겨, 테스트가 가끔 실패했다.

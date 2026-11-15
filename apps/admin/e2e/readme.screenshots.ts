@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { LAUNCHER_URL, WEB_URL } from "./helpers";
+import { LAUNCHER_URL, waitForMobileList, WEB_URL } from "./helpers";
 
 /**
  * README 화면 촬영 (pnpm --dir apps/admin screenshots)
@@ -63,7 +63,7 @@ test.describe("백오피스", () => {
 
     test("재고 카드 목록", async ({ page }) => {
       await page.goto("/inventory?cafe=c_seomyeon");
-      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await waitForMobileList(page);
       await shoot(page, "admin-mobile");
     });
   });

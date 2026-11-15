@@ -17,13 +17,13 @@
    * 한글은 각 운영체제의 고딕(Apple SD Gothic Neo, Malgun Gothic, Noto Sans CJK KR).
    */
   --font-sans:
-    var(--font-lato), var(--font-gowun-dodum), "Helvetica Neue", "Segoe UI",
+    var(--font-comfortaa), var(--font-gowun-dodum), "Helvetica Neue", "Segoe UI",
     "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
   --font-heading:
-    var(--font-jua), "Arial Rounded MT Bold", "Apple SD Gothic Neo",
+    var(--font-comfortaa), var(--font-gowun-dodum), "Arial Rounded MT Bold", "Apple SD Gothic Neo",
     "Malgun Gothic", "Noto Sans CJK KR", sans-serif;
   --font-stat:
-    var(--font-lato), var(--font-sunflower), "Helvetica Neue", "Segoe UI",
+    var(--font-comfortaa), var(--font-gowun-dodum), "Helvetica Neue", "Segoe UI",
     "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --color-page: #111111;
   --color-brand-green: #76cc1c;

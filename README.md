@@ -137,15 +137,23 @@ docs/
 | [런처](apps/launcher/README.md), [홍보 사이트](apps/web/README.md) | 앱별 안내 |
 | [시퀀스 다이어그램](docs/sequence-diagrams.md) | 키오스크 예약 확인·도착 알림, 현장 대기 등록, 대여와 반납 |
 
+## 웹 폰트
+
+| 글꼴 | 쓰는 곳 | 굵기 |
+|---|---|---|
+| Comfortaa | 홍보 사이트 영문·숫자 (제목·본문·수치) | 300~700 가변 |
+| 고운돋움 | 홍보 사이트 한글 (제목·본문·수치 옆 글자) | 400 |
+| Geist | 백오피스·런처 | 가변 |
+
+저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 `next/font/google`이 빌드 때 받아 같은 사이트에서 제공합니다. 고운돋움은 글자 묶음별 조각이라 화면에 쓰인 조각만 받습니다.
+
 ## 출처
 
 | 자료 | 저작자 | 사용 허락 | 원본 |
 |---|---|---|---|
 | Geist · Geist Mono 글꼴 | The Geist Project Authors(Vercel) | SIL OFL 1.1 | [vercel/geist-font](https://github.com/vercel/geist-font) |
 | Gowun Dodum(고운돋움) 글꼴 | The Gowun Dodum Project Authors(류양희) | SIL OFL 1.1 | [yangheeryu/Gowun-Dodum](https://github.com/yangheeryu/Gowun-Dodum) |
-| Jua(주아) 글꼴 | The BM JUA Project Authors(우아한형제들) | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Jua) |
-| Lato 글꼴 | Łukasz Dziedzic(tyPoland) | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Lato) |
-| Sunflower 글꼴 | The Sunflower Project Authors | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Sunflower) |
+| Comfortaa 글꼴 | Johan Aakerlund | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Comfortaa) |
 | 아보카도 아이콘 (세 앱의 파비콘·로고, 키오스크 앱 아이콘) | Google (Noto Emoji) | Apache 2.0 ([사본](apps/web/public/brand/LICENSE-noto-emoji.txt), 앱마다 `public/brand`에 같은 사본) | [googlefonts/noto-emoji](https://github.com/googlefonts/noto-emoji) |
 | 보드게임 상자 그림(게임 썸네일) | 각 게임의 출판사 | 확인 안 됨 (저작권은 출판사에 있고, 사용 허락을 받지 않은 포트폴리오용 썸네일) | [BoardGameGeek](https://boardgamegeek.com) (avocado 데이터의 게임별 `bggId`) |
 

@@ -102,7 +102,7 @@ pnpm dev                                # 세 앱을 모두 띄움 (DB 설치 �
 | `pnpm lint` | ESLint |
 | `pnpm test` | 단위·컴포넌트 테스트 |
 | `pnpm e2e` | E2E 테스트 |
-| `pnpm --dir apps/admin screenshots` | README 화면 다시 찍기 (개발용 시드, 키오스크 시연 GIF는 그대로) |
+| `pnpm --dir apps/admin screenshots` | README 화면과 키오스크 흐름 GIF 다시 만들기 (개발용 시드) |
 | `pnpm --filter @avocado/web size` / `lhci` | 홍보 사이트 번들 크기 / Lighthouse 기준 검사 (먼저 빌드 필요) |
 
 ## 프로젝트 구조

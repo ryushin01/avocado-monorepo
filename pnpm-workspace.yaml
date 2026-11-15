@@ -9,3 +9,6 @@ allowBuilds:
 overrides:
   "minimatch@>=7 <11.0.1": ^11.0.1
   "esbuild@<0.25.0": ^0.25.0
+  # Lighthouse CI(proxy-agent → get-uri)가 끌어오는 basic-ftp의 MLSD 파싱 DoS(GHSA, 6.2.4에서 고침).
+  # get-uri는 최신판도 ^5를 요구해 덮어쓴다. ftp:// 주소는 Lighthouse 측정에서 쓰지 않는다.
+  "basic-ftp@<6.2.4": ^6.2.4

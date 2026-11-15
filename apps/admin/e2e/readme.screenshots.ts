@@ -199,14 +199,16 @@ test.describe("키오스크 흐름 GIF", () => {
       gif.writeFrame(applyPalette(rgba, palette), GIF_WIDTH, GIF_HEIGHT, { palette, delay });
     };
 
-    // 키오스크(런처, 둔산점)는 로그인 없이 씁니다. 이름과 번호는 가상입니다.
+    // 키오스크(런처, 둔산점)는 로그인 없이 씁니다. 이름은 가상이고, 전화번호는 시드처럼 쓰이지 않는 010-0000-xxxx 대역에서
+    // 뒷자리를 실행마다 새로 정해 다시 찍어도 앞선 등록과 겹치지 않게 합니다. 백오피스에서도 이 번호로 찾습니다.
     const kioskContext = await browser.newContext({
       viewport: { width: GIF_WIDTH, height: GIF_SCREEN_HEIGHT },
       deviceScaleFactor: 1,
     });
     const kiosk = await kioskContext.newPage();
     const name = "한가람";
-    const phone = "01000005678";
+    const last4 = String(Math.floor(Math.random() * 10_000)).padStart(4, "0");
+    const phone = `010-0000-${last4}`;
 
     await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
     await expect(kiosk.getByText(/팀이 기다리고 있습니다/)).toBeVisible();
@@ -237,7 +239,7 @@ test.describe("키오스크 흐름 GIF", () => {
     await frame(kiosk, "3. 손님: 대기 번호를 받습니다", 2300);
 
     await page.goto("/reservations?cafe=c_dunsan");
-    const entry = page.getByTestId("waitlist-entry").filter({ hasText: name });
+    const entry = page.getByTestId("waitlist-entry").filter({ hasText: phone });
     await expect(entry).toBeVisible();
     await frame(page, "4. 직원: 백오피스에 바로 표시됩니다", 2300);
 
@@ -247,7 +249,7 @@ test.describe("키오스크 흐름 GIF", () => {
 
     await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
     await kiosk.getByRole("button", { name: "내 순서 확인" }).click();
-    for (const digit of phone.slice(-4)) {
+    for (const digit of last4) {
       await kiosk.getByRole("button", { name: digit, exact: true }).click();
     }
     await expect(kiosk.getByText("지금 호출됐습니다. 카운터로 와주세요.")).toBeVisible();

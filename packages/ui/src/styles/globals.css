@@ -7,8 +7,17 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  /*
+   * 백오피스·런처는 next/font가 html에 걸어 둔 Geist 변수(--font-geist-sans·--font-geist-mono)를 씁니다.
+   * Geist에 없는 한글은 운영체제 고딕으로 이어집니다. 변수가 없는 앱(런처의 고정폭 등)에서도 값이
+   * 무효가 되지 않도록 var()에 대체 값을 둡니다. 홍보 사이트(apps/web)는 자기 globals.css에서 다시 정합니다.
+   */
+  --font-sans:
+    var(--font-geist-sans, system-ui), "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR",
+    system-ui, sans-serif;
+  --font-mono:
+    var(--font-geist-mono, ui-monospace), ui-monospace, "SF Mono", Menlo, Consolas, "Apple SD Gothic Neo",
+    "Malgun Gothic", monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

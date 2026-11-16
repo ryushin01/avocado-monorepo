@@ -28,7 +28,7 @@ flowchart LR
 
 - **세 앱을 각각 배포하고, 백오피스의 화면과 백엔드는 나누지 않습니다.** 판단 근거는 [docs/deployment.md](deployment.md#배포-단위)에 있습니다.
 - **런처는 DB에 직접 접근하지 않습니다.** 백오피스 주소와 토큰은 런처 서버에만 두고, 손님 화면은 서버 액션을 거쳐 API를 부릅니다.
-- **화면 코드는 Feature-Sliced Design으로 나눕니다.** `app → views → widgets → features → entities → shared` 순서로만 가져오며, 어기면 `pnpm lint`가 실패합니다. 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.
+- **화면 코드는 Feature-Sliced Design으로 나눕니다.** `_app → _pages → widgets → features → entities → shared` 순서로만 가져오며, 어기면 `pnpm lint`(ESLint·Steiger)가 실패합니다. 한 화면에서만 쓰는 코드는 그 화면 슬라이스에 둡니다. 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.
 
 ## 설계에서 신경 쓴 점
 

@@ -103,16 +103,17 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 ```
 src/
 ├─ instrumentation.ts        서버 오류 로그, 쿼리 값 가리기
-├─ app/                      Next.js 라우트. page.tsx는 views를 다시 내보내기만 함
-│  ├─ (backoffice)/          사이드바가 있는 화면들 (layout.tsx)
+├─ app/                      Next.js 라우트. _pages·_app·server를 다시 내보내기만 함
+│  ├─ (backoffice)/          사이드바가 있는 화면들
 │  ├─ login/ password/       로그인, 비밀번호 변경
-│  ├─ api/kiosk/             가맹점 런처(키오스크)용 API, api/auth/ Auth.js
-│  └─ forbidden.tsx, error.tsx, global-error.tsx, not-found.tsx   403·오류·404 화면
-├─ views/                    화면 한 장: 데이터를 읽어 아래 조각을 조합 (dashboard, stats, games, inventory, plays, reservations, cafes, staff, audit, login, password)
-├─ widgets/                  큰 화면 영역: app-shell(사이드바·헤더), dashboard, stats, catalog-list, inventory-list, play-list, reservation-board, cafe-list, staff-list, audit-list
-├─ features/                 사용자 동작(대화상자 + 서버 액션 api/actions.ts): auth, manage-game, manage-inventory, manage-cafe, manage-staff, manage-reservation, record-play, filter-list, filter-stats
-├─ entities/                 도메인: game, cafe, inventory, play, reservation, waitlist, user, guest, stats, kiosk-device, audit
-│                            model/(타입·규칙·검증), ui/(배지 등 표시)
+│  └─ api/kiosk/ api/auth/   키오스크 API(src/server/kiosk/routes), Auth.js
+├─ _app/                     FSD app 레이어: layout/(루트·백오피스 레이아웃), error/(오류 경계), styles/(전역 CSS)
+├─ _pages/                   화면 한 장과 그 화면에서만 쓰는 조각(목록 표, 차트, 대화상자, 서버 액션 api/actions.ts)
+│                            dashboard, stats, games, inventory, plays, reservations, cafes, staff, audit, login, password, forbidden, not-found
+├─ widgets/                  여러 화면이 쓰는 영역: app-shell(사이드바·헤더)
+├─ features/                 여러 화면이 쓰는 동작: auth(로그인·비밀번호), filter-list(목록 검색·필터)
+├─ entities/                 도메인: game, cafe, inventory, play, reservation, waitlist, user, guest, stat, audit
+│                            model/(타입·규칙·검증), ui/(배지 등 표시). zod 검증은 index.server.ts
 ├─ shared/                   도메인을 모르는 공통: lib/(목록·폼·날짜 계산, 훅), ui/(목록 빈 상태, 페이지네이션, 무한 스크롤, 폼 오류)
 ├─ server/                   서버 전용: <domain>/(repository·data·seed), auth/(세션·로그인 잠금), kiosk/(토큰·응답 변환), audit/(변경 이력), rate-limit/(요청 제한)
 └─ db/                       DB: 스키마(schema.ts)·마이그레이션·연결(server.ts)·시드·테스트용 메모리 DB(testing.ts)

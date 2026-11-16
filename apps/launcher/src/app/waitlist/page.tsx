@@ -1,1 +1,1 @@
-export { WaitlistPage as default, metadata } from "@/views/waitlist";
+export { WaitlistPage as default, metadata } from "@/_pages/waitlist";

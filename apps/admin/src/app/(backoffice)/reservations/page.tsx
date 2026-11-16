@@ -1,1 +1,1 @@
-export { ReservationsPage as default } from "@/views/reservations";
+export { ReservationsPage as default } from "@/_pages/reservations";

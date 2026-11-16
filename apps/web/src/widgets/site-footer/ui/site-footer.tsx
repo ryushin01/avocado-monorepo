@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { CATEGORY_INFO } from "@avocado/domain/catalog";
 
-import { BRAND, SITE_LINKS } from "@/shared/config/site";
+import { BRAND, SITE_LINKS } from "@/shared/config";
 
 const LINK = "inline-flex min-h-11 items-center underline-offset-4 hover:underline";
 

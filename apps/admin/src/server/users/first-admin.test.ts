@@ -5,7 +5,7 @@ import { createTestDb } from "@/db/testing";
 
 import { createFirstAdmin, generateTemporaryPassword, TEMPORARY_PASSWORD_CHARS } from "./first-admin";
 import { createUserRepository } from "./repository";
-import { passwordSchema } from "@/entities/user/schema";
+import { passwordSchema } from "@/entities/user/index.server";
 
 const HASH = "$2b$10$abcdefghijklmnopqrstuuWb0FHpIHQmFH5L4nXfIMR6t2kUzLqaa";
 

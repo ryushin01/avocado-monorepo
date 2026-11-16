@@ -1,20 +1,4 @@
 "use client";
 
-import { useEffect } from "react";
-
-import { PageHeader } from "@/widgets/site-header";
-import { captureException } from "@/shared/lib/monitoring";
-import { ErrorNotice } from "@/shared/ui/error-notice";
-
-export default function Error({ error, retry }: { error: unknown; retry: () => void }) {
-  useEffect(() => {
-    captureException(error);
-  }, [error]);
-
-  return (
-    <div className="flex flex-1 flex-col lg:grid lg:grid-cols-8">
-      <PageHeader title="ERROR" />
-      <ErrorNotice error={error} retry={retry} />
-    </div>
-  );
-}
+// 오류 경계는 클라이언트 컴포넌트여야 한다. 화면은 _app/error에 있다.
+export { RouteError as default } from "@/_app/error";

@@ -6,7 +6,7 @@
     "dev": "copy-catalog-assets public && next dev --port 3002",
     "build": "copy-catalog-assets public && next build",
     "start": "next start --port 3002",
-    "lint": "eslint",
+    "lint": "eslint && steiger ./src",
     "typecheck": "next typegen && tsc7 --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -28,6 +28,7 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@feature-sliced/steiger-plugin": "^0.8.2",
     "@tailwindcss/turbopack": "^4.3.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
@@ -37,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "sharp": "^0.35.5",
+    "steiger": "0.10.0",
     "tailwindcss": "^4.3.5",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0"

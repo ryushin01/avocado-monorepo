@@ -1,6 +1,6 @@
 import type { PostHog } from "posthog-js";
 
-import { analyticsEnabled, posthogKey, posthogOptions } from "@/shared/config/analytics";
+import { analyticsEnabled, posthogKey, posthogOptions } from "@/shared/config";
 
 let client: PostHog | null = null;
 let stopped = false;

@@ -1,1 +1,1 @@
-export { StaffPage as default } from "@/views/staff";
+export { StaffPage as default } from "@/_pages/staff";

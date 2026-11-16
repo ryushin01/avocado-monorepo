@@ -2,6 +2,13 @@
 
 버전별로 달라진 점을 적습니다. 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따릅니다.
 
+## [Unreleased]
+
+### 바뀜
+
+- 화면 코드 구조를 Feature-Sliced Design 2.1과 Steiger 검사에 맞췄다. `views` → `_pages`, 레이아웃·오류 화면·전역 스타일은 `_app`으로 옮기고, Next.js의 `src/app`은 다시 내보내기만 한다. 한 화면에서만 쓰던 위젯·기능은 그 화면 슬라이스로 옮겼다. 엔티티의 zod 검증은 `index.server.ts`, 표시 컴포넌트는 `index.ts`로 내보낸다. `pnpm lint`가 Steiger도 돌린다.
+- 백오피스의 키오스크 API 구현을 `src/server/kiosk/routes`로 옮겼다(라우트 파일은 다시 내보내기만 한다).
+
 ## [0.2.0] - 2026-11-16
 
 v1.0.0 런칭을 가정하고 다시 점검해 나온 문제를 고쳤습니다.
@@ -43,5 +50,6 @@ v1.0.0 런칭을 가정하고 다시 점검해 나온 문제를 고쳤습니다.
 
 첫 릴리스: 백오피스, 가맹점 런처(키오스크), 홍보 사이트. 자세한 내용은 [릴리스 노트](https://github.com/ryushin01/avocado-monorepo/releases/tag/v0.1.0)에 있습니다.
 
+[Unreleased]: https://github.com/ryushin01/avocado-monorepo/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/ryushin01/avocado-monorepo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ryushin01/avocado-monorepo/releases/tag/v0.1.0

@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { BRAND } from "@/shared/config/site";
+import { BRAND } from "@/shared/config";
 
 import { SiteMenu } from "./site-menu";
 

@@ -74,7 +74,7 @@ sequenceDiagram
 sequenceDiagram
     actor 직원
     participant 화면 as 이용 기록 화면<br/>(admin /plays)
-    participant 액션 as startPlayAction / returnPlayAction<br/>(features/record-play)
+    participant 액션 as startPlayAction / returnPlayAction<br/>(_pages/plays/api)
     participant 권한 as canRecordPlays
     participant 저장소 as plays repository
     participant DB as PostgreSQL

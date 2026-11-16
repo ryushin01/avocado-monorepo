@@ -11,26 +11,30 @@
 
 ## 프론트엔드 구조 (Feature-Sliced Design)
 
-세 앱의 화면 코드는 `src` 아래 레이어로 나눕니다. **위 레이어는 아래 레이어만 가져옵니다.** `packages/config/eslint-fsd.mjs`가 `pnpm lint`에서 강제합니다.
+세 앱의 화면 코드는 [Feature-Sliced Design v2.1](https://feature-sliced.design)의 레이어로 나눕니다. **위 레이어는 아래 레이어만 가져옵니다.** `pnpm lint`가 ESLint(`packages/config/eslint-fsd.mjs`, 가져오기 경계)와 [Steiger](https://github.com/feature-sliced/steiger)(앱마다 `steiger.config.mjs`, 폴더 구조와 공개 API)로 함께 검사합니다.
 
-| 레이어 | 내용 |
+| 폴더 | 내용 |
 |---|---|
-| `app` | Next.js 라우트, 루트·공통 레이아웃, Route Handler. `page.tsx`는 `export { GamesPage as default } from "@/views/games"`처럼 다시 내보내기만 합니다 |
-| `views` | 화면 한 장. 데이터를 읽어 아래 조각을 조합합니다. FSD의 `pages`인데, `src/pages`는 Next.js가 Pages Router로 읽어서 이름을 바꿨습니다 |
-| `widgets` | 큰 화면 영역 (사이드바, 대시보드 차트 묶음, 목록 표) |
-| `features` | 사용자 동작 하나 (대화상자 + 서버 액션 `api/actions.ts`) |
+| `src/app` | Next.js 라우트 폴더(FSD 레이어가 아님). `page.tsx`는 `export { GamesPage as default } from "@/_pages/games"`처럼, 레이아웃·오류 화면은 `@/_app`을, 백오피스의 Route Handler는 `@/server/...`를 다시 내보내기만 합니다. 파비콘 같은 Next.js 파일 규칙도 여기 둡니다 |
+| `_app` | FSD의 `app` 레이어. 루트·공통 레이아웃(`layout`), 오류 경계(`error`), 전역 스타일(`styles`), 매니페스트·검색 설정 |
+| `_pages` | FSD의 `pages` 레이어. 화면 한 장과, 그 화면에서만 쓰는 조각(목록 표, 차트, 대화상자, 서버 액션 `api/actions.ts`) |
+| `widgets` | 여러 화면이 함께 쓰는 큰 화면 영역 (백오피스 사이드바, 홍보 사이트 머리글·바닥글) |
+| `features` | 여러 화면이 함께 쓰는 사용자 동작 (목록 검색·필터, 로그인·비밀번호 변경) |
 | `entities` | 도메인 개념: `model`(타입·규칙·검증), `ui`(배지처럼 표시만 하는 조각) |
-| `shared` | 도메인을 모르는 공통 코드: `lib`, `ui`, `api`, `config`. 슬라이스가 없어 파일 경로로 바로 가져옵니다 |
+| `shared` | 도메인을 모르는 공통 코드: `lib`, `ui`, `api`, `config` |
 
+- **Next.js와 겹치는 레이어 이름은 `_app`, `_pages`로 씁니다.** Next.js가 `src/app`을 라우트로, `src/pages`를 Pages Router로 읽기 때문입니다. Steiger는 앞의 `_`를 떼고 레이어로 알아보므로, 이 이름 때문에 나는 `fsd/typo-in-layer-name`만 끄고 Next의 `src/app`은 검사에서 뺍니다.
+- **한 화면에서만 쓰는 코드는 그 화면 슬라이스(`_pages/<화면>`)에 둡니다.** 두 화면 이상에서 쓰게 되면 `features`·`widgets`로 올립니다. 한 곳에서만 쓰는 슬라이스는 Steiger(`fsd/insignificant-slice`)가 막습니다.
+  - 예외: 백오피스의 `guest`·`reservation`·`waitlist`·`stat` 엔티티는 화면은 한 곳에서만 쓰지만 서버 코드(`src/server`, `src/db`)도 같은 타입·규칙을 씁니다. Steiger는 레이어 밖 참조를 세지 않으므로 이 넷만 그 규칙을 끕니다(`apps/admin/steiger.config.mjs`).
 - **같은 레이어의 다른 슬라이스는 가져오지 않습니다.** 둘을 함께 쓰려면 위 레이어에서 조합합니다. 엔티티끼리 꼭 필요하면 `entities/<대상>/@x/<소비자>.ts`로 내보냅니다.
-- **슬라이스 밖에서는 공개 API로만 가져옵니다.** 안에서는 상대 경로를 씁니다. `features`·`widgets`·`views`는 `@/features/<이름>`, `entities`는 아래 셋입니다.
-  - `@/entities/<이름>`: 타입·상수·규칙. React와 zod가 없어 서버·스크립트·브라우저 어디서나 씁니다.
-  - `@/entities/<이름>/ui`: 표시 컴포넌트.
-  - `@/entities/<이름>/schema`: zod 검증. 서버 코드(서버 액션, 페이지의 URL 파싱)에서 씁니다.
+- **슬라이스 밖에서는 공개 API로만 가져옵니다.** 안에서는 상대 경로를 씁니다. 공개 API는 슬라이스 바로 아래의 `index.ts`와 `index.server.ts`뿐입니다.
+  - `@/entities/<이름>`(`index.ts`): 타입·상수·규칙과 표시 컴포넌트. zod가 없어 서버·스크립트·브라우저 어디서나 씁니다.
+  - `@/entities/<이름>/index.server`: zod 검증. 서버 코드(서버 액션, 페이지의 URL 해석, API)에서만 씁니다. zod가 브라우저 번들에 들어가지 않게 나눕니다.
+  - 서버와 클라이언트 코드가 섞인 곳도 서버 전용을 `index.server.ts`로 나눕니다(런처의 `shared/api`: 손님 화면이 부르는 서버 액션은 `@/shared/api`, 서버 컴포넌트가 읽는 백오피스 호출은 `@/shared/api/index.server`).
+  - `shared`의 `ui`·`lib`는 파일 경로로 바로 가져오고(`@/shared/ui/error-notice`), 그 밖의 세그먼트(`api`, `config`)는 `index.ts`로 가져옵니다.
 - **`index.ts`에서는 이름을 하나씩 내보냅니다.** `"use client"` 모듈은 `export *`로 내보낼 수 없습니다.
 - **공개 API에는 슬라이스 밖에서 쓰는 것만 내보냅니다.** 슬라이스 안에서만 쓰는 액션·대화상자·상수는 내보내지 않습니다. 쓰지 않는 내보내기는 `npx knip`으로 찾을 수 있습니다(교차 공개 API `@x`의 `export *`는 knip이 놓치므로 지우기 전에 확인).
-- **백오피스의 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.** `views`, `app`, `features/*/api`만 가져오고, 서버 코드는 `entities`의 model·schema와 `shared/lib`만 가져옵니다. 나머지 화면 조각은 props로 데이터를 받습니다.
-- **새 슬라이스는 처음부터 만들지 않아도 됩니다.** 한 화면에서만 쓰면 그 `views` 안에 두고, 여러 곳에서 쓰게 될 때 내립니다.
+- **백오피스의 서버 코드는 FSD 밖 `src/server`, `src/db`에 둡니다.** `_pages`, `_app`, `features/*/api`, 화면 슬라이스의 `api`만 가져오고, 서버 코드는 엔티티 공개 API와 `shared/lib`만 가져옵니다. 나머지 화면 조각은 props로 데이터를 받습니다. 키오스크 API(Route Handler)도 `src/server/kiosk/routes`에 두고 `src/app/api`가 다시 내보냅니다.
 
 ## UI
 
@@ -68,7 +72,7 @@
 - **형태는 데이터가 하는 일로 정합니다.**
   - 숫자 하나는 요약 칸(`StatTile`)으로 보여줍니다. 기간을 비교하는 화면에서는 지난 기간 대비 증감과 작은 추이선을 붙인 `KpiTile`(통계)을 씁니다.
   - 시간에 따른 변화는 선 그래프로 그립니다. 비교 기간은 같은 축에 회색 점선으로 겹칩니다(강조할 하나만 색, 나머지는 회색).
-  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`widgets/stats/ui/usage-heatmap.tsx`).
+  - 두 범주(요일 × 시간대)에 걸친 크기는 히트맵으로 그립니다. Recharts에 없어서 격자로 직접 그립니다(`_pages/stats/ui/usage-heatmap.tsx`).
     - 히트맵은 격자 자체가 접근 가능한 표(`role="grid"`, 칸마다 "월요일 14시 12회" 같은 이름)라서 따로 `sr-only` 표를 두지 않습니다.
     - 키보드는 Tab으로 한 번만 들어오고 안에서는 화살표·Home·End로 움직입니다(칸이 많은 위젯은 모두 이 방식).
     - `aria-hidden` 안에 초점을 받을 수 있는 요소를 두지 않습니다.
@@ -80,7 +84,7 @@
   - **상태(이용 가능·점검 중):** 상태 색(good `#0ca30c`, warning `#fab219`)을 씁니다. 폐기는 중립 회색(`#898781`)입니다.
   - **상태 색:** 색만으로 구분하지 않도록 범례에 아이콘과 이름을 함께 둡니다.
   - **비교 기간(지난 기간):** 회색 `#898781` 점선. 회색이라 색만으로 구분하지 않도록 점선과 범례를 함께 둡니다.
-  - **히트맵:** 파랑 한 가지 색의 6단계(`--heat-1`~`--heat-6`, `apps/admin/src/app/globals.css`). 다크 모드는 바탕에 가까운 쪽이 '적음'이 되도록 순서를 뒤집은 값을 씁니다. 0은 `bg-muted`.
+  - **히트맵:** 파랑 한 가지 색의 6단계(`--heat-1`~`--heat-6`, `apps/admin/src/_app/styles/globals.css`). 다크 모드는 바탕에 가까운 쪽이 '적음'이 되도록 순서를 뒤집은 값을 씁니다. 0은 `bg-muted`.
   - **증감:** 늘면 좋은 값은 증가 `--delta-up`(라이트 `#006300`, 다크 `#0ca30c`), 감소 `--delta-down`(`#d03b3b`). 화살표 아이콘과 부호(+/-)를 함께 써서 색만으로 구분하지 않습니다. 좋고 나쁨이 없는 값은 회색입니다.
   - **새 색 조합:** 데이터 시각화 가이드의 검증 스크립트로 대비·색각 이상 구분을 확인합니다.
 - **표시 규칙**
@@ -161,7 +165,7 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 | 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
 | 운영 키오스크가 로그 없이 늘 "연결할 수 없습니다" | 요청 시점 데이터를 읽기 전에 바로 돌아오는 분기(설정 확인 등)가 빌드 중에 실행되면, 그 결과가 정적 화면(`index.html`)에 굳음 | 그런 함수는 맨 앞에서 `await connection()`을 부른다(`launcher/src/shared/api/backoffice.ts`). 확인: 빌드 뒤 `grep -l "연결할 수 없습니다" apps/launcher/.next/server/app/*.html`이 비어 있어야 함 |
 | 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
-| `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
+| `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/_pages`, app 레이어는 `src/_app`을 씀 |
 | 느린 기기에서 페이지 번호 등을 눌러도 반응이 없고 React 오류 #418이 남 | `useWindowVirtualizer`는 첫 렌더링에서 `window.scrollY`를 읽어, 하이드레이션 전에 스크롤하면 서버와 다른 항목을 그림. 항목 수가 달라지면 `useId` 값도 달라짐. `md:hidden` 목록도 데스크톱에서 하이드레이션되므로 함께 해당됨 | `initialOffset: 0`으로 첫 렌더링을 맞추되, 라이브러리가 마운트할 때 창을 그 위치로 옮기므로 `scrollToFn`에서 그 한 번을 막음 (`shared/ui/infinite-list.tsx`) |
 | 서버 요청 기록에 `/login?email=...&password=...`이 보임 | 화면이 준비되기 전에 제출하면 `onSubmit`이 아직 없어 브라우저 기본 동작(GET)으로 폼을 보냄 | `LoginForm`에서 하이드레이션 전에는 제출 버튼을 막고 `method="post"`를 둠 |
 | 모바일에서 하이드레이션 불일치 | 사이드바 틀을 Suspense 안에 두면, 바깥이 먼저 하이드레이션되며 `useIsMobile`이 바뀐 뒤 사이드바가 하이드레이션됨 | 틀은 Suspense 밖, 사용자별 영역만 슬롯으로 Suspense |

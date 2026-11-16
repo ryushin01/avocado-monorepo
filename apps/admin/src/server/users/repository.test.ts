@@ -7,7 +7,7 @@ import { createTestDb } from "@/db/testing";
 
 import { createUserRepository } from "./repository";
 import { type UserInput } from "@/entities/user";
-import { changePasswordSchema, userInputSchema } from "@/entities/user/schema";
+import { changePasswordSchema, userInputSchema } from "@/entities/user/index.server";
 
 const ADMIN = "u_admin";
 const staff = (patch: Partial<UserInput> = {}): UserInput => ({

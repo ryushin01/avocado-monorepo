@@ -1,1 +1,1 @@
-export { CafesPage as default } from "@/views/cafes";
+export { CafesPage as default } from "@/_pages/cafes";

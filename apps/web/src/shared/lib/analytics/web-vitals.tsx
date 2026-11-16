@@ -2,7 +2,7 @@
 
 import { useReportWebVitals } from "next/web-vitals";
 
-import { toVitalEvent } from "@/shared/config/analytics";
+import { toVitalEvent } from "@/shared/config";
 
 import { track } from "./analytics";
 

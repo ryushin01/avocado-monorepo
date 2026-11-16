@@ -6,10 +6,10 @@ import { reservations as reservationTable } from "@/db/schema";
 import { createSeedData } from "@/db/seed-data";
 import { createTestDb } from "@/db/testing";
 import { createWaitlistRepository } from "@/server/waitlist/repository";
-import { waitlistInputSchema } from "@/entities/waitlist/schema";
+import { waitlistInputSchema } from "@/entities/waitlist/index.server";
 
 import { createReservationRepository } from "./repository";
-import { reservationInputSchema } from "@/entities/reservation/schema";
+import { reservationInputSchema } from "@/entities/reservation/index.server";
 import type { Reservation } from "@/entities/reservation";
 
 const cafe = (id: string, status: Cafe["status"] = "open"): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status });

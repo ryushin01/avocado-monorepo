@@ -1,1 +1,1 @@
-export { AboutPage as default, metadata } from "@/views/about";
+export { AboutPage as default, metadata } from "@/_pages/about";

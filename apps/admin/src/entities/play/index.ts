@@ -17,3 +17,6 @@ export {
   type PopularityRanking,
   type PlayUsageSummary,
 } from "./model/types";
+export {
+  ElapsedTime,
+} from "./ui/elapsed-time";

@@ -1,1 +1,1 @@
-export { StatsPage as default } from "@/views/stats";
+export { StatsPage as default } from "@/_pages/stats";

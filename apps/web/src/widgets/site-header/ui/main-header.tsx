@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
 
-import { BRAND } from "@/shared/config/site";
+import { BRAND } from "@/shared/config";
 
 /** 큰 사진(#hero)이 머리글 아래로 지나갔는지 본다. 머리글이 데스크톱 높이(80px)만큼 사진을 가리므로 그만큼 뺀다. */
 function usePastHero() {

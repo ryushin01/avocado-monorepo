@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Button } from "@avocado/ui/components/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@avocado/ui/components/sheet";
 
-import { BRAND, SITE_LINKS } from "@/shared/config/site";
+import { BRAND, SITE_LINKS } from "@/shared/config";
 
 import { useMenuCategories } from "./site-menu-provider";
 

@@ -36,7 +36,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm dev:web` | 홍보 사이트만 |
 | `pnpm build` | 모든 앱 프로덕션 빌드 |
 | `pnpm typecheck` | 모든 앱·패키지 타입 검사 |
-| `pnpm lint` | ESLint |
+| `pnpm lint` | ESLint, Steiger(FSD 폴더 구조·공개 API) |
 | `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
 | `pnpm test:coverage` | 단위 테스트 + 커버리지 (앱마다 `coverage/`) |
 | `pnpm e2e` | E2E 테스트 (백오피스, 키오스크용 런처, 홈페이지를 함께 띄움) |

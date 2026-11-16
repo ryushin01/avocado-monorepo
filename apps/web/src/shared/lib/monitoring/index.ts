@@ -1,4 +1,4 @@
-import { sentryOptions, withoutVisitorTracking } from "@/shared/config/sentry";
+import { sentryOptions, withoutVisitorTracking } from "@/shared/config";
 
 type SentryModule = typeof import("./sentry");
 

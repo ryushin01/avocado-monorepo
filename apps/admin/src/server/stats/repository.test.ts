@@ -8,7 +8,7 @@ import { createTestDb } from "@/db/testing";
 import type { PlaySession } from "@/entities/play";
 
 import { createStatsRepository, summarizeStats } from "./repository";
-import { changeRate, parseStatPeriod } from "@/entities/stats/schema";
+import { changeRate, parseStatPeriod } from "@/entities/stat";
 
 const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open" });
 const game = (id: string, name: string): BoardGame => ({

@@ -1,1 +1,1 @@
-export { PasswordPage as default, metadata } from "@/views/password";
+export { PasswordPage as default, metadata } from "@/_pages/password";

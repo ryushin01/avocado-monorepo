@@ -4,7 +4,7 @@ import { GAME_CATEGORIES, GAME_DIFFICULTIES } from "./catalog/types";
 
 /**
  * 백오피스 → 가맹점 런처(손님용 키오스크) 조회 API의 응답 형태.
- * 백오피스: apps/admin/src/app/api/kiosk, 런처: apps/launcher/src/shared/api/backoffice.ts
+ * 백오피스: apps/admin/src/server/kiosk/routes, 런처: apps/launcher/src/shared/api/backoffice.ts
  * 두 앱이 따로 배포되므로, 런처는 받은 응답을 이 스키마로 확인한다. 타입도 스키마에서 나온다.
  */
 

@@ -8,3 +8,6 @@ export {
   type WaitlistStatus,
   type WaitlistEntry,
 } from "./model/types";
+export {
+  WaitlistStatusBadge,
+} from "./ui/waitlist-status-badge";

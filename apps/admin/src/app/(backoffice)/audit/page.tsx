@@ -1,1 +1,1 @@
-export { AuditPage as default } from "@/views/audit";
+export { AuditPage as default } from "@/_pages/audit";

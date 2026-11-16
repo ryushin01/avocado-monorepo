@@ -40,6 +40,8 @@
   - CLI가 만든 파일 안에서 같은 패키지의 컴포넌트를 `@avocado/ui/components/...`로 가져오면 상대 경로(`./button`)로 바꿉니다.
   - 테마(색·반경 토큰)는 `packages/ui/src/styles/globals.css`입니다. 앱의 `globals.css`는 이것을 가져오고 `@source`로 `packages/ui/src`를 알려줘야 공통 컴포넌트의 클래스가 빠지지 않습니다. 앱만의 색은 앱의 `globals.css`에서 덮어씁니다(홍보 사이트의 주황 강조색 등).
   - 아이콘은 lucide(`lucide-react`)를 씁니다.
+  - 두 앱이 함께 쓰는 훅·도우미도 이 패키지에 둡니다: `@avocado/ui/hooks/use-auto-refresh`(화면이 보이는 동안 주기적으로 `router.refresh()`), `@avocado/ui/lib/field-a11y`(입력 칸 접근성 속성).
+  - **목록 묶음(`ItemGroup`)은 `role="list"`입니다.** 안의 `Item`에 `role="listitem"`을 주고, 항목이 링크라면 `<div role="listitem">`으로 감쌉니다. 불러오는 중·없음 안내는 목록 밖에 둡니다.
 - **shadcn 스타일은 `base-nova`이고 Radix가 아니라 Base UI 기반입니다.**
   - 다른 요소로 렌더링할 때는 `asChild` 대신 `render` prop을 씁니다. 예: `<DialogTrigger render={<Button />}>`
   - **링크를 버튼처럼 보이게 할 때**는 `<Link className={buttonVariants()}>`를 씁니다.
@@ -52,6 +54,8 @@
   - **Base UI Checkbox**는 보이는 `role="checkbox"` 요소와 숨은 `<input>`이 따로 있습니다. 테스트에서는 `getByRole("checkbox", { name, exact: true })`로 찾습니다.
 - **shadcn 컴포넌트를 고친 곳**(다시 `add --overwrite`하면 사라지므로 주의, 모두 `packages/ui/src` 아래)
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
+  - `components/table.tsx`: `label`(표 이름)을 받고, 표가 가로로 넘칠 때만 바깥 영역이 이름 있는 영역(`role="region"`, `tabIndex=0`)이 되어 키보드로 스크롤할 수 있습니다. 같은 화면에 표가 여럿이면 `label`을 서로 다르게 줍니다
+  - `components/sonner.tsx`: 테마 기능이 없어 `next-themes` 대신 밝은 테마로 고정
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석. 끝에 닿은 버튼은 초점이 사라지지 않게 `disabled` 대신 `aria-disabled`를 쓰고, 화면 밖 슬라이드는 탭 순서에서 빠지도록 `inert`를 겁니다
   - `dialog`, `sheet`, `breadcrumb`, `spinner`, `carousel`, `pagination`, `sidebar`: 화면 낭독기가 읽는 영어 기본 문구를 한국어로 바꿈
@@ -85,6 +89,7 @@
   - **차트마다 같은 데이터의 `sr-only` 표**를 함께 둡니다. 화면 낭독기와 E2E 테스트가 이 표를 읽습니다.
   - 표만 확인하면 차트가 그려지지 않아도 테스트가 통과합니다. 차트가 실제로 그려졌는지는 대시보드 E2E가 `svg.recharts-surface`로 확인합니다.
   - 작은 추이선(`Sparkline`)은 숫자를 옆 글자가 전하므로 화면 낭독기에서 숨깁니다. 여러 줄을 나란히 비교할 때는 `max`로 세로 축을 맞춥니다.
+  - **화면 낭독기에서 숨긴 차트(`aria-hidden`)는 초점도 받지 않게** Recharts 차트에 `accessibilityLayer={false}`를 줍니다. Recharts 3은 기본으로 차트 표면에 `tabIndex=0`을 붙입니다.
 - **스크린샷 주의:** Playwright `fullPage` 스크린샷은 창 크기를 바꿔 차트가 처음부터 다시 그려지는 순간을 찍습니다. 빈 차트처럼 나오므로 키가 큰 창으로 찍으세요.
 
 ## 폼
@@ -98,6 +103,7 @@
 - **`onSubmit`만 있는 폼은 하이드레이션 전에 브라우저가 GET으로 제출합니다.** 입력값이 주소에 실리므로, 비밀번호·개인정보를 받는 폼은 Server Action(`action`)을 쓰거나 로그인 폼처럼 준비될 때까지 제출 버튼을 막고 `method="post"`를 둡니다.
 - **검증은 zod 스키마 하나로 서버에서 합니다.** 폼에는 `noValidate`를 붙여 브라우저 기본 검증을 끄고, 서버 오류 메시지를 일관되게 보여줍니다.
 - **글자 칸은 `FormTextField`, 대화상자 아래 버튼은 `DialogFormFooter`**(`shared/ui`)를 씁니다. 라벨·값 복원·오류 문구 연결과 처리 중 막기를 한곳에서 맞춥니다.
+- **중복 제출:** 폼 액션(`useActionState`)은 처리 중 상태가 다음 클릭 전에 반영돼 제출 버튼이 막힙니다. 새로 만드는 등록 폼도 `pending`으로 버튼을 막고, 더블 클릭 E2E로 한 건만 생기는지 확인합니다(`e2e/reservations.spec.ts`, `e2e/kiosk.spec.ts`).
 - **오류 문구와 도움말은 칸에 잇습니다.** 선택 상자·여러 줄 칸·체크박스처럼 직접 만드는 칸은 `fieldA11y(칸 id, 잘못됐는지, { described })`(`shared/lib/field-a11y.ts`)를 펼쳐 넣고, 짝이 되는 `FieldError`·`FieldDescription`에 `errorIdOf(칸 id)`·`descriptionIdOf(칸 id)`를 id로 줍니다. 잘못된 값일 때만 `aria-invalid`를 붙이고, 오류 문구는 `aria-errormessage`와 `aria-describedby`로 함께 잇습니다(KWCAG 7.3.1).
 
 ## 테스트
@@ -117,6 +123,7 @@
   - 테스트는 기본으로 관리자로 로그인한 상태입니다. `e2e/auth.setup.ts`가 먼저 실제 로그인 화면으로 로그인해 세션을 저장합니다. 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
   - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작하고, 프로덕션 모드라 `SEED_DEMO=1`로 개발용 시드를 넣습니다. 로그인 화면에 개발용 계정 안내가 나오지 않으므로 테스트는 `e2e/helpers.ts`의 계정을 씁니다.
   - 모바일 목록은 `waitForMobileList()`로 목록이 실제로 보일 때까지 기다린 뒤 다룹니다. Suspense 스트리밍 중에는 숨은 영역에 먼저 그려졌다가 옮겨지기 때문입니다.
+  - **접근성:** `e2e/a11y.spec.ts`가 백오피스 모든 메뉴·로그인과 키오스크 화면을 axe(WCAG 2.2 A·AA)로 검사합니다. 새 화면을 만들면 여기에 더합니다. axe를 통과해도 KWCAG 준수는 아니므로 키보드·화면 낭독기로 직접도 확인합니다. 홍보 사이트는 Lighthouse(접근성 100점)가 검사합니다.
 - **의존성:** Dependabot이 매주 업데이트 PR을 올립니다(`.github/dependabot.yml`). CI는 운영 의존성의 높음 이상 취약점이 있으면 실패합니다(`pnpm audit --prod --audit-level high`).
 - **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다(단위 테스트는 커버리지와 함께). E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
@@ -175,3 +182,6 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 | 루트 `pnpm e2e`에서만 가끔 `ERR_CONNECTION_REFUSED`와 함께 방금 만든 데이터가 사라짐 | 개발 서버(`next dev`)는 메모리가 한도의 80%를 넘으면 스스로 다시 켜짐(`devMemoryThresholdRestart`). 메모리 DB가 초기화되고 잠깐 접속이 끊김 | E2E는 프로덕션 빌드로 돌린다 (`playwright.config.ts`의 `webServer`) |
 | CI에서만 저장소 단위 테스트가 "Test timed out in 5000ms" | 테스트마다 새 PGlite를 열고 마이그레이션을 적용해 느린 컴퓨터에서는 5초를 넘김 | 백오피스 Vitest 설정의 `testTimeout: 30_000` |
 | 비활성 Select 값이 제출되지 않음 | 비활성 폼 컨트롤은 값을 보내지 않음 | 숨은 `<input>`으로 같은 값을 보냄 (직원 수정의 역할) |
+| Vitest에서만 `invariant expected app router to be mounted` (공통 UI의 훅·컴포넌트) | `packages/ui`가 peer 버전 고정 때문에 앱과 다른 `next`를 따로 설치함. Next 빌드는 앱의 `next`로 맞춰 주지만 Vitest는 다른 사본을 읽어 `vi.mock("next/navigation")`이 닿지 않음 | `packages/ui`의 `next`는 peer를 범위로 두고 같은 버전을 devDependencies에 적음. 확인: `readlink -f packages/ui/node_modules/next apps/admin/node_modules/next`가 같아야 함 |
+| 기록이 많을 때만 `RangeError: Maximum call stack size exceeded` | `Math.min(...배열)`·`Math.max(...배열)`이 원소 수만큼 인수를 넘김(Node는 약 12만 5천 개부터 실패) | 반복문이나 `reduce`로 구함 (`server/stats/repository.ts`) |
+| axe `aria-hidden-focus`: 숨긴 차트 안에 초점 받는 요소 | Recharts 3의 `accessibilityLayer`(기본 켜짐)가 차트 표면에 `tabIndex=0`을 붙임 | 같은 데이터를 sr-only 표로 주는 차트는 `accessibilityLayer={false}` |

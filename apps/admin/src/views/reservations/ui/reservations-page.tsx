@@ -20,7 +20,7 @@ import { firstParam } from "@/shared/lib/search-params";
 import { buildListHref } from "@/shared/lib/list";
 import { DAY, kstDayRange, toKstDate } from "@/shared/lib/kst-time";
 import { listReservations, listWaitlistToday } from "@/server/reservations/data";
-import { OPEN_RESERVATION_STATUSES } from "@/entities/reservation";
+import { OPEN_RESERVATION_STATUSES, type Reservation } from "@/entities/reservation";
 import { parseReservationDate } from "@/entities/reservation/schema";
 import { ACTIVE_WAITLIST_STATUSES } from "@/entities/waitlist";
 
@@ -67,8 +67,11 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
       date: toKstDate(kstDayRange(date).from + offset * DAY),
     });
   const activeWaits = waitlist.entries.filter((e) => ACTIVE_WAITLIST_STATUSES.includes(e.status));
-  const openReservations = reservations.filter((r) => OPEN_RESERVATION_STATUSES.includes(r.status));
-  const arrivals = openReservations.filter((r) => r.arrivedAt);
+  const isOpen = (r: Reservation) => OPEN_RESERVATION_STATUSES.includes(r.status);
+  const openReservations = reservations.filter(isOpen);
+  // 키오스크 도착 알림은 오늘 예약에만 오므로, 다른 날짜를 보고 있어도 오늘 예약으로 알린다.
+  const todaysOpen = date === today ? openReservations : (await listReservations(cafe.id, today)).filter(isOpen);
+  const arrivals = todaysOpen.filter((r) => r.arrivedAt);
 
   return (
     <>
@@ -97,7 +100,8 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
       )}
 
       <LiveUpdates
-        key={`${cafe.id}:${date}`}
+        // 알림 기준(이미 본 대기·도착)은 매장 단위다. 날짜를 바꿔도 오늘의 대기·도착을 이어서 센다.
+        key={cafe.id}
         waiting={activeWaits.map((e) => ({ id: e.id, label: `${e.number}번 ${e.name}` }))}
         arrived={arrivals.map((r) => ({ id: r.id, label: `${formatTime(r.startsAt)} 예약 ${r.name}` }))}
       />

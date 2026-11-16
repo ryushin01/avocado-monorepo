@@ -184,3 +184,30 @@ test("키오스크 결과 화면은 30초 동안 만지지 않으면 경고하�
   await kiosk.clock.fastForward(21_000);
   await expect(kiosk).toHaveURL(`${LAUNCHER_URL}/`);
 });
+
+test("다른 날짜의 예약을 보고 있어도 오늘 손님의 키오스크 도착을 알린다", async ({ page, browser }) => {
+  test.skip(kstHour() >= 23, "오늘 남은 예약 시각이 없음");
+  const name = `도착${Date.now() % 100000}`;
+  const { phone, last4 } = uniquePhone();
+  await page.goto(ADMIN_PAGE);
+  await page.getByRole("button", { name: "예약 등록" }).click();
+  const dialog = page.getByRole("dialog", { name: "예약 등록" });
+  await dialog.getByLabel("이름").fill(name);
+  await dialog.getByLabel("휴대전화").fill(phone);
+  await dialog.getByLabel("날짜").fill(kstDate(0));
+  await dialog.getByLabel("시각").fill(`${String(kstHour() + 1).padStart(2, "0")}:00`);
+  await dialog.getByRole("button", { name: "등록" }).click();
+  await expect(page.getByText(`'${name}' 예약을 등록했습니다.`)).toBeVisible();
+
+  // 직원은 내일 예약을 보고 있다.
+  await page.goto(`${ADMIN_PAGE}&date=${kstDate(1)}`);
+  await expect(page.getByRole("heading", { name: /^예약 · / })).toBeVisible();
+
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/reservation`);
+  await pressDigits(kiosk, last4);
+  await kiosk.getByRole("button", { name: "도착했어요" }).click();
+  await expect(kiosk.getByText("도착을 알렸습니다")).toBeVisible();
+
+  await expect(page.getByTestId("live-updates")).toContainText(`${name}님이 도착을 알렸습니다.`, { timeout: 25_000 });
+});

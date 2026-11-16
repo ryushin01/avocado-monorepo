@@ -5,8 +5,11 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { canManageReservations } from "@/entities/user";
 import {
+  editConflictMessage,
   formDataToObject,
   formError,
+  parseVersion,
+  STALE_FORM_MESSAGE,
   type ActionResult,
   type FormState,
 } from "@/shared/lib/form";
@@ -62,12 +65,21 @@ export async function saveReservationAction(
   if (!(await hasAccess(cafeId))) return formError(values, FORBIDDEN);
   const parsed = reservationInputSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
+  // 수정은 폼을 연 시점의 버전과 같을 때만 저장한다(낙관적 잠금).
+  const version = parseVersion(values);
+  if (id && version === null) return formError(values, STALE_FORM_MESSAGE);
 
-  const result = id
-    ? await updateReservation(cafeId, id, parsed.data)
-    : await createReservation(cafeId, parsed.data);
+  const result =
+    id && version !== null
+      ? await updateReservation(cafeId, id, parsed.data, version)
+      : await createReservation(cafeId, parsed.data);
   if (result === "past") {
     return { status: "error", fieldErrors: { time: [RESERVATION_ERRORS.past] }, values };
+  }
+  if (result === "changed") {
+    // 목록은 바뀐 내용으로 다시 받고, 열린 폼은 입력을 그대로 둔 채 알린다.
+    revalidate();
+    return formError(values, editConflictMessage("예약을"));
   }
   if (typeof result === "string") return formError(values, RESERVATION_ERRORS[result]);
 

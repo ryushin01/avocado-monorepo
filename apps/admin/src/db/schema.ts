@@ -21,6 +21,12 @@ import type { WaitlistStatus } from "@/entities/waitlist";
 // 시각은 모두 timestamptz로 저장하고, 도메인 타입(ISO 문자열)으로는 repository에서 바꾼다.
 const at = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
 
+/**
+ * 편집 폼의 낙관적 잠금. 직원이 폼으로 고치는 행은 바꿀 때마다 1씩 올리고, 저장할 때 폼을 연 시점의 값과 같아야 쓴다.
+ * 그사이 다른 직원이 바꿨으면 덮어쓰지 않고 다시 보게 한다(repository의 "changed").
+ */
+const version = () => integer("version").notNull().default(1);
+
 export const cafes = pgTable("cafes", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -30,6 +36,7 @@ export const cafes = pgTable("cafes", {
   openedAt: date("opened_at", { mode: "string" }).notNull(),
   status: text("status").$type<CafeStatus>().notNull(),
   closedAt: at("closed_at"),
+  version: version(),
 });
 
 export const games = pgTable("games", {
@@ -46,6 +53,7 @@ export const games = pgTable("games", {
   playTimeMax: integer("play_time_max").notNull(),
   difficulty: text("difficulty").$type<GameDifficulty>().notNull(),
   createdAt: at("created_at").notNull(),
+  version: version(),
 });
 
 export const inventoryItems = pgTable(
@@ -60,6 +68,7 @@ export const inventoryItems = pgTable(
     quantity: integer("quantity").notNull(),
     status: text("status").$type<InventoryStatus>().notNull(),
     updatedAt: at("updated_at").notNull(),
+    version: version(),
   },
   (t) => [primaryKey({ columns: [t.cafeId, t.gameId] })],
 );
@@ -95,6 +104,7 @@ export const users = pgTable(
     passwordHash: text("password_hash"),
     /** 관리자가 정한 임시 비밀번호라면 true. 다음 로그인 때 본인 비밀번호로 바꿔야 한다. */
     mustChangePassword: boolean("must_change_password").notNull().default(false),
+    version: version(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email)],
 );
@@ -115,6 +125,7 @@ export const reservations = pgTable(
     createdAt: at("created_at").notNull(),
     arrivedAt: at("arrived_at"),
     closedAt: at("closed_at"),
+    version: version(),
   },
   (t) => [index("reservations_cafe_starts_idx").on(t.cafeId, t.startsAt)],
 );

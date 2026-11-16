@@ -10,7 +10,7 @@ import type { PlaySession } from "@/entities/play";
 import { createStatsRepository, summarizeStats } from "./repository";
 import { changeRate, parseStatPeriod } from "@/entities/stat";
 
-const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open" });
+const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open", version: 1 });
 const game = (id: string, name: string): BoardGame => ({
   id,
   name,
@@ -21,6 +21,7 @@ const game = (id: string, name: string): BoardGame => ({
   playTimeMax: 60,
   difficulty: "easy",
   createdAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
 });
 const item = (cafeId: string, gameId: string, quantity: number, status: InventoryItem["status"] = "available"): InventoryItem => ({
   cafeId,
@@ -28,6 +29,7 @@ const item = (cafeId: string, gameId: string, quantity: number, status: Inventor
   quantity,
   status,
   updatedAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
 });
 let seq = 0;
 /** kst: "2026-11-02T14:00" 같은 한국 시각, minutes: 이용 시간 (없으면 이용 중) */

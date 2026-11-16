@@ -19,8 +19,8 @@ export async function listReservations(cafeId: string, date: string) {
 }
 export const createReservation = async (cafeId: string, input: ReservationInput) =>
   (await reservations()).create(cafeId, input, new Date());
-export const updateReservation = async (cafeId: string, id: string, input: ReservationInput) =>
-  (await reservations()).update(cafeId, id, input, new Date());
+export const updateReservation = async (cafeId: string, id: string, input: ReservationInput, version: number) =>
+  (await reservations()).update(cafeId, id, input, version, new Date());
 export const setReservationStatus = async (cafeId: string, id: string, status: ReservationStatus) =>
   (await reservations()).setStatus(cafeId, id, status, new Date());
 export const findReservationsForKiosk = async (cafeId: string, last4: string) =>

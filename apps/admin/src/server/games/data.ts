@@ -20,6 +20,6 @@ export async function createGame(input: GameInput) {
   return (await repository()).create(input);
 }
 
-export async function updateGame(id: string, input: GameInput) {
-  return (await repository()).update(id, input);
+export async function updateGame(id: string, input: GameInput, version: number) {
+  return (await repository()).update(id, input, version);
 }

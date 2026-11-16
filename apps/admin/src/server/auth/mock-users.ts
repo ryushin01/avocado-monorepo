@@ -1,8 +1,9 @@
+import type { New } from "@/db/mappers";
 import type { User } from "@/entities/user";
 
 // 개발용 시드 직원. 처음 DB를 만들 때 모두 DEV_PASSWORD로 로그인할 수 있게 넣는다.
 // 운영 DB에는 넣지 않는다(SEED_DEMO=1일 때만).
-export const SEED_USERS: User[] = [
+export const SEED_USERS: New<User>[] = [
   { id: "u_admin", name: "김관리", email: "admin@example.com", role: "admin", active: true },
   {
     id: "u_staff_gangnam",

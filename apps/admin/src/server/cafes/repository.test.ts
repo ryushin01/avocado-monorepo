@@ -31,15 +31,31 @@ describe("CafeRepository", () => {
     expect(created).toMatchObject({ status: "open", name: "제주점" });
     expect(typeof created !== "string" && created.id).toMatch(/^c_/);
     expect(await repo.create(input({ name: "제주 점" }))).toBe("duplicate-name");
-    expect(await repo.update("c_gangnam", input({ name: "홍대점" }))).toBe("duplicate-name");
-    expect(await repo.update("nope", input({ name: "새 이름" }))).toBe("not-found");
+    expect(await repo.update("c_gangnam", input({ name: "홍대점" }), 1)).toBe("duplicate-name");
+    expect(await repo.update("nope", input({ name: "새 이름" }), 1)).toBe("not-found");
   });
 
   it("수정하면 비운 선택 항목은 지우고 상태는 그대로 둔다", async () => {
     const repo = createCafeRepository(await createTestDb({ plays: [] }));
-    const updated = await repo.update("c_gangnam", input({ name: "강남역점" }));
-    expect(updated).toMatchObject({ name: "강남역점", status: "open" });
+    const updated = await repo.update("c_gangnam", input({ name: "강남역점" }), 1);
+    expect(updated).toMatchObject({ name: "강남역점", status: "open", version: 2 });
     expect(typeof updated !== "string" && updated.phone).toBeUndefined();
+  });
+
+  it("수정 폼을 연 뒤 다른 관리자가 고치거나 폐점하면 덮어쓰지 않는다(낙관적 잠금)", async () => {
+    const repo = createCafeRepository(await createTestDb({ plays: [] }));
+    // 두 관리자가 같은 버전(1)으로 연 폼을 동시에 저장하면 하나만 저장된다.
+    const results = await Promise.all([
+      repo.update("c_gangnam", input({ name: "강남역점" }), 1),
+      repo.update("c_gangnam", input({ name: "강남대로점" }), 1),
+    ]);
+    expect(results.filter((r) => r === "changed")).toHaveLength(1);
+    const saved = results.find((r) => typeof r !== "string");
+    expect(await repo.get("c_gangnam")).toMatchObject({ name: typeof saved !== "string" && saved?.name, version: 2 });
+    // 폐점·운영 재개도 버전을 올리므로, 그 전에 연 폼은 저장되지 않는다.
+    await repo.setStatus("c_gangnam", "closed");
+    expect(await repo.update("c_gangnam", input({ name: "강남점" }), 2)).toBe("changed");
+    expect(await repo.get("c_gangnam")).toMatchObject({ status: "closed", version: 3 });
   });
 
   it("이용 중인 게임이 있으면 폐점할 수 없고, 모두 반납하면 폐점·재개할 수 있다", async () => {

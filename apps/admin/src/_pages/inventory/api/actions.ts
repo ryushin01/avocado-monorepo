@@ -7,8 +7,11 @@ import { recordAudit } from "@/server/audit/data";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { canManageInventory } from "@/entities/user";
 import {
+  editConflictMessage,
   formDataToObject,
   formError,
+  parseVersion,
+  STALE_FORM_MESSAGE,
   type ActionResult,
   type FormState,
 } from "@/shared/lib/form";
@@ -81,9 +84,17 @@ export async function editInventoryAction(
   const parsed = inventoryEditSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
 
+  // 폼을 연 시점의 버전과 같을 때만 저장한다(낙관적 잠금).
+  const version = parseVersion(values);
+  if (version === null) return formError(values, STALE_FORM_MESSAGE);
+
   const before = await getInventory(cafeId, gameId);
-  const entry = await updateInventory(cafeId, gameId, parsed.data);
+  const entry = await updateInventory(cafeId, gameId, parsed.data, version);
   if (entry === "not-found") return formError(values, NOT_FOUND);
+  if (entry === "changed") {
+    revalidate();
+    return formError(values, editConflictMessage("이 재고를"));
+  }
   if (entry === "in-use") {
     const current = await getInventory(cafeId, gameId);
     return {

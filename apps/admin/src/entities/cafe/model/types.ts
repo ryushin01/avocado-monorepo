@@ -21,6 +21,8 @@ export type Cafe = {
   status: CafeStatus;
   /** 폐점 처리한 시각 */
   closedAt?: string;
+  /** 편집 폼의 낙관적 잠금용 행 버전. 바꿀 때마다 1씩 오른다(db/schema.ts의 version). */
+  version: number;
 };
 
 /** 매장 관리 화면에서 함께 보여주는 수치 */

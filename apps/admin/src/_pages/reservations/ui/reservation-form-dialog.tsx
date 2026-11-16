@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 
 import {
   Dialog,
@@ -71,9 +71,35 @@ export function ReservationFormDialog({
   onOpenChange: (open: boolean) => void;
   trigger?: ReactElement;
 }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger render={trigger} />}
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
+        {/* 창을 열 때마다 새로 마운트되어 그때의 값·버전으로 시작한다. */}
+        <ReservationForm cafeId={cafeId} reservation={reservation} date={date} onSaved={() => onOpenChange(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ReservationForm({
+  cafeId,
+  reservation: latest,
+  date,
+  onSaved,
+}: {
+  cafeId: string;
+  reservation?: Reservation;
+  date: string;
+  onSaved: () => void;
+}) {
+  // 창을 연 시점의 예약. 열려 있는 동안 목록이 다시 받아져도(15초 자동 갱신) 이 값과 버전을 쓰고,
+  // 그사이 다른 직원이 고쳤다면 저장할 때 서버가 버전으로 알아채 덮어쓰지 않는다.
+  const [reservation] = useState(latest);
+  const [defaults] = useState(() => toFormValues(reservation, date));
   const form = useDialogForm(saveReservationAction.bind(null, cafeId, reservation?.id ?? null), {
-    defaults: toFormValues(reservation, date),
-    onSuccess: () => onOpenChange(false),
+    defaults,
+    onSuccess: onSaved,
   });
 
   const field = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
@@ -81,64 +107,60 @@ export function ReservationFormDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger && <DialogTrigger render={trigger} />}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
-        <form key={form.formKey} action={form.formAction} noValidate>
-          <DialogHeader>
-            <DialogTitle>{reservation ? "예약 수정" : "예약 등록"}</DialogTitle>
-            <DialogDescription>
-              전화 등으로 받은 예약을 기록합니다. 손님은 키오스크에서 전화번호 뒷자리로 예약을 확인합니다.
-            </DialogDescription>
-          </DialogHeader>
-          <FieldGroup className="py-4">
-            <FormErrorAlert message={form.formError} />
-            <div className="grid grid-cols-2 gap-4">
-              {field("name", "이름")}
-              {field("partySize", "인원", { type: "number", inputMode: "numeric", min: 1 })}
-            </div>
-            {field("phone", "휴대전화", { type: "tel", inputMode: "tel", placeholder: "010-1234-5678" })}
-            <div className="grid grid-cols-2 gap-4">
-              {field("date", "날짜", { type: "date" })}
-              {field("time", "시각", { type: "time", step: 1800 })}
-            </div>
-            {!(reservation && reservation.status === "confirmed") && (
-              <Field data-invalid={form.invalid("status")}>
-                <FieldLabel htmlFor="reservation-status">상태</FieldLabel>
-                <Select name="status" items={STATUS_ITEMS} defaultValue={form.text("status")}>
-                  <SelectTrigger
-                    id="reservation-status"
-                    className="w-full"
-                    {...fieldA11y("reservation-status", form.invalid("status"))}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_ITEMS.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldError id={errorIdOf("reservation-status")} errors={form.errors("status")} />
-              </Field>
-            )}
-            <Field data-invalid={form.invalid("memo")}>
-              <FieldLabel htmlFor="reservation-memo">메모 (선택)</FieldLabel>
-              <Textarea
-                id="reservation-memo"
-                name="memo"
-                rows={2}
-                defaultValue={form.text("memo")}
-                {...fieldA11y("reservation-memo", form.invalid("memo"))}
-              />
-              <FieldError id={errorIdOf("reservation-memo")} errors={form.errors("memo")} />
-            </Field>
-          </FieldGroup>
-          <DialogFormFooter submitLabel={reservation ? "저장" : "등록"} pending={form.pending} />
-        </form>
-      </DialogContent>
-    </Dialog>
+    <form key={form.formKey} action={form.formAction} noValidate>
+      {reservation && <input type="hidden" name="version" value={reservation.version} />}
+      <DialogHeader>
+        <DialogTitle>{reservation ? "예약 수정" : "예약 등록"}</DialogTitle>
+        <DialogDescription>
+          전화 등으로 받은 예약을 기록합니다. 손님은 키오스크에서 전화번호 뒷자리로 예약을 확인합니다.
+        </DialogDescription>
+      </DialogHeader>
+      <FieldGroup className="py-4">
+        <FormErrorAlert message={form.formError} />
+        <div className="grid grid-cols-2 gap-4">
+          {field("name", "이름")}
+          {field("partySize", "인원", { type: "number", inputMode: "numeric", min: 1 })}
+        </div>
+        {field("phone", "휴대전화", { type: "tel", inputMode: "tel", placeholder: "010-1234-5678" })}
+        <div className="grid grid-cols-2 gap-4">
+          {field("date", "날짜", { type: "date" })}
+          {field("time", "시각", { type: "time", step: 1800 })}
+        </div>
+        {!(reservation && reservation.status === "confirmed") && (
+          <Field data-invalid={form.invalid("status")}>
+            <FieldLabel htmlFor="reservation-status">상태</FieldLabel>
+            <Select name="status" items={STATUS_ITEMS} defaultValue={form.text("status")}>
+              <SelectTrigger
+                id="reservation-status"
+                className="w-full"
+                {...fieldA11y("reservation-status", form.invalid("status"))}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_ITEMS.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError id={errorIdOf("reservation-status")} errors={form.errors("status")} />
+          </Field>
+        )}
+        <Field data-invalid={form.invalid("memo")}>
+          <FieldLabel htmlFor="reservation-memo">메모 (선택)</FieldLabel>
+          <Textarea
+            id="reservation-memo"
+            name="memo"
+            rows={2}
+            defaultValue={form.text("memo")}
+            {...fieldA11y("reservation-memo", form.invalid("memo"))}
+          />
+          <FieldError id={errorIdOf("reservation-memo")} errors={form.errors("memo")} />
+        </Field>
+      </FieldGroup>
+      <DialogFormFooter submitLabel={reservation ? "저장" : "등록"} pending={form.pending} />
+    </form>
   );
 }

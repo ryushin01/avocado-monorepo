@@ -1,3 +1,4 @@
+import type { New } from "@/db/mappers";
 import type { Cafe } from "@/entities/cafe";
 import { hash01 } from "@/shared/lib/hash";
 import { DAY, startOfKstDay } from "@/shared/lib/kst-time";
@@ -17,9 +18,9 @@ const pick = (key: string) => NAMES[Math.floor(hash01(key) * NAMES.length)];
  * 매장마다 오늘과 내일의 예약을 만든다(now 기준, 매번 같은 결과).
  * 오늘 이미 지난 시각의 예약은 입장 또는 노쇼, 앞으로의 예약은 확정 또는 가예약이다.
  */
-export function createSeedReservations(cafes: Cafe[], now = new Date()): Reservation[] {
+export function createSeedReservations(cafes: New<Cafe>[], now = new Date()): New<Reservation>[] {
   const today = startOfKstDay(now.getTime());
-  const list: Reservation[] = [];
+  const list: New<Reservation>[] = [];
   for (const cafe of cafes) {
     if (cafe.status !== "open") continue;
     // 오늘 13·15·17·19·20시, 내일 14·18시
@@ -51,7 +52,7 @@ export function createSeedReservations(cafes: Cafe[], now = new Date()): Reserva
 }
 
 /** 매장마다 오늘의 현장 대기: 입장 1팀, 호출 1팀, 대기 2팀 */
-export function createSeedWaitlist(cafes: Cafe[], now = new Date()): WaitlistEntry[] {
+export function createSeedWaitlist(cafes: New<Cafe>[], now = new Date()): WaitlistEntry[] {
   const list: WaitlistEntry[] = [];
   const at = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * MINUTE).toISOString();
   for (const cafe of cafes) {

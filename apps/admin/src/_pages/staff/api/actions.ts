@@ -11,8 +11,11 @@ import { canManageOrganization, ROLE_LABELS, type UserInput } from "@/entities/u
 import { passwordSchema, userInputSchema } from "@/entities/user/index.server";
 import type { User } from "@/entities/user";
 import {
+  editConflictMessage,
   formDataToObject,
   formError,
+  parseVersion,
+  STALE_FORM_MESSAGE,
   type ActionResult,
   type FormState,
 } from "@/shared/lib/form";
@@ -27,6 +30,7 @@ const ERROR_MESSAGES: Record<UserSaveError, string> = {
   "cafe-unavailable": "운영 중인 매장을 소속 매장으로 선택해주세요.",
   self: "자기 자신의 역할은 바꾸거나 퇴사 처리할 수 없습니다.",
   "last-admin": "재직 중인 관리자가 한 명은 있어야 합니다.",
+  changed: editConflictMessage("이 직원 정보를"),
 };
 
 /** 필드와 연결되는 오류는 그 필드 아래에 보여준다. */
@@ -48,7 +52,12 @@ async function submitUserForm(
   formData: FormData,
   action: AuditAction,
   passwordRequired: boolean,
-  save: (input: UserInput, actor: User, passwordHash?: string) => Promise<User | UserSaveError>,
+  save: (
+    input: UserInput,
+    actor: User,
+    values: Record<string, string | string[]>,
+    passwordHash?: string,
+  ) => Promise<User | UserSaveError | "stale">,
   done: (name: string) => string,
 ): Promise<FormState> {
   const { password = "", ...values } = formDataToObject(formData);
@@ -69,7 +78,10 @@ async function submitUserForm(
   }
 
   const passwordHash = pw.data ? await hash(pw.data, 10) : undefined;
-  const result = await save(parsed.data, actor, passwordHash);
+  const result = await save(parsed.data, actor, values, passwordHash);
+  if (result === "stale") return formError(values, STALE_FORM_MESSAGE);
+  // 목록은 바뀐 내용으로 다시 받고, 열린 폼은 입력을 그대로 둔 채 알린다.
+  if (result === "changed") revalidate();
   if (typeof result === "string") {
     const field = FIELD_OF[result];
     return field
@@ -101,7 +113,7 @@ export async function createUserAction(
     formData,
     "staff.create",
     true,
-    (input, _actor, passwordHash) => createUser(input, passwordHash!),
+    (input, _actor, _values, passwordHash) => createUser(input, passwordHash!),
     (name) => `'${name}' 직원을 등록했습니다.`,
   );
 }
@@ -115,7 +127,11 @@ export async function updateUserAction(
     formData,
     "staff.update",
     false,
-    (input, actor, passwordHash) => updateUser(id, input, actor.id, passwordHash),
+    // 폼을 연 시점의 버전과 같을 때만 저장한다(낙관적 잠금).
+    async (input, actor, values, passwordHash) => {
+      const version = parseVersion(values);
+      return version === null ? "stale" : updateUser(id, input, actor.id, version, passwordHash);
+    },
     (name) => `'${name}' 정보를 수정했습니다.`,
   );
 }

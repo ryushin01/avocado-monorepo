@@ -13,7 +13,7 @@ import { createInventoryRepository, distributions } from "./repository";
 import { createSeedInventory } from "./seed";
 import type { InventoryItem } from "@/entities/inventory";
 
-const cafe = (id: string): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status: "open" });
+const cafe = (id: string): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status: "open", version: 1 });
 const game = (id: string, name: string, categories: BoardGame["categories"]): BoardGame => ({
   id,
   name,
@@ -24,6 +24,7 @@ const game = (id: string, name: string, categories: BoardGame["categories"]): Bo
   playTimeMax: 60,
   difficulty: "normal",
   createdAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
 });
 const item = (
   cafeId: string,
@@ -35,6 +36,7 @@ const item = (
   quantity: 1,
   status: "available",
   updatedAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
   ...patch,
 });
 
@@ -93,6 +95,24 @@ describe("InventoryRepository", () => {
       status: "retired",
     });
     expect(await repo.update("a", "g3", { quantity: 1 })).toBe("not-found");
+  });
+
+  it("수정 폼을 연 뒤 다른 직원이 수량·상태를 바꿨으면 덮어쓰지 않는다(낙관적 잠금)", async () => {
+    const { db, repo } = await setup();
+    const opened = (await repo.get("a", "g1"))!.version;
+    // 대여·반납은 재고 줄을 바꾸지 않아 열린 수정 폼을 막지 않는다.
+    await createPlayRepository(db).start("a", { gameId: "g1", playerCount: 2 });
+    expect((await repo.get("a", "g1"))!.version).toBe(opened);
+    const [a, b] = await Promise.all([
+      repo.update("a", "g1", { quantity: 4, status: "available" }, opened),
+      repo.update("a", "g1", { quantity: 6, status: "available" }, opened),
+    ]);
+    expect([a, b].filter((r) => r === "changed")).toHaveLength(1);
+    // 상태 메뉴(버전 없이 바로 바꿈)도 버전을 올리므로, 그 전에 연 폼으로는 저장되지 않는다.
+    const beforeStatus = (await repo.get("a", "g1"))!.version;
+    expect(await repo.update("a", "g1", { status: "maintenance" })).toMatchObject({ version: beforeStatus + 1 });
+    expect(await repo.update("a", "g1", { quantity: 9, status: "available" }, beforeStatus)).toBe("changed");
+    expect(await repo.get("a", "g1")).toMatchObject({ status: "maintenance", version: beforeStatus + 1 });
   });
 
   it("제외하면 그 매장에서만 빠진다", async () => {

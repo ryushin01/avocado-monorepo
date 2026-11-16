@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { formDataToObject, formError } from "./form";
+import { formDataToObject, formError, parseVersion } from "./form";
 
 describe("formDataToObject", () => {
   it("같은 이름이 여러 번 오면 배열로 모은다", () => {
@@ -27,5 +27,16 @@ describe("formError", () => {
     const parsed = z.object({ a: z.number() }).safeParse({ a: "x" });
     const state = formError({ a: "x" }, parsed.error!);
     expect(state.status === "error" && Object.keys(state.fieldErrors)).toEqual(["a"]);
+  });
+});
+
+describe("parseVersion", () => {
+  it("1 이상의 정수만 버전으로 읽고, 없거나 잘못된 값은 null", () => {
+    expect(parseVersion({ version: "3" })).toBe(3);
+    expect(parseVersion({})).toBeNull();
+    expect(parseVersion({ version: "" })).toBeNull();
+    expect(parseVersion({ version: "0" })).toBeNull();
+    expect(parseVersion({ version: "1.5" })).toBeNull();
+    expect(parseVersion({ version: ["1", "2"] })).toBeNull();
   });
 });

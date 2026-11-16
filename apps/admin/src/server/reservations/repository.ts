@@ -4,6 +4,7 @@ import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
 import { toReservation } from "@/db/mappers";
 import { cafes, reservations } from "@/db/schema";
+import { nextVersion } from "@/db/version";
 import { phoneLast4 } from "@/entities/guest";
 import { kstDayRange, toKstDate } from "@/shared/lib/kst-time";
 
@@ -21,7 +22,7 @@ import {
  * - finished: 이미 입장·취소·노쇼로 끝난 예약
  * - invalid-transition: 그 상태로 바꿀 수 없음 (예: 확정 → 가예약)
  * - too-early: 예약 시각 전에 노쇼 처리
- * - changed: 확인하는 사이 다른 직원이 먼저 상태를 바꿈 (다시 보고 처리)
+ * - changed: 확인하는 사이, 또는 수정 폼을 연 뒤에 다른 직원이 먼저 바꿈 (다시 보고 처리)
  */
 export type ReservationError =
   | "not-found"
@@ -37,8 +38,11 @@ export interface ReservationRepository {
   /** date(한국 날짜) 하루의 예약, 시각순 */
   listByDate(cafeId: string, date: string): Promise<Reservation[]>;
   create(cafeId: string, input: ReservationInput, now: Date): Promise<Reservation | ReservationError>;
-  /** 끝나지 않은 예약만 고칠 수 있다. 시각을 바꿀 때만 지난 시각인지 본다. */
-  update(cafeId: string, id: string, input: ReservationInput, now: Date): Promise<Reservation | ReservationError>;
+  /**
+   * 끝나지 않은 예약만 고칠 수 있다. 시각을 바꿀 때만 지난 시각인지 본다.
+   * version: 수정 폼을 연 시점의 버전. 그사이 누가 고치거나 상태를 바꿨으면 덮어쓰지 않고 "changed".
+   */
+  update(cafeId: string, id: string, input: ReservationInput, version: number, now: Date): Promise<Reservation | ReservationError>;
   setStatus(cafeId: string, id: string, status: ReservationStatus, now: Date): Promise<Reservation | ReservationError>;
   /** 키오스크: 오늘 아직 끝나지 않은 예약 중 전화번호 뒷자리가 같은 것 */
   findForKiosk(cafeId: string, last4: string, now: Date): Promise<Reservation[]>;
@@ -96,17 +100,24 @@ export function createReservationRepository(db: Database): ReservationRepository
       return toReservation(row);
     },
 
-    async update(cafeId, id, input, now) {
+    async update(cafeId, id, input, version, now) {
       const current = await find(cafeId, id);
       if (!current) return "not-found";
       if (!isOpen(current)) return "finished";
+      if (current.version !== version) return "changed";
       if (input.startsAt !== current.startsAt && Date.parse(input.startsAt) < now.getTime()) return "past";
       // 확정한 예약을 다시 가예약으로 되돌리지는 않는다.
       const status = current.status === "confirmed" ? "confirmed" : input.status;
       const [row] = await db
         .update(reservations)
-        .set({ ...input, startsAt: new Date(input.startsAt), memo: input.memo ?? null, status })
-        .where(unchanged(current))
+        .set({
+          ...input,
+          startsAt: new Date(input.startsAt),
+          memo: input.memo ?? null,
+          status,
+          version: nextVersion(reservations.version),
+        })
+        .where(and(byId(cafeId, id), eq(reservations.version, version)))
         .returning();
       return row ? toReservation(row) : "changed";
     },
@@ -119,7 +130,12 @@ export function createReservationRepository(db: Database): ReservationRepository
       if (status === "no_show" && Date.parse(current.startsAt) > now.getTime()) return "too-early";
       const [row] = await db
         .update(reservations)
-        .set({ status, closedAt: OPEN_RESERVATION_STATUSES.includes(status) ? null : now })
+        .set({
+          status,
+          closedAt: OPEN_RESERVATION_STATUSES.includes(status) ? null : now,
+          // 상태도 수정 폼이 고치는 값이라, 열려 있던 수정 폼이 이 변경을 덮지 않게 버전을 올린다.
+          version: nextVersion(reservations.version),
+        })
         .where(unchanged(current))
         .returning();
       return row ? toReservation(row) : "changed";

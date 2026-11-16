@@ -15,6 +15,7 @@ const game = (id: string, name: string, patch: Partial<BoardGame> = {}): BoardGa
   playTimeMax: 60,
   difficulty: "easy",
   createdAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
   ...patch,
 });
 const entry = (g: BoardGame, patch: Partial<InventoryEntry> = {}): InventoryEntry => ({
@@ -23,6 +24,7 @@ const entry = (g: BoardGame, patch: Partial<InventoryEntry> = {}): InventoryEntr
   quantity: 2,
   status: "available",
   updatedAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
   inUse: 0,
   game: g,
   ...patch,

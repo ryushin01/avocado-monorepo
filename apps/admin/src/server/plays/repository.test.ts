@@ -21,6 +21,7 @@ const game = (id: string, name: string): BoardGame => ({
   playTimeMax: 60,
   difficulty: "easy",
   createdAt: "2026-10-01T00:00:00.000Z",
+  version: 1,
 });
 let seq = 0;
 const play = (

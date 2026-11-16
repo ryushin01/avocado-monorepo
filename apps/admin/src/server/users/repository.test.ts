@@ -22,7 +22,10 @@ const HASH = "$2b$10$abcdefghijklmnopqrstuuWb0FHpIHQmFH5L4nXfIMR6t2kUzLqaa";
 
 async function setup() {
   const db = await createTestDb({ plays: [], reservations: [], waitlist: [] }, new Date(), HASH);
-  return { db, repo: createUserRepository(db) };
+  const repo = createUserRepository(db);
+  /** 지금 버전(수정 폼을 막 연 것처럼) */
+  const version = async (id: string) => (await repo.get(id))?.version ?? 0;
+  return { db, repo, version };
 }
 
 describe("UserRepository", () => {
@@ -47,13 +50,13 @@ describe("UserRepository", () => {
   });
 
   it("자기 역할은 바꿀 수 없고, 자신은 퇴사 처리할 수 없다", async () => {
-    const { repo } = await setup();
+    const { repo, version } = await setup();
     const me = { name: "김관리", email: "admin@example.com", role: "staff" as const, cafeId: "c_gangnam" };
-    expect(await repo.update(ADMIN, me, ADMIN)).toBe("self");
+    expect(await repo.update(ADMIN, me, ADMIN, await version(ADMIN))).toBe("self");
     expect(await repo.setActive(ADMIN, false, ADMIN)).toBe("self");
     // 이름은 바꿀 수 있다.
     expect(
-      await repo.update(ADMIN, { name: "김본사", email: "admin@example.com", role: "admin" }, ADMIN),
+      await repo.update(ADMIN, { name: "김본사", email: "admin@example.com", role: "admin" }, ADMIN, await version(ADMIN)),
     ).toMatchObject({ name: "김본사" });
   });
 
@@ -66,20 +69,48 @@ describe("UserRepository", () => {
     expect(await repo.setActive(other.id, false, "someone")).toBe("last-admin");
   });
 
-  it("관리자는 소속 매장이 없고, 비밀번호는 바꿀 때만 바뀐다", async () => {
+  it("두 관리자가 동시에 서로를 퇴사 처리해도 재직 중인 관리자가 남는다", async () => {
     const { repo } = await setup();
+    const other = await repo.create(staff({ role: "admin", email: "boss2@example.com" }), HASH);
+    if (typeof other === "string") throw new Error(other);
+    // 예전에는 둘 다 "다른 관리자가 있다"고 읽은 뒤 써서 관리자가 0명이 됐다.
+    const results = await Promise.all([repo.setActive(ADMIN, false, other.id), repo.setActive(other.id, false, ADMIN)]);
+    expect(results.filter((r) => r === "last-admin")).toHaveLength(1);
+    const admins = (await repo.list()).filter((u) => u.role === "admin" && u.active);
+    expect(admins).toHaveLength(1);
+  });
+
+  it("수정 폼을 연 뒤 다른 관리자가 고치거나 퇴사 처리했으면 덮어쓰지 않는다(낙관적 잠금)", async () => {
+    const { repo, version } = await setup();
+    const created = await repo.create(staff({ email: "lock@example.com" }), HASH);
+    if (typeof created === "string") throw new Error(created);
+    const opened = await version(created.id);
+    const [a, b] = await Promise.all([
+      repo.update(created.id, staff({ email: "lock@example.com", name: "가" }), ADMIN, opened),
+      repo.update(created.id, staff({ email: "lock@example.com", name: "나" }), ADMIN, opened),
+    ]);
+    expect([a, b].filter((r) => r === "changed")).toHaveLength(1);
+    // 퇴사 처리도 버전을 올리므로, 그 전에 연 폼으로 저장해 재직으로 되돌리지 않는다.
+    const beforeLeave = await version(created.id);
+    expect(await repo.setActive(created.id, false, ADMIN)).toMatchObject({ active: false });
+    expect(await repo.update(created.id, staff({ email: "lock@example.com" }), ADMIN, beforeLeave)).toBe("changed");
+    expect(await repo.get(created.id)).toMatchObject({ active: false, version: beforeLeave + 1 });
+  });
+
+  it("관리자는 소속 매장이 없고, 비밀번호는 바꿀 때만 바뀐다", async () => {
+    const { repo, version } = await setup();
     const created = await repo.create(staff({ role: "admin", email: "a2@example.com", cafeId: "c_dunsan" }), HASH);
     expect(created).toMatchObject({ role: "admin", cafeId: undefined });
     if (typeof created === "string") throw new Error(created);
 
-    await repo.update(created.id, { name: "이름만", email: "a2@example.com", role: "admin" }, ADMIN);
+    await repo.update(created.id, { name: "이름만", email: "a2@example.com", role: "admin" }, ADMIN, await version(created.id));
     expect((await repo.findForLogin("a2@example.com"))?.passwordHash).toBe(HASH);
-    await repo.update(created.id, { name: "이름만", email: "a2@example.com", role: "admin" }, ADMIN, "new-hash");
+    await repo.update(created.id, { name: "이름만", email: "a2@example.com", role: "admin" }, ADMIN, await version(created.id), "new-hash");
     expect((await repo.findForLogin("A2@EXAMPLE.COM "))?.passwordHash).toBe("new-hash");
   });
 
   it("관리자가 정한 비밀번호는 임시라 다음 로그인 때 바꿔야 하고, 본인이 바꾸면 풀린다", async () => {
-    const { repo } = await setup();
+    const { repo, version } = await setup();
     const created = await repo.create(staff({ email: "temp@example.com" }), HASH);
     if (typeof created === "string") throw new Error(created);
     expect((await repo.get(created.id))?.mustChangePassword).toBe(true);
@@ -88,14 +119,14 @@ describe("UserRepository", () => {
     expect((await repo.get(created.id))?.mustChangePassword).toBe(false);
 
     // 관리자가 다른 직원의 비밀번호를 재설정하면 다시 임시
-    await repo.update(created.id, staff({ email: "temp@example.com" }), ADMIN, "reset-hash");
+    await repo.update(created.id, staff({ email: "temp@example.com" }), ADMIN, await version(created.id), "reset-hash");
     expect((await repo.get(created.id))?.mustChangePassword).toBe(true);
     // 비밀번호 없이 정보만 고치면 그대로
     await repo.changeOwnPassword(created.id, "own-hash-2");
-    await repo.update(created.id, staff({ email: "temp@example.com", name: "이름만" }), ADMIN);
+    await repo.update(created.id, staff({ email: "temp@example.com", name: "이름만" }), ADMIN, await version(created.id));
     expect((await repo.get(created.id))?.mustChangePassword).toBe(false);
     // 자기 비밀번호를 직원 관리에서 바꾸면 임시가 아니다
-    await repo.update(ADMIN, { name: "김관리", email: "admin@example.com", role: "admin" }, ADMIN, "mine");
+    await repo.update(ADMIN, { name: "김관리", email: "admin@example.com", role: "admin" }, ADMIN, await version(ADMIN), "mine");
     expect((await repo.get(ADMIN))?.mustChangePassword).toBe(false);
   });
 

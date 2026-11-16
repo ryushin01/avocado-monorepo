@@ -1,15 +1,14 @@
 "use client"
 
-import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
 
+// 앱에 테마 기능(다크 모드 전환)이 없어 밝은 테마로 고정한다. shadcn 원본은 next-themes의 useTheme()을 써서,
+// ThemeProvider 없이 OS가 다크 모드면 알림만 다크 스타일이 섞였다. (shadcn 원본에서 고친 곳: docs/conventions.md)
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme="light"
       className="toaster group"
       icons={{
         success: (

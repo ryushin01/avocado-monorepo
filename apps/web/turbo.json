@@ -1,0 +1,12 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/*/src/app/*.{ico,png}", "$TURBO_ROOT$/apps/launcher/public/icon-*.png"]
+    },
+    "test:coverage": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/*/src/app/*.{ico,png}", "$TURBO_ROOT$/apps/launcher/public/icon-*.png"]
+    }
+  }
+}

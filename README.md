@@ -161,4 +161,4 @@ docs/
 | 아보카도 아이콘 (세 앱의 파비콘·로고, 키오스크 앱 아이콘) | Google (Noto Emoji) | Apache 2.0 ([사본](apps/web/public/brand/LICENSE-noto-emoji.txt), 앱마다 `public/brand`에 같은 사본) | [googlefonts/noto-emoji](https://github.com/googlefonts/noto-emoji) |
 | 보드게임 상자 그림(게임 썸네일) | 각 게임의 출판사 | 확인 안 됨 (저작권은 출판사에 있고, 사용 허락을 받지 않은 포트폴리오용 썸네일) | [BoardGameGeek](https://boardgamegeek.com) (avocado 데이터의 게임별 `bggId`) |
 
-홍보 사이트의 사진·아이콘은 원작 avocado 프로젝트의 자료를 줄여 옮겼고(`pnpm import:avocado-media`), 매장·직원·손님 데이터는 가상 데이터입니다.
+홍보 사이트의 사진과 10위권 배지는 원작 avocado 프로젝트의 자료를 줄여 옮겼고(`pnpm import:avocado-media`), 매장·직원·손님 데이터는 가상 데이터입니다.

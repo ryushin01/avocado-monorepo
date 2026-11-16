@@ -1,8 +1,9 @@
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import type { BoardGame } from "@/entities/game";
 import { fromPlay } from "@/db/mappers";
-import { playSessions } from "@/db/schema";
+import { games, playSessions } from "@/db/schema";
 import { createSeedData } from "@/db/seed-data";
 import { createTestDb } from "@/db/testing";
 
@@ -253,6 +254,27 @@ describe("PlayRepository: 대여·반납", () => {
     expect((await repo.listHistory("a", { date: "2026-11-01" })).total).toBe(1);
     expect((await repo.listHistory("a", { q: "아줄" })).total).toBe(1);
     expect((await repo.listHistory("a", {}, { offset: 1, limit: 1 })).items).toHaveLength(1);
+  });
+
+  it("지난 기록은 DB에서 거르고 나눠 읽고, 영문 이름은 대소문자를 무시하며 %·_는 글자로 찾는다", async () => {
+    const { db, repo } = await rentalSetup();
+    await db.update(games).set({ englishName: "Azul" }).where(eq(games.id, "g2"));
+    await db.insert(playSessions).values(
+      Array.from({ length: 25 }, (_, i) =>
+        fromPlay(play("a", i % 5 === 0 ? "g2" : "g1", new Date(Date.parse("2026-11-01T00:00:00.000Z") + i * 3_600_000).toISOString())),
+      ),
+    );
+    const page2 = await repo.listHistory("a", {}, { offset: 20, limit: 20 });
+    expect(page2.total).toBe(25);
+    expect(page2.items).toHaveLength(5);
+    // 최근 시작 순으로 이어진다(1쪽 마지막 다음이 2쪽 처음).
+    const page1 = await repo.listHistory("a", {}, { offset: 0, limit: 20 });
+    expect(Date.parse(page1.items[19].startedAt)).toBeGreaterThan(Date.parse(page2.items[0].startedAt));
+
+    expect((await repo.listHistory("a", { q: "AZUL" })).total).toBe(5);
+    expect((await repo.listHistory("a", { q: "zu" }, { offset: 0, limit: 2 })).items.map((p) => p.game.name)).toEqual(["아줄", "아줄"]);
+    expect((await repo.listHistory("a", { q: "%" })).total).toBe(0);
+    expect((await repo.listHistory("a", { q: "_" })).total).toBe(0);
   });
 
   it("인기 순위는 이용 중인 기록도 시작 시각으로 센다", async () => {

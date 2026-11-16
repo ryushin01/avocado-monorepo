@@ -7,6 +7,7 @@ import { Skeleton } from "@avocado/ui/components/skeleton";
 
 import { AutoRefresh } from "@/shared/ui/auto-refresh";
 import { ConnectionError } from "@/shared/ui/connection-error";
+import { IdleReturn } from "@/shared/ui/idle-return";
 import { fetchCafeGames } from "@/shared/api/backoffice";
 
 /**
@@ -17,6 +18,8 @@ export default function HomePage() {
   return (
     <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-10 p-8">
       <AutoRefresh seconds={60} />
+      {/* 시작 화면은 확대된 채 남았을 때만 새로 연다. */}
+      <IdleReturn />
       <Suspense fallback={<Skeleton className="h-24 w-96" />}>
         <Welcome />
       </Suspense>

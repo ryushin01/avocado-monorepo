@@ -39,7 +39,7 @@ export function TrendChart({ data, period }: { data: DailyPoint[]; period: numbe
         </li>
       </ul>
       <ChartContainer config={config} className="aspect-auto h-64 w-full" aria-hidden>
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
+        <LineChart accessibilityLayer={false} data={data} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="date"

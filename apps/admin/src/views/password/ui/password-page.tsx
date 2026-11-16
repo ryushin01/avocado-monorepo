@@ -33,7 +33,9 @@ async function PasswordContent() {
         <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <KeyRound className="size-5" />
         </div>
-        <CardTitle className="text-xl">비밀번호 변경</CardTitle>
+        <CardTitle className="text-xl">
+          <h1>비밀번호 변경</h1>
+        </CardTitle>
         <CardDescription>
           {user.mustChangePassword
             ? `${user.name}님, 관리자가 정한 임시 비밀번호로 로그인했습니다. 계속하려면 본인만 아는 비밀번호로 바꿔주세요.`

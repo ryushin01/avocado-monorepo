@@ -130,14 +130,15 @@ export function KioskDevicesDialog({
           </Button>
         </div>
 
-        <ItemGroup aria-label="키오스크 기기" className="gap-2">
-          {devices === null ? (
-            <p className="text-sm text-muted-foreground">불러오는 중…</p>
-          ) : devices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">발급한 토큰이 없습니다.</p>
-          ) : (
-            devices.map((d) => (
-              <Item key={d.id} variant="outline" size="sm" data-testid="kiosk-device">
+        {/* 목록(role=list) 안에는 항목만 둔다. 불러오는 중·없음 안내는 목록 밖에 보인다. */}
+        {devices === null ? (
+          <p className="text-sm text-muted-foreground">불러오는 중…</p>
+        ) : devices.length === 0 ? (
+          <p className="text-sm text-muted-foreground">발급한 토큰이 없습니다.</p>
+        ) : (
+          <ItemGroup aria-label="키오스크 기기" className="gap-2">
+            {devices.map((d) => (
+              <Item key={d.id} variant="outline" size="sm" role="listitem" data-testid="kiosk-device">
                 <ItemContent className="min-w-0">
                   <ItemTitle className="flex-wrap">
                     {d.name}
@@ -163,9 +164,9 @@ export function KioskDevicesDialog({
                   </ItemActions>
                 )}
               </Item>
-            ))
-          )}
-        </ItemGroup>
+            ))}
+          </ItemGroup>
+        )}
       </DialogContent>
     </Dialog>
   );

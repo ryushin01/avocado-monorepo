@@ -80,6 +80,7 @@ async function PlaysContent({ searchParams }: Pick<PageProps<"/plays">, "searchP
       {cafeOptions && (
         <ListToolbar
           key={`cafe:${cafe.id}`}
+          label="매장 선택"
           action="/plays"
           values={{ cafe: cafe.id }}
           cafes={cafeOptions}
@@ -101,6 +102,7 @@ async function PlaysContent({ searchParams }: Pick<PageProps<"/plays">, "searchP
         </h2>
         <ListToolbar
           key={listKey}
+          label="지난 기록 검색"
           action="/plays"
           values={listParams}
           hidden={{ cafe: cafeOptions ? cafe.id : undefined }}

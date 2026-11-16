@@ -48,7 +48,7 @@ export function CafeList({ cafes }: { cafes: CafeOverview[] }) {
   return (
     <>
       <div className="hidden rounded-lg border md:block">
-        <Table>
+        <Table label="매장 목록">
           <TableHeader>
             <TableRow>
               <TableHead>매장</TableHead>
@@ -94,7 +94,7 @@ export function CafeList({ cafes }: { cafes: CafeOverview[] }) {
 
       <ItemGroup aria-label="매장 목록" className="gap-2 md:hidden">
         {cafes.map((cafe) => (
-          <Item key={cafe.id} variant="outline" data-testid="cafe-item">
+          <Item key={cafe.id} variant="outline" role="listitem" data-testid="cafe-item">
             <ItemContent className="min-w-0 gap-1">
               <ItemTitle className="flex-wrap">
                 <CafeName cafe={cafe} />

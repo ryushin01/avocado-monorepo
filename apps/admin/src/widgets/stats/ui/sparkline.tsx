@@ -35,7 +35,7 @@ export function Sparkline({
   ];
   return (
     <ChartContainer config={config} className={className} aria-hidden>
-      <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+      <LineChart accessibilityLayer={false} data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
         <YAxis hide domain={[0, max ?? "auto"]} />
         {previous.length > 0 && (
           <Line

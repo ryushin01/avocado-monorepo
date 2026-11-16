@@ -43,7 +43,7 @@ export function ActivePlayList({ plays, now }: { plays: PlayEntry[]; now: number
   return (
     <ItemGroup aria-label="이용 중인 게임" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {plays.map((play) => (
-        <Item key={play.id} variant="outline" data-testid="active-play">
+        <Item key={play.id} variant="outline" role="listitem" data-testid="active-play">
           <ItemMedia>
             <GameThumbnail game={play.game} className="size-12" />
           </ItemMedia>

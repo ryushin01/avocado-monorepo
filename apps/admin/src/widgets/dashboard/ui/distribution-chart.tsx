@@ -38,7 +38,7 @@ export function DistributionChart({
         className="aspect-auto h-56 w-full"
         aria-hidden
       >
-        <BarChart data={data} margin={{ top: 20, right: 0, bottom: 0, left: 0 }}>
+        <BarChart accessibilityLayer={false} data={data} margin={{ top: 20, right: 0, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="label"

@@ -81,7 +81,10 @@ export function ListToolbar({
   showDate = false,
   cafes,
   hidden,
+  label,
 }: {
+  /** 검색 영역 이름. 한 화면에 검색 폼이 둘 이상이면 서로 다르게 준다. */
+  label?: string;
   action: string;
   values: {
     q?: string;
@@ -119,6 +122,7 @@ export function ListToolbar({
     <form
       ref={formRef}
       role="search"
+      aria-label={label}
       onSubmit={onSubmit}
       className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center"
     >

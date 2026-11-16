@@ -127,7 +127,7 @@ export function CatalogTable({
 
   return (
     <div className="rounded-lg border">
-      <Table>
+      <Table label="보드게임 목록">
         <TableHeader>
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>

@@ -101,6 +101,7 @@ function RankingChart({ ranking }: { ranking: PopularityRanking }) {
         aria-hidden
       >
         <BarChart
+          accessibilityLayer={false}
           data={rows}
           layout="vertical"
           margin={{ left: 0, right: 40, top: 0, bottom: 0 }}

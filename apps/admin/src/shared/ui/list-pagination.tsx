@@ -43,12 +43,10 @@ export function ListPagination({
             </PaginationItem>
           ) : (
             <PaginationItem key={item}>
-              <PaginationLink
-                href={href(item)}
-                isActive={item === page}
-                aria-label={`${item}페이지`}
-              >
+              <PaginationLink href={href(item)} isActive={item === page}>
+                {/* 접근 이름 "2페이지"가 보이는 숫자로 시작하게 한다(KWCAG 6.5.3). */}
                 {item}
+                <span className="sr-only">페이지</span>
               </PaginationLink>
             </PaginationItem>
           ),

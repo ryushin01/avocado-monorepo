@@ -7,6 +7,8 @@ import { playSessions } from "@/db/schema";
 import { createSeedData } from "@/db/seed-data";
 import { createTestDb } from "@/db/testing";
 
+import { createPlayRepository } from "@/server/plays/repository";
+
 import { createInventoryRepository, distributions } from "./repository";
 import { createSeedInventory } from "./seed";
 import type { InventoryItem } from "@/entities/inventory";
@@ -124,6 +126,26 @@ describe("InventoryRepository", () => {
     });
     expect(await repo.remove("a", "g1")).toBe("in-use");
     expect(await repo.remove("a", "g2")).toBe(true);
+  });
+
+  it("수량을 줄이거나 제외하는 사이 빌려줘도 보유보다 이용 중이 많아지지 않는다", async () => {
+    const { db, repo } = await setup();
+    const plays = createPlayRepository(db);
+    await plays.start("a", { gameId: "g1", playerCount: 2 }); // 보유 3개 중 1개 이용 중
+    const [updated, started] = await Promise.all([
+      repo.update("a", "g1", { quantity: 1 }),
+      plays.start("a", { gameId: "g1", playerCount: 2 }),
+    ]);
+    const after = await repo.get("a", "g1");
+    // 둘 중 하나만 통한다: 먼저 줄였으면 새 대여가 막히고, 먼저 빌려줬으면 줄이기가 막힌다.
+    expect([updated === "in-use", started === "unavailable"].filter(Boolean)).toHaveLength(1);
+    expect(after!.inUse).toBeLessThanOrEqual(after!.quantity);
+
+    // 제외와 대여가 겹쳐도, 제외됐다면 이용 중 기록이 남지 않는다.
+    await repo.update("a", "g2", { status: "available" });
+    const [removed] = await Promise.all([repo.remove("a", "g2"), plays.start("a", { gameId: "g2", playerCount: 2 })]);
+    const active = (await plays.listActive("a")).filter((p) => p.gameId === "g2");
+    expect(removed === true ? active : []).toEqual([]);
   });
 
   it("요약: 매장별·전체 집계와 유형 분포, 최근 점검 중 목록", async () => {

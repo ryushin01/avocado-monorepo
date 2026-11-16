@@ -60,7 +60,7 @@ export function ReservationList({ reservations, date }: { reservations: Reservat
   return (
     <>
       <div className="hidden rounded-lg border md:block">
-        <Table>
+        <Table label="예약 목록">
           <TableHeader>
             <TableRow>
               <TableHead>시각</TableHead>
@@ -98,7 +98,7 @@ export function ReservationList({ reservations, date }: { reservations: Reservat
       </div>
       <ItemGroup aria-label="예약 목록" className="gap-2 md:hidden">
         {reservations.map((r) => (
-          <Item key={r.id} variant="outline">
+          <Item key={r.id} variant="outline" role="listitem">
             <ItemContent className="min-w-0 gap-1">
               <ItemTitle className="flex-wrap">
                 <span className="tabular-nums">{formatTime(r.startsAt)}</span> {r.name}

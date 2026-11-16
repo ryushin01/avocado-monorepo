@@ -93,15 +93,26 @@ export function createInventoryRepository(db: Database): InventoryRepository {
   const key = (cafeId: string, gameId: string) =>
     and(eq(inventoryItems.cafeId, cafeId), eq(inventoryItems.gameId, gameId));
 
-  /** 재고 한 줄 + 게임 + 이용 중 수 */
-  async function entryOf(cafeId: string, gameId: string): Promise<InventoryEntry | null> {
-    const [row] = await db
+  /**
+   * 재고 한 줄 + 게임 + 이용 중 수.
+   * lock: 트랜잭션 안에서 그 재고 줄을 잠근다. 대여 시작(plays.start)도 같은 줄을 잠그므로, 수량을 줄이거나
+   * 제외하는 사이 새로 빌려줘 "보유 2개에 이용 중 3개"가 되는 일을 막는다.
+   */
+  async function entryOf(
+    database: Database,
+    cafeId: string,
+    gameId: string,
+    { lock = false } = {},
+  ): Promise<InventoryEntry | null> {
+    const query = database
       .select()
       .from(inventoryItems)
       .innerJoin(games, eq(games.id, inventoryItems.gameId))
-      .where(key(cafeId, gameId));
+      .where(key(cafeId, gameId))
+      .$dynamic();
+    const [row] = await (lock ? query.for("update", { of: inventoryItems }) : query);
     if (!row) return null;
-    const inUse = (await countInUse(db, cafeId, [gameId])).get(gameId) ?? 0;
+    const inUse = (await countInUse(database, cafeId, [gameId])).get(gameId) ?? 0;
     return { ...toInventoryItem(row.inventory_items), game: toGame(row.games), inUse };
   }
 
@@ -159,27 +170,31 @@ export function createInventoryRepository(db: Database): InventoryRepository {
     },
 
     async get(cafeId, gameId) {
-      return entryOf(cafeId, gameId);
+      return entryOf(db, cafeId, gameId);
     },
 
     async update(cafeId, gameId, patch) {
-      const current = await entryOf(cafeId, gameId);
-      if (!current) return "not-found";
-      if (patch.quantity !== undefined && patch.quantity < current.inUse) return "in-use";
-      const [row] = await db
-        .update(inventoryItems)
-        .set({ ...patch, updatedAt: new Date() })
-        .where(key(cafeId, gameId))
-        .returning();
-      return { ...toInventoryItem(row), game: current.game, inUse: current.inUse };
+      return db.transaction(async (tx) => {
+        const current = await entryOf(tx, cafeId, gameId, { lock: true });
+        if (!current) return "not-found" as const;
+        if (patch.quantity !== undefined && patch.quantity < current.inUse) return "in-use" as const;
+        const [row] = await tx
+          .update(inventoryItems)
+          .set({ ...patch, updatedAt: new Date() })
+          .where(key(cafeId, gameId))
+          .returning();
+        return { ...toInventoryItem(row), game: current.game, inUse: current.inUse };
+      });
     },
 
     async remove(cafeId, gameId) {
-      const current = await entryOf(cafeId, gameId);
-      if (!current) return "not-found";
-      if (current.inUse > 0) return "in-use";
-      await db.delete(inventoryItems).where(key(cafeId, gameId));
-      return true;
+      return db.transaction(async (tx) => {
+        const current = await entryOf(tx, cafeId, gameId, { lock: true });
+        if (!current) return "not-found" as const;
+        if (current.inUse > 0) return "in-use" as const;
+        await tx.delete(inventoryItems).where(key(cafeId, gameId));
+        return true as const;
+      });
     },
 
     async summarize(cafeIds, maintenanceLimit = 5) {

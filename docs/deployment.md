@@ -49,7 +49,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `LAUNCHER_CAFE_ID` | 이 키오스크가 놓인 매장 id | |
 | `KIOSK_API_TOKEN` | 백오피스 **매장 관리 → 매장 메뉴 → 키오스크 토큰**에서 발급한 값 | 운영에서 없으면 401. 다른 매장의 토큰이면 403. 발급할 때 한 번만 보임 |
 
-세 변수는 서버를 켤 때의 환경 변수를 읽습니다. 빌드 하나를 여러 매장에 쓸 수 있고, 값을 바꾸면 다시 시작만 하면 됩니다. 빌드할 때 없어도 됩니다(빌드 중 백오피스 호출은 끊겨도 결과에 남지 않습니다).
+세 변수는 서버를 켤 때의 환경 변수를 읽습니다. 빌드 하나를 여러 매장에 쓸 수 있고, 값을 바꾸면 다시 시작만 하면 됩니다. 빌드할 때 없어도 됩니다(빌드 중에는 백오피스를 부르지 않고, 화면은 요청마다 그립니다). 운영에서 하나라도 빠지면 개발 기본값(강남점, localhost)을 쓰지 않고 백오피스를 부르지 않으며, 빠진 이름을 `launcher_config_missing` 로그로 남깁니다.
 
 ### 홈페이지 (`apps/web`)
 
@@ -98,7 +98,7 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 
 - 서버 오류는 앱 프로세스의 표준 오류에 한 줄 JSON으로 남습니다(`service`, `event`, `path`, `digest` 등). 호스팅의 로그 보관 기간을 확인합니다.
 - 직원이 알려 준 오류 번호는 로그의 `digest`로 찾습니다.
-- [ ] 런처에서 `event`가 `backoffice_error`(상태 401이면 토큰 문제)나 `backoffice_unreachable`이면 손님 화면에는 연결 안내만 보입니다. 이 로그에 알림을 겁니다.
+- [ ] 런처에서 `event`가 `backoffice_error`(상태 401이면 토큰 문제), `backoffice_unreachable`, `launcher_config_missing`(설정 빠짐)이면 손님 화면에는 연결 안내만 보입니다. 이 로그에 알림을 겁니다.
 - [ ] 외부 모니터링을 붙이려면 각 앱의 `src/instrumentation.ts`에서 보냅니다. 요청 헤더와 쿼리 문자열은 보내지 않습니다(개인정보).
 
 ## 운영 데이터

@@ -4,9 +4,9 @@ import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
 import { toGame, toPlay } from "@/db/mappers";
 import { cafes, games, inventoryItems, playSessions } from "@/db/schema";
-import { byGameName, matchesGame } from "@/server/games/repository";
+import { byGameName, gameNameLike } from "@/server/games/repository";
 import { countInUse } from "@/server/inventory/repository";
-import { slice, type ListRange, type ListResult } from "@/shared/lib/list";
+import type { ListRange, ListResult } from "@/shared/lib/list";
 
 import type {
   PlayStartInput,
@@ -157,21 +157,31 @@ export function createPlayRepository(db: Database): PlayRepository {
     },
 
     async listHistory(cafeId, filter = {}, range) {
+      // 지난 기록은 운영 기간만큼 늘어나므로, 거르기·페이지 나누기·개수 세기를 모두 DB에서 한다.
       const day = filter.date ? kstDayRange(filter.date) : null;
-      const rows = await db
+      const where = and(
+        eq(playSessions.cafeId, cafeId),
+        isNotNull(playSessions.returnedAt),
+        day ? gte(playSessions.startedAt, new Date(day.from)) : undefined,
+        day ? lt(playSessions.startedAt, new Date(day.to)) : undefined,
+        gameNameLike(filter.q),
+      );
+      const query = db
         .select(withGame)
         .from(playSessions)
         .innerJoin(games, eq(games.id, playSessions.gameId))
-        .where(
-          and(
-            eq(playSessions.cafeId, cafeId),
-            isNotNull(playSessions.returnedAt),
-            day ? gte(playSessions.startedAt, new Date(day.from)) : undefined,
-            day ? lt(playSessions.startedAt, new Date(day.to)) : undefined,
-          ),
-        )
-        .orderBy(desc(playSessions.startedAt));
-      return slice(rows.map(toEntry).filter((e) => matchesGame(e.game, { q: filter.q })), range);
+        .where(where)
+        .orderBy(desc(playSessions.startedAt), desc(playSessions.id))
+        .$dynamic();
+      const [rows, [{ total }]] = await Promise.all([
+        range ? query.limit(range.limit).offset(range.offset) : query,
+        db
+          .select({ total: count() })
+          .from(playSessions)
+          .innerJoin(games, eq(games.id, playSessions.gameId))
+          .where(where),
+      ]);
+      return { items: rows.map(toEntry), total };
     },
 
     async listRentable(cafeId) {

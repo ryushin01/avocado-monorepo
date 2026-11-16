@@ -85,3 +85,33 @@ test.describe("현장 대기 (관리자)", () => {
     await expect(entry).toHaveCount(0);
   });
 });
+
+test.describe("중복 제출", () => {
+  test("등록 버튼을 빠르게 두 번 눌러도 예약과 대기는 한 건만 생긴다", async ({ page }) => {
+    const tomorrow = kstDate(1);
+    const reservationName = `두번${Date.now() % 100000}`;
+    await page.goto(`${PAGE}&date=${tomorrow}`);
+    await page.getByRole("button", { name: "예약 등록" }).click();
+    const reservationDialog = page.getByRole("dialog", { name: "예약 등록" });
+    await reservationDialog.getByLabel("이름").fill(reservationName);
+    await reservationDialog.getByLabel("휴대전화").fill(uniquePhone().phone);
+    await reservationDialog.getByLabel("날짜").fill(tomorrow);
+    await reservationDialog.getByLabel("시각").fill("18:00");
+    await reservationDialog.getByRole("button", { name: "등록" }).dblclick();
+    await expect(page.getByText(`'${reservationName}' 예약을 등록했습니다.`)).toBeVisible();
+    await page.reload();
+    await expect(page.getByTestId("reservation-row").filter({ hasText: reservationName })).toHaveCount(1);
+
+    const waitName = `두번대기${Date.now() % 100000}`;
+    await page.getByRole("button", { name: "대기 등록" }).click();
+    const waitDialog = page.getByRole("dialog", { name: "현장 대기 등록" });
+    await waitDialog.getByLabel("이름").fill(waitName);
+    await waitDialog.getByLabel("휴대전화").fill(uniquePhone().phone);
+    await waitDialog.getByRole("button", { name: "등록" }).dblclick();
+    await expect(page.getByText(new RegExp(`'${waitName}'을\\(를\\) 등록했습니다`))).toBeVisible();
+    // 두 번째 요청이 갔다면 '같은 전화번호로 이미 대기 중' 오류가 남거나 같은 이름이 두 번 보인다.
+    await expect(page.getByText("같은 전화번호로 이미 대기 중입니다.")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("waitlist-entry").filter({ hasText: waitName })).toHaveCount(1);
+  });
+});

@@ -44,7 +44,7 @@ export function WaitlistBoard({ entries, now }: { entries: WaitlistEntry[]; now:
       ) : (
         <ItemGroup aria-label="현장 대기" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {active.map((entry) => (
-            <Item key={entry.id} variant="outline" data-testid="waitlist-entry">
+            <Item key={entry.id} variant="outline" role="listitem" data-testid="waitlist-entry">
               <ItemMedia>
                 <span className="flex size-12 items-center justify-center rounded-lg bg-muted text-xl font-bold tabular-nums">
                   {entry.number}

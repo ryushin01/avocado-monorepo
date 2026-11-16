@@ -23,6 +23,7 @@ import {
   POPULARITY_PERIODS,
   type PopularityRanking,
 } from "@/entities/play";
+import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
 // 단일 계열이므로 기본 팔레트의 1번(파랑)만 쓴다. 라이트·다크 각각 대비 검증을 통과한 값.
 const chartConfig = {
@@ -93,7 +94,7 @@ function RankingChart({ ranking }: { ranking: PopularityRanking }) {
   }
 
   return (
-    <>
+    <div className="relative">
       <ChartContainer
         config={chartConfig}
         className="aspect-auto w-full"
@@ -101,6 +102,7 @@ function RankingChart({ ranking }: { ranking: PopularityRanking }) {
         aria-hidden
       >
         <BarChart
+          accessibilityLayer={false}
           data={rows}
           layout="vertical"
           margin={{ left: 0, right: 40, top: 0, bottom: 0 }}
@@ -155,27 +157,29 @@ function RankingChart({ ranking }: { ranking: PopularityRanking }) {
         </BarChart>
       </ChartContainer>
 
-      {/* 화면 낭독기와 키보드 사용자를 위한 같은 데이터의 표 */}
-      <table className="sr-only">
-        <caption>{label} 인기 게임 순위</caption>
-        <thead>
-          <tr>
-            <th scope="col">순위</th>
-            <th scope="col">게임</th>
-            <th scope="col">이용 횟수</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ranking.items.map((item) => (
-            <tr key={item.game.id}>
-              <td>{item.rank}</td>
-              <th scope="row">{item.game.name}</th>
-              <td>{item.playCount}</td>
+      {/* 화면 낭독기와 키보드 사용자를 위한 같은 데이터의 표. 축에서 잘린 게임 이름도 여기에는 모두 보인다. */}
+      <ChartDataTable label={`${label} 인기 게임 순위 표`}>
+        <table>
+          <caption>{label} 인기 게임 순위</caption>
+          <thead>
+            <tr>
+              <th scope="col">순위</th>
+              <th scope="col">게임</th>
+              <th scope="col">이용 횟수</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
+          </thead>
+          <tbody>
+            {ranking.items.map((item) => (
+              <tr key={item.game.id}>
+                <td>{item.rank}</td>
+                <th scope="row">{item.game.name}</th>
+                <td>{item.playCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ChartDataTable>
+    </div>
   );
 }
 

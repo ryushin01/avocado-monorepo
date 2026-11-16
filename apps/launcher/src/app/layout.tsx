@@ -11,12 +11,11 @@ export const metadata: Metadata = {
   description: "매장 보유 게임을 둘러보고 예약·대기를 확인하는 손님용 화면",
 };
 
-// 매장 태블릿에서 전체 화면으로 띄우므로 확대를 막는다.
+// 손님이 글자를 키워 볼 수 있게 확대는 막지 않는다(WCAG 1.4.4). 확대한 채 떠나도 자동 복귀(IdleReturn) 때
+// 페이지를 새로 열어 원래 크기로 돌아간다.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

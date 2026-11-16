@@ -1,6 +1,6 @@
 {
   "name": "@avocado/admin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "copy-catalog-assets public && next dev --port 3000",
@@ -40,6 +40,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "^4.3.5",
     "@testing-library/jest-dom": "^7.0.1",

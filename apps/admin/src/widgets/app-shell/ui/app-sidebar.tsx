@@ -32,31 +32,34 @@ import { findNavItem, type NavItem } from "../model/navigation";
 export function AppSidebar({ nav, footer }: { nav: ReactNode; footer: ReactNode }) {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#f3f7ea]">
-                <Image src="/brand/logo.png" alt="" width={24} height={24} />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">보드게임 카페</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  백오피스
-                </span>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>메뉴</SidebarGroupLabel>
-          <SidebarGroupContent>{nav}</SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>{footer}</SidebarFooter>
-      <SidebarRail />
+      {/* 사이드바의 모든 내용(브랜드·메뉴·계정·너비 조절)을 랜드마크 안에 둔다. 레이아웃은 그대로 세로 흐름이다. */}
+      <nav aria-label="백오피스 메뉴" className="flex min-h-0 flex-1 flex-col">
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" render={<Link href="/" />}>
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#f3f7ea]">
+                  <Image src="/brand/logo.png" alt="" width={24} height={24} />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">보드게임 카페</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    백오피스
+                  </span>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>메뉴</SidebarGroupLabel>
+            <SidebarGroupContent>{nav}</SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>{footer}</SidebarFooter>
+        <SidebarRail />
+      </nav>
     </Sidebar>
   );
 }

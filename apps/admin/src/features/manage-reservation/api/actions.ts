@@ -33,6 +33,7 @@ const RESERVATION_ERRORS: Record<ReservationError, string> = {
   finished: "이미 입장·취소·노쇼로 끝난 예약입니다.",
   "invalid-transition": "지금 상태에서는 그렇게 바꿀 수 없습니다.",
   "too-early": "예약 시각이 지나야 노쇼로 처리할 수 있습니다.",
+  changed: "다른 직원이 먼저 이 예약을 바꿨습니다. 목록을 새로고침해 확인해주세요.",
 };
 
 const WAITLIST_ERRORS: Record<WaitlistError, string> = {
@@ -41,6 +42,7 @@ const WAITLIST_ERRORS: Record<WaitlistError, string> = {
   duplicate: "같은 전화번호로 이미 대기 중입니다.",
   finished: "이미 입장·이탈로 끝난 대기입니다.",
   "invalid-transition": "지금 상태에서는 그렇게 바꿀 수 없습니다.",
+  changed: "다른 직원이 먼저 이 대기를 바꿨습니다. 목록을 새로고침해 확인해주세요.",
 };
 
 /** 액션마다 서버에서 다시 권한을 확인한다. */

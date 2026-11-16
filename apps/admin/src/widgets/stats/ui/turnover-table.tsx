@@ -26,7 +26,7 @@ export function TurnoverTable({
   caption: string;
 }) {
   return (
-    <Table>
+    <Table label={caption}>
       <caption className="sr-only">{caption}</caption>
       <TableHeader>
         <TableRow>

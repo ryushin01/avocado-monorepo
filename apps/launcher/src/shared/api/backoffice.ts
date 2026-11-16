@@ -10,9 +10,10 @@ import {
   KioskWaitlistJoinResultSchema,
   KioskWaitlistStatusSchema,
 } from "@avocado/domain/kiosk";
+import { connection } from "next/server";
 import type { ZodType } from "zod";
 
-import { LAUNCHER_CONFIG } from "./config";
+import { LAUNCHER_CONFIG, missingLauncherConfig } from "./config";
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -29,6 +30,15 @@ async function call<T>(
   schema: ZodType<T>,
   init?: { method: "POST"; body: unknown },
 ): Promise<ApiResult<T>> {
+  // 요청 시점에만 부른다. 빌드 중(프리렌더링)에 여기서 바로 돌아오면 그 결과(연결 안내)가 정적 화면에 굳는다.
+  // 설정이 없는 빌드에서도 화면은 요청마다 그려지고, 아래 설정 확인도 요청 때만 한다.
+  await connection();
+  const missing = missingLauncherConfig();
+  if (missing.length > 0) {
+    // 운영에서 설정이 빠지면 부르지 않고 연결 문제로 안내한다.
+    logError("launcher", "launcher_config_missing", { missing });
+    return { ok: false, reason: "unreachable" };
+  }
   const { backofficeUrl, cafeId, apiToken } = LAUNCHER_CONFIG;
   const url = new URL(`/api/kiosk/cafes/${encodeURIComponent(cafeId)}${path}`, backofficeUrl);
   try {

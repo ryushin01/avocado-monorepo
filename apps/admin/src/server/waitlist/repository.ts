@@ -20,8 +20,15 @@ import {
  * - duplicate: 같은 전화번호가 이미 줄에 있음
  * - finished: 이미 입장·이탈로 끝남
  * - invalid-transition: 그 상태로 바꿀 수 없음 (예: 호출함 → 대기 중)
+ * - changed: 확인하는 사이 다른 직원이 먼저 상태를 바꿈 (다시 보고 처리)
  */
-export type WaitlistError = "not-found" | "closed-cafe" | "duplicate" | "finished" | "invalid-transition";
+export type WaitlistError =
+  | "not-found"
+  | "closed-cafe"
+  | "duplicate"
+  | "finished"
+  | "invalid-transition"
+  | "changed";
 
 /** 키오스크에 보여줄 내 대기: 앞에 남은 팀 수와 함께 */
 export type WaitlistPosition = WaitlistEntry & { ahead: number };
@@ -115,6 +122,7 @@ export function createWaitlistRepository(db: Database): WaitlistRepository {
       if (!current) return "not-found";
       if (!isActive(current.status)) return "finished";
       if (!canChangeWaitlist(current.status, status)) return "invalid-transition";
+      // 읽은 뒤 상태가 그대로일 때만 바꾼다. 두 직원이 동시에 '입장'과 '이탈'을 누르면 나중 것은 막는다.
       const [row] = await db
         .update(waitlistEntries)
         .set({
@@ -122,9 +130,9 @@ export function createWaitlistRepository(db: Database): WaitlistRepository {
           calledAt: status === "called" ? now : current.calledAt,
           closedAt: isActive(status) ? null : now,
         })
-        .where(where)
+        .where(and(where, eq(waitlistEntries.status, current.status)))
         .returning();
-      return toWaitlistEntry(row);
+      return row ? toWaitlistEntry(row) : "changed";
     },
 
     async countActive(cafeId) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Delete } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { Button } from "@avocado/ui/components/button";
 import { cn } from "@avocado/ui/lib/utils";
@@ -22,6 +22,7 @@ export function Keypad({
   onComplete: (digits: string) => void;
 }) {
   const [digits, setDigits] = useState("");
+  const labelId = useId();
 
   const press = (key: string) => {
     if (disabled) return;
@@ -50,10 +51,11 @@ export function Keypad({
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <p className="text-center text-lg font-medium" id="keypad-label">
+      <p className="text-center text-lg font-medium" id={labelId}>
         {label}
       </p>
-      <div className="flex justify-center gap-3" aria-live="polite" aria-labelledby="keypad-label">
+      {/* 네모 칸은 보이는 표시만 하고, 화면 낭독기에는 아래 상태 문구로 몇 자리를 눌렀는지 알린다. */}
+      <div className="flex justify-center gap-3" aria-hidden>
         {Array.from({ length: 4 }, (_, i) => (
           <span
             key={i}
@@ -66,7 +68,10 @@ export function Keypad({
           </span>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <p role="status" className="sr-only">
+        {digits ? `${digits.length}자리 입력: ${[...digits].join(" ")}` : ""}
+      </p>
+      <div className="grid grid-cols-3 gap-3" role="group" aria-labelledby={labelId}>
         {KEYS.map((k) => (
           <Button key={k} variant="outline" className="h-16 text-2xl" disabled={disabled} onClick={() => press(k)}>
             {k}

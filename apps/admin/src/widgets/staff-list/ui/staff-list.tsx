@@ -62,7 +62,7 @@ export function StaffList({
   return (
     <>
       <div className="hidden rounded-lg border md:block">
-        <Table>
+        <Table label="직원 목록">
           <TableHeader>
             <TableRow>
               <TableHead>이름</TableHead>
@@ -102,7 +102,7 @@ export function StaffList({
 
       <ItemGroup aria-label="직원 목록" className="gap-2 md:hidden">
         {users.map((user) => (
-          <Item key={user.id} variant="outline" data-testid="staff-item">
+          <Item key={user.id} variant="outline" role="listitem" data-testid="staff-item">
             <ItemContent className="min-w-0 gap-1">
               <ItemTitle className="flex-wrap">
                 <Name user={user} isSelf={user.id === currentUserId} />

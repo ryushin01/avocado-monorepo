@@ -23,7 +23,7 @@ test("매장을 등록하면 변경 이력에 직원·작업·대상이 남는�
 test("스태프는 변경 이력 메뉴가 없고 주소로 들어가도 막힌다", async ({ context, page }) => {
   await loginAs(context, USERS.hongdaeStaff);
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "박스태프 계정 메뉴" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^박스태프 .*계정 메뉴$/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "변경 이력" })).toHaveCount(0);
 
   await page.goto("/audit");

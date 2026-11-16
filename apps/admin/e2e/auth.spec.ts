@@ -30,7 +30,7 @@ test("화면이 준비되기 전에는 제출되지 않아 비밀번호가 주�
 
   release();
   await submit.click();
-  await expect(page.getByRole("button", { name: "박스태프 계정 메뉴" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^박스태프 .*계정 메뉴$/ })).toBeVisible();
   expect(requested.filter((url) => url.includes(DEV_PASSWORD))).toEqual([]);
 });
 

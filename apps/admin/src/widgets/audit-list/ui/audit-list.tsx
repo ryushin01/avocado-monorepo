@@ -15,7 +15,7 @@ export function AuditList({ entries }: { entries: AuditEntry[] }) {
   return (
     <>
       <div className="hidden rounded-lg border md:block">
-        <Table>
+        <Table label="변경 이력">
           <TableHeader>
             <TableRow>
               <TableHead>시각</TableHead>
@@ -42,7 +42,7 @@ export function AuditList({ entries }: { entries: AuditEntry[] }) {
       </div>
       <ItemGroup className="gap-2 md:hidden">
         {entries.map((entry) => (
-          <Item key={entry.id} variant="outline">
+          <Item key={entry.id} variant="outline" role="listitem">
             <ItemContent>
               <ItemTitle>
                 {AUDIT_ACTION_LABELS[entry.action]} · {entry.targetName}

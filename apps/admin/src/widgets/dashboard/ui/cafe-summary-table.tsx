@@ -22,7 +22,7 @@ export function CafeSummaryTable({
 }) {
   const usageOf = new Map(usage.map((u) => [u.cafeId, u]));
   return (
-    <Table>
+    <Table label="매장별 현황">
       <TableHeader>
         <TableRow>
           <TableHead>매장</TableHead>

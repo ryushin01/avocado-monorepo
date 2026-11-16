@@ -3,14 +3,40 @@
 import * as React from "react"
 import { cn } from "cn"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+/**
+ * label: 표 이름. 표가 가로로 넘쳐 스크롤해야 할 때는 그 영역이 초점을 받아 키보드(화살표)로 스크롤할 수 있게 하고,
+ * 영역 이름으로도 쓴다(KWCAG 6.1.1). 같은 화면에 표가 여럿이면 이름이 겹치지 않게 준다.
+ * (shadcn 원본에서 고친 곳: docs/conventions.md)
+ */
+function Table({ className, label, ...props }: React.ComponentProps<"table"> & { label?: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const [scrollable, setScrollable] = React.useState(false)
+
+  React.useEffect(() => {
+    const container = containerRef.current
+    // ResizeObserver가 없는 환경(jsdom 컴포넌트 테스트 등)에서는 넘침을 재지 않는다.
+    if (!container || typeof ResizeObserver === "undefined") return
+    // 관찰을 시작할 때 한 번, 그 뒤로 크기가 바뀔 때마다 넘치는지 다시 본다.
+    const observer = new ResizeObserver(() =>
+      setScrollable(container.scrollWidth > container.clientWidth + 1)
+    )
+    observer.observe(container)
+    if (container.firstElementChild) observer.observe(container.firstElementChild)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div
+      ref={containerRef}
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="relative w-full overflow-x-auto rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      {...(scrollable
+        ? { role: "region", tabIndex: 0, "aria-label": `${label ?? "표"} (좌우로 스크롤)` }
+        : {})}
     >
       <table
         data-slot="table"
+        aria-label={label}
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />

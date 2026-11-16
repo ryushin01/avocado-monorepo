@@ -1,5 +1,7 @@
-// avocado의 사진·아이콘을 홍보 사이트용으로 옮긴다. 큰 사진은 webp로 줄인다.
+// avocado의 사진과 10위권 배지를 홍보 사이트용으로 옮긴다. 큰 사진은 webp로 줄인다.
 // 결과는 public/images 아래에 두고 git에 넣는다. 다시 만들 때만 실행한다.
+// 파비콘·앱 아이콘(src/app/favicon.ico·icon.png·apple-icon.png)은 세 앱이 함께 쓰는 Noto 아보카도라 여기서 만들지 않는다.
+// avocado의 옛 로고(common/logo.png)로 덮어쓰면 세 앱의 아이콘이 달라진다(src/app/icons.test.ts가 확인).
 // 사용법: node scripts/import-avocado-media.mjs [avocado 폴더 경로]
 import { copyFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
@@ -32,7 +34,5 @@ for (const [from, to, width] of PHOTOS) {
     .webp({ quality: 72 })
     .toFile(path.join(out, to));
 }
-copyFileSync(src("common/logo.png"), path.join(out, "logo.png"));
 copyFileSync(src("common/icon_top_ten.png"), path.join(out, "top-ten.png"));
-copyFileSync(src("common/logo.png"), path.join(here, "../src/app/icon.png"));
-console.log(`사진 ${PHOTOS.length}장과 아이콘을 ${out}에 저장했습니다.`);
+console.log(`사진 ${PHOTOS.length}장과 10위권 배지를 ${out}에 저장했습니다.`);

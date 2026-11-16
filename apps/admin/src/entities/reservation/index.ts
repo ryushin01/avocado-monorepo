@@ -8,3 +8,6 @@ export {
   type ReservationStatus,
   type Reservation,
 } from "./model/types";
+export {
+  ReservationStatusBadge,
+} from "./ui/reservation-status-badge";

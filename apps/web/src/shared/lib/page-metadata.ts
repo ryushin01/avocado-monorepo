@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { BRAND, SHARE_IMAGE } from "@/shared/config/site";
+import { BRAND, SHARE_IMAGE } from "@/shared/config";
 
 /** 화면별 제목·설명·대표 주소·공유 정보. openGraph는 부모 값과 합쳐지지 않고 통째로 바뀌므로 공통 값도 함께 적는다. */
 export function pageMetadata({

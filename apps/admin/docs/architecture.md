@@ -94,7 +94,7 @@ Cafe (매장) ──< InventoryItem (매장 재고) >── BoardGame (카탈로
 ## 데이터 흐름
 
 ```
-views/*/ui/*-page.tsx, features/*/api/actions.ts   화면·서버 액션: 권한 확인, 입력 검증(zod)
+_pages/*/ui/*-page.tsx, _pages/*/api/actions.ts  화면·서버 액션: 권한 확인, 입력 검증(zod)
         │
         ▼
 server/<domain>/data.ts             서버 전용(server-only) 진입점. 저장소를 고른다.
@@ -134,7 +134,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
   - 토큰의 매장과 주소의 매장이 다르면 403, 없거나 폐기한 토큰이면 401입니다.
   - 토큰 없이 오면 운영에서는 401, 개발 중에는 편의상 허용합니다. 개발 DB에는 매장마다 `kio_dev_<매장 id>` 토큰이 있습니다.
   - 마지막 접속 시각을 1분 단위로 남겨, 쓰지 않는 기기를 찾을 수 있습니다.
-- 상태를 바꾸는 요청(도착, 대기 등록)은 백오피스 `/reservations` 화면을 갱신합니다(`revalidatePath`). 카운터에 열어 둔 화면은 15초마다 다시 받아(`useAutoRefresh`) 새로고침 없이 보이고, 새 대기·도착은 화면 낭독기에도 알립니다(`views/reservations/ui/live-updates.tsx`).
+- 상태를 바꾸는 요청(도착, 대기 등록)은 백오피스 `/reservations` 화면을 갱신합니다(`revalidatePath`). 카운터에 열어 둔 화면은 15초마다 다시 받아(`useAutoRefresh`) 새로고침 없이 보이고, 새 대기·도착은 화면 낭독기에도 알립니다(`_pages/reservations/ui/live-updates.tsx`).
 
 ### 로그인 (Auth.js 4)
 
@@ -160,7 +160,7 @@ src/db                           Drizzle 스키마·마이그레이션. server.t
 - **요청 시점 데이터는 `<Suspense>` 안에서 읽습니다.** 세션(현재 사용자), `searchParams`, DB 조회가 여기에 해당하고, 밖에서 읽으면 빌드가 실패합니다. 그래서 각 페이지는 `XxxPage`(정적 틀 + Suspense)와 `XxxContent`(async, 데이터 읽기)로 나뉩니다.
 - **DB 조회와 세션 확인은 `connection()`을 먼저 부릅니다.** 빌드 때 정적 HTML에 고정되지 않게 하고, Auth.js가 안에서 쓰는 난수 때문에 미리 렌더링이 멈추는 것을 막습니다(`data.ts`, `current-user.ts`).
 - **레이아웃 최상단에서 사용자를 기다리지 않습니다.** 사이드바 틀은 Suspense 밖에 두고, 사용자에 따라 달라지는 메뉴·계정 영역만 Suspense 슬롯으로 넣습니다. 틀까지 Suspense 안에 두면 모바일에서 하이드레이션 불일치가 납니다([conventions.md](../../../docs/conventions.md#알려진-함정) 참고).
-- **`forbidden()`** 은 `experimental.authInterrupts`로 켜 두었습니다. Suspense 안에서 불러도 `src/app/forbidden.tsx`가 보입니다.
+- **`forbidden()`** 은 `experimental.authInterrupts`로 켜 두었습니다. Suspense 안에서 불러도 `src/app/forbidden.tsx`(화면은 `_pages/forbidden`)가 보입니다.
 - **다른 곳에서 바뀌는 화면:** 키오스크처럼 다른 기기가 바꾸는 데이터를 보여 주는 화면은 `useAutoRefresh(간격)`(`@avocado/ui/hooks/use-auto-refresh`)로 화면이 보이는 동안 `router.refresh()`합니다. 탭이 숨으면 멈추고, 열린 대화상자·입력 중인 값은 그대로 남습니다. 지금은 예약·대기 화면(15초)과 키오스크 시작 화면(1분)에서 씁니다.
 - **변경 후 갱신:** 서버 액션이 바꾼 데이터를 보여주는 경로를 `revalidatePath`로 갱신합니다.
   - 재고: `/inventory`, `/games`(보유 현황), `/`(대시보드), `/plays`(빌려줄 수 있는 게임)

@@ -7,7 +7,7 @@ import { users } from "@/db/schema";
 import type { User } from "@/entities/user";
 
 import { createUserRepository, type UserSaveError } from "./repository";
-import { userInputSchema } from "@/entities/user/schema";
+import { userInputSchema } from "@/entities/user/index.server";
 
 /**
  * - admin-exists: 재직 중인 관리자가 이미 있음. 그다음 계정은 직원 관리 화면에서 만든다.

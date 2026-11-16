@@ -2,7 +2,7 @@ import { logRequestError } from "@avocado/logger";
 import * as Sentry from "@sentry/nextjs";
 import type { Instrumentation } from "next";
 
-import { sentryOptions } from "@/shared/config/sentry";
+import { sentryOptions } from "@/shared/config";
 
 export function register() {
   Sentry.init(sentryOptions);

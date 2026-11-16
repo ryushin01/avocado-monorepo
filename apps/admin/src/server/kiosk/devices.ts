@@ -6,7 +6,7 @@ import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
 import { cafes, kioskDevices } from "@/db/schema";
 
-import type { KioskDevice } from "@/entities/kiosk-device";
+import type { KioskDevice } from "@/entities/cafe";
 
 /** 토큰 → 저장용 해시. 토큰이 충분히 길고 무작위라 SHA-256으로 충분하다. */
 export const hashKioskToken = (token: string) => createHash("sha256").update(token).digest("hex");

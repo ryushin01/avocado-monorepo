@@ -27,8 +27,8 @@ import type {
   HeatmapCell,
   StatPeriod,
   StatsSummary,
-} from "@/entities/stats";
-import { WEEKDAYS } from "@/entities/stats";
+} from "@/entities/stat";
+import { WEEKDAYS } from "@/entities/stat";
 
 const HOUR = 3_600_000;
 

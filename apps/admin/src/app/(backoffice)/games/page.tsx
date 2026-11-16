@@ -1,1 +1,1 @@
-export { GamesPage as default } from "@/views/games";
+export { GamesPage as default } from "@/_pages/games";

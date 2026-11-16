@@ -8,7 +8,7 @@ import { createTestDb } from "@/db/testing";
 
 import { createCafeRepository } from "./repository";
 import type { CafeInput } from "@/entities/cafe";
-import { cafeInputSchema } from "@/entities/cafe/schema";
+import { cafeInputSchema } from "@/entities/cafe/index.server";
 
 const input = (patch: Partial<CafeInput> = {}): CafeInput => ({
   name: "제주점",

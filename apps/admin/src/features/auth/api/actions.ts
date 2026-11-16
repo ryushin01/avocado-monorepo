@@ -6,7 +6,7 @@ import { getDb } from "@/db/server";
 import { getSignedInUser } from "@/server/auth/current-user";
 import { formDataToObject, formError, type FormState } from "@/shared/lib/form";
 import { createUserRepository } from "@/server/users/repository";
-import { changePasswordSchema } from "@/entities/user/schema";
+import { changePasswordSchema } from "@/entities/user/index.server";
 
 /** 본인 비밀번호 변경. 지금 비밀번호가 맞아야 바꾼다. 비밀번호는 실패해도 폼에 되돌려 보내지 않는다. */
 export async function changePasswordAction(_prev: FormState, formData: FormData): Promise<FormState> {

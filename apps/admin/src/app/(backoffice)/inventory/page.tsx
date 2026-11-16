@@ -1,1 +1,1 @@
-export { InventoryPage as default } from "@/views/inventory";
+export { InventoryPage as default } from "@/_pages/inventory";

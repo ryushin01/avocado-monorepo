@@ -8,3 +8,7 @@ export {
   type CafeInventoryStats,
   type InventorySummary,
 } from "./model/types";
+export {
+  InventoryStatusBadge,
+  InUseBadge,
+} from "./ui/inventory-status-badge";

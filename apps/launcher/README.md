@@ -16,12 +16,12 @@
 - 손님 화면이라 전화번호는 보여주지 않고, 이름은 가려서(김*수) 보여줍니다. 예약 조회 결과·도착 완료·대기표·내 순서 화면은 30초 동안 만지지 않으면 "곧 처음 화면으로 돌아갑니다" 창을 띄우고, 20초 안에 '계속 보기'를 누르지 않으면 처음 화면으로 돌아갑니다(KWCAG 6.2.1 응답시간 조절). 다른 화면도 같은 방식이고 시간만 다릅니다(90초, 오류 화면 30초).
 - 운영에서 설정(`BACKOFFICE_URL`, `LAUNCHER_CAFE_ID`, `KIOSK_API_TOKEN`)이 빠지면 개발 기본값을 쓰지 않고, 연결 안내와 함께 빠진 이름을 `launcher_config_missing` 로그로 남깁니다.
 - 화면은 손으로 누르기 쉽게 큰 버튼을 쓰고, 글자 선택은 막아 둡니다. 확대는 막지 않고(WCAG 1.4.4), 한동안 만지지 않으면 페이지를 새로 열어 원래 크기의 처음 화면으로 돌아갑니다.
-- 태블릿 홈 화면에 추가하면 아보카도 아이콘의 전체 화면 앱으로 열립니다(`src/app/manifest.ts`). 설치 아이콘은 `public/icon-192.png`·`icon-512.png`·마스커블 `icon-maskable-512.png`이고, 세 앱이 함께 쓰는 Noto 아보카도입니다(출처는 루트 README).
+- 태블릿 홈 화면에 추가하면 아보카도 아이콘의 전체 화면 앱으로 열립니다(`src/_app/manifest/manifest.ts`). 설치 아이콘은 `public/icon-192.png`·`icon-512.png`·마스커블 `icon-maskable-512.png`이고, 세 앱이 함께 쓰는 Noto 아보카도입니다(출처는 루트 README).
 
 ```bash
 pnpm dev:launcher   # 루트에서. 백오피스(3000)와 런처(3001)를 함께 띄움
 ```
 
-응답 형태는 `@avocado/domain/kiosk`, 응답을 만드는 쪽은 `apps/admin/src/app/api/kiosk`입니다.
+응답 형태는 `@avocado/domain/kiosk`, 응답을 만드는 쪽은 `apps/admin/src/server/kiosk/routes`입니다.
 
-코드는 Feature-Sliced Design을 따릅니다([docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)): `views`(화면), `features`(예약 확인, 대기 등록, 게임 거르기), `entities/game`, `shared`(백오피스 API, 숫자 패드 등).
+코드는 Feature-Sliced Design을 따릅니다([docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)): `_app`(레이아웃·오류 화면·매니페스트), `_pages`(화면과 그 화면의 예약 확인·대기 등록·게임 거르기), `shared`(백오피스 API, 숫자 패드 등).

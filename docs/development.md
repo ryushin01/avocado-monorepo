@@ -42,7 +42,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm e2e` | E2E 테스트 (백오피스, 키오스크용 런처, 홈페이지를 함께 띄움) |
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
-| `pnpm import:avocado-media` | avocado 사진·아이콘을 홍보 사이트용 webp로 다시 생성 (`apps/web/public/images`) |
+| `pnpm import:avocado-media` | avocado 사진·10위권 배지를 홍보 사이트용으로 다시 생성 (`apps/web/public/images`). 파비콘·앱 아이콘(Noto 아보카도)은 건드리지 않음 |
 
 `main` 푸시와 PR마다 GitHub Actions가 검사를 모두 실행합니다(`.github/workflows/ci.yml`). PR 리뷰는 CodeRabbit이 합니다(`.coderabbit.yaml`, GitHub에 앱 설치 필요).
 

@@ -34,7 +34,7 @@ export type Reservation = {
   arrivedAt?: string;
   /** 입장·취소·노쇼로 바뀐 시각 */
   closedAt?: string;
-  /** 편집 폼의 낙관적 잠금용 행 버전. 바꿀 때마다 1씩 오른다(db/schema.ts의 version). */
+  /** 편집 폼의 낙관적 잠금용 행 버전. 바꿀 때마다 새 값을 받는다(db/schema.ts의 version). */
   version: number;
 };
 

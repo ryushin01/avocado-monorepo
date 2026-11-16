@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { logError, logRequestError, redactConsoleErrors, redactSecrets, stripQuery } from "./index";
+import {
+  type ErrorReporter,
+  logError,
+  logInfo,
+  logRequestError,
+  redactConsoleErrors,
+  redactSecrets,
+  reportErrorsTo,
+  stripQuery,
+} from "./index";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -66,6 +75,37 @@ describe("logError", () => {
     logError("launcher", "backoffice_unreachable", { status: 500, error: "boom" });
     expect(lastLog()).toMatchObject({ event: "backoffice_unreachable", status: 500, message: "boom" });
   });
+
+  it("정해 둔 모니터링에도 넘기되, 오류는 쿼리 값을 가린 사본을 넘긴다", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const reports: Parameters<ErrorReporter>[0][] = [];
+    reportErrorsTo((report) => reports.push(report));
+    try {
+      logError("admin", "audit_write_failed", { action: "cafe.update", error: new Error("Failed query: x\nparams: 01012345678") });
+      logError("launcher", "launcher_config_missing", { missing: ["KIOSK_API_TOKEN"] });
+    } finally {
+      reportErrorsTo(undefined);
+    }
+    expect(reports.map(({ service, event, fields }) => ({ service, event, fields }))).toEqual([
+      { service: "admin", event: "audit_write_failed", fields: { action: "cafe.update" } },
+      { service: "launcher", event: "launcher_config_missing", fields: { missing: ["KIOSK_API_TOKEN"] } },
+    ]);
+    expect(reports[0].error?.message).toBe("Failed query: x\nparams: [생략]");
+    expect(reports[1].error).toBeUndefined();
+  });
+
+  it("모니터링으로 넘기다 실패해도 로그는 남기고 오류를 던지지 않는다", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    reportErrorsTo(() => {
+      throw new Error("모니터링 장애");
+    });
+    try {
+      expect(() => logError("admin", "x")).not.toThrow();
+    } finally {
+      reportErrorsTo(undefined);
+    }
+    expect(lastLog()).toMatchObject({ event: "x" });
+  });
 });
 
 describe("redactConsoleErrors", () => {
@@ -92,5 +132,13 @@ describe("redactConsoleErrors", () => {
     } finally {
       console.error = original;
     }
+  });
+});
+
+describe("logInfo", () => {
+  it("운영 기록을 한 줄 JSON으로 표준 출력에 남긴다", () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    logInfo("admin", "retention_pruned", { reservations: 3 });
+    expect(JSON.parse(info.mock.calls[0][0] as string)).toMatchObject({ level: "info", service: "admin", event: "retention_pruned", reservations: 3 });
   });
 });

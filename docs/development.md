@@ -40,6 +40,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
 | `pnpm test:coverage` | 단위 테스트 + 커버리지 (앱마다 `coverage/`) |
 | `pnpm e2e` | E2E 테스트 (백오피스, 키오스크용 런처, 홈페이지를 함께 띄움) |
+| `pnpm --filter @avocado/admin db:backup` / `db:restore` / `db:prune` | DB 백업(pg_dump 형식) / 개발용 DB로 복원 / 보관 기간이 지난 기록 지우기 (`docs/deployment.md`) |
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·10위권 배지를 홍보 사이트용으로 다시 생성 (`apps/web/public/images`). 파비콘·앱 아이콘(Noto 아보카도)은 건드리지 않음 |

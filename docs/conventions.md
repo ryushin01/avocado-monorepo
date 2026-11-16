@@ -147,6 +147,7 @@
 - **로그:** 서버 오류는 `@avocado/logger`가 한 줄 JSON으로 표준 오류에 남깁니다. 각 앱의 `src/instrumentation.ts`가 `onRequestError`로 넘기고, 백오피스 화면의 오류 번호는 로그의 `digest`와 같습니다.
 - **로그에 개인정보를 남기지 않습니다.** 요청 헤더와 쿼리 문자열(`phone4` 등)은 기록하지 않습니다. 직접 로그를 남길 때는 `logError`에 전화번호·이름·토큰을 넘기지 않습니다.
 - **잡아서 삼키는 오류는 로그를 남깁니다.** 손님 화면에 연결 문제로만 보이는 런처의 백오피스 호출 실패가 그 예입니다(`shared/api/backoffice.ts`).
+- **외부 모니터링(Sentry):** 각 앱의 `instrumentation.ts`가 `registerServerMonitoring`(`@avocado/monitoring/server`)으로 켜고, `onRequestError`·오류 화면·`logError`가 보냅니다. DSN이 없으면 보내지 않습니다. 개인정보 규칙(쿼리·헤더·쿠키·사용자 정보 제외, DB 오류의 쿼리 값 가림)은 `packages/monitoring/src/options.ts` 한 곳에 있으니 앱에서 따로 정하지 않습니다.
 
 ## 보안 헤더와 요청 제한
 

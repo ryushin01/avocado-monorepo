@@ -40,6 +40,8 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `NEXTAUTH_URL` | 백오피스의 실제 주소 (`https://…`) | 로그인 후 돌아올 주소 |
 | `NEXTAUTH_SECRET` | 긴 임의 값 (`openssl rand -base64 32`) | 세션 서명용. 저장소의 개발 값을 쓰면 안 됨. 바꾸면 모든 로그인이 풀림 |
 | `SEED_DEMO` | 설정하지 않음 | 시연용 서버에서만 `1` |
+| `CRON_SECRET` | 긴 임의 값 | 하루 한 번 보관 기간이 지난 기록을 지우는 `/api/cron/retention`의 비밀 값. Vercel Cron이 `Authorization: Bearer <값>`으로 보낸다. 없으면 이 경로는 401 |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry 프로젝트의 DSN (선택) | 없으면 Sentry로 보내지 않음. 아래 "오류 확인" 참고 |
 
 ### 런처 (`apps/launcher`, 키오스크마다 하나)
 
@@ -48,6 +50,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `BACKOFFICE_URL` | 백오피스 주소 | 서버에서만 읽음 (손님 화면에 노출되지 않음) |
 | `LAUNCHER_CAFE_ID` | 이 키오스크가 놓인 매장 id | |
 | `KIOSK_API_TOKEN` | 백오피스 **매장 관리 → 매장 메뉴 → 키오스크 토큰**에서 발급한 값 | 운영에서 없으면 401. 다른 매장의 토큰이면 403. 발급할 때 한 번만 보임 |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry 프로젝트의 DSN (선택) | 빌드할 때 넣는다. 없으면 Sentry로 보내지 않음 |
 
 세 변수는 서버를 켤 때의 환경 변수를 읽습니다. 빌드 하나를 여러 매장에 쓸 수 있고, 값을 바꾸면 다시 시작만 하면 됩니다. 빌드할 때 없어도 됩니다(빌드 중에는 백오피스를 부르지 않고, 화면은 요청마다 그립니다). 운영에서 하나라도 빠지면 개발 기본값(강남점, localhost)을 쓰지 않고 백오피스를 부르지 않으며, 빠진 이름을 `launcher_config_missing` 로그로 남깁니다.
 
@@ -99,14 +102,35 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 - 서버 오류는 앱 프로세스의 표준 오류에 한 줄 JSON으로 남습니다(`service`, `event`, `path`, `digest` 등). 호스팅의 로그 보관 기간을 확인합니다.
 - 직원이 알려 준 오류 번호는 로그의 `digest`로 찾습니다.
 - [ ] 런처에서 `event`가 `backoffice_error`(상태 401이면 토큰 문제), `backoffice_unreachable`, `launcher_config_missing`(설정 빠짐)이면 손님 화면에는 연결 안내만 보입니다. 이 로그에 알림을 겁니다.
-- [ ] 외부 모니터링을 붙이려면 각 앱의 `src/instrumentation.ts`에서 보냅니다. 요청 헤더와 쿼리 문자열은 보내지 않습니다(개인정보).
+
+### Sentry (세 앱 공통, 무료 Developer 요금제로 충분)
+
+코드는 준비돼 있고 DSN만 넣으면 동작합니다(`packages/monitoring`). DSN이 없으면 아무것도 보내지 않습니다.
+
+1. Sentry에서 Next.js 프로젝트를 앱마다 만들고(admin·launcher·web), 각 DSN을 그 앱의 `NEXT_PUBLIC_SENTRY_DSN`에 넣어 다시 빌드합니다. 한 프로젝트를 함께 써도 `service` 태그로 나눠 볼 수 있습니다.
+2. 소스맵을 올리려면 빌드 환경에 `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`(비밀 값)을 넣습니다. 없으면 소스맵 없이 보냅니다.
+3. Sentry의 알림 규칙으로 새 오류·`backoffice_unreachable` 같은 이벤트를 메일로 받습니다.
+
+- **보내는 것:** 서버 요청 오류(`onRequestError`), 화면 오류(오류 화면에 잡힌 것), `logError`로 남기는 오류(키오스크의 백오피스 연결 실패·설정 빠짐, 변경 이력 실패, 보관 기간 정리 실패 등). 같은 로그 이벤트는 10분에 한 번만 보내 무료 한도(월 5천 건)를 지킵니다.
+- **보내지 않는 것:** 쿠키, 요청 헤더·본문, 쿼리 문자열, 사용자 정보, 방문 기록·클릭 기록. DB 오류 메시지의 쿼리 값(손님 전화번호 등)은 서버 로그와 같은 규칙으로 가립니다(`scrubEvent`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다.
 
 ## 운영 데이터
 
-- [ ] PostgreSQL 자동 백업과 복원 시험
-- [ ] 변경 이력(`audit_logs`) 보관 기간 정하기. 지금은 지우지 않습니다.
+- **보관 기간** (`apps/admin/src/server/retention/repository.ts`): 손님 예약(방문 예정 시각 기준)·현장 대기(등록 시각 기준)는 90일, 변경 이력은 2년, 로그인 실패·요청 제한 횟수는 하루가 지나면 지웁니다. 이용 기록은 손님 정보가 없어 통계를 위해 남깁니다.
+  - Vercel에서는 Cron(`apps/admin/vercel.json`)이 매일 새벽 3시(한국)에 `/api/cron/retention`을 부릅니다(`CRON_SECRET` 필요). 다른 호스팅은 같은 일을 하는 `DATABASE_URL=… pnpm --filter @avocado/admin db:prune`을 하루 한 번 예약 작업으로 돌립니다.
+  - 지운 수는 `retention_pruned` 로그로, 실패는 `retention_failed`로 남습니다.
 - [ ] 시각은 DB에 UTC로 저장하고 화면은 한국 시각으로 보여 줍니다. 서버 시간대 설정과 상관없습니다.
 - [ ] 첫 배포 뒤 매장·게임 카탈로그를 실제 데이터로 등록 (데모 시드 대신)
+
+## 백업과 복원
+
+백업에는 손님 이름·휴대전화가 들어 있습니다. 저장소에 넣지 말고(`backups/`는 git 제외) 접근을 제한한 곳에 암호화해 보관하고, 보관 기간(90일)이 지난 백업은 지웁니다.
+
+- **관리형 PostgreSQL:** 호스팅의 자동 백업·특정 시점 복원(Neon은 과거 시점에서 브랜치를 만들어 복원)을 씁니다. 무료 요금제는 되돌릴 수 있는 기간이 짧으므로 아래 논리 백업을 함께 둡니다.
+- **논리 백업:** `DATABASE_URL=… pnpm --filter @avocado/admin db:backup`이 pg_dump로 일반 SQL 파일을 만듭니다(PostgreSQL 클라이언트 도구 필요). `DATABASE_URL`이 없으면 개발 DB(PGlite)를 같은 형식으로 내보냅니다.
+- **복원:** 빈 DB를 만들고 `psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -f <백업 파일>`로 넣은 뒤, 백오피스의 `DATABASE_URL`을 그 DB로 바꿔 띄웁니다. 백업에 마이그레이션 적용 기록이 들어 있어, 서버가 처음 열 때 이미 적용한 마이그레이션은 다시 하지 않고 백업 뒤에 생긴 것만 이어서 올립니다.
+- **복원 시험:** `src/db/backup.test.ts`가 시드를 넣은 DB를 pg_dump로 백업하고 새 DB에 복원해, 모든 표의 내용이 같고 앱이 마이그레이션을 다시 하지 않는지 CI에서 매번 확인합니다. 손으로 확인할 때는 `pnpm --filter @avocado/admin db:restore <백업 파일>`이 개발용 PGlite DB(`.data/pglite-restored`)로 복원하고, `PGLITE_DATA_DIR=.data/pglite-restored`로 띄워 로그인·목록을 봅니다.
+- [ ] 운영을 시작하면 분기마다 한 번 최신 백업을 시험용 DB에 복원해 로그인·예약 목록을 확인합니다.
 
 ## 홍보 사이트 데모 (Vercel)
 

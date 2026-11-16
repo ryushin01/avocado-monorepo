@@ -28,8 +28,9 @@ afterEach(() => {
 });
 
 const load = async (dsn?: string) => {
-  if (dsn) vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", dsn);
-  return import("./index");
+  const { createMonitoring } = await import("./client");
+  const { createSentryOptions } = await import("./options");
+  return createMonitoring(createSentryOptions({ dsn, service: "web" }));
 };
 
 describe("initMonitoring", () => {

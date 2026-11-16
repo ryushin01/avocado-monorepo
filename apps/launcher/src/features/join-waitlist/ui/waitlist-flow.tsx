@@ -29,7 +29,7 @@ const FIELDS = ["name", "phone"] as const;
 const fieldId = (name: string) => `wait-${name}`;
 const SUBMIT_ID = "wait-submit";
 const PARTY_LABEL_ID = "wait-party-label";
-/** 손님 정보(가린 이름·대기 번호)가 보이는 결과 화면을 남겨 두는 시간. 다음 손님이 보지 않게 짧게 둔다. */
+/** 손님 정보(가린 이름·대기 번호)가 보이는 결과 화면에서 경고를 띄우기까지의 시간. 다음 손님이 보지 않게 짧게 둔다. */
 const RESULT_SECONDS = 30;
 
 /** 대기 번호와 앞에 남은 팀 수 (등록 직후와 '내 순서 확인' 공통) */

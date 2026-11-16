@@ -8,6 +8,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@avocado/ui/components/chart";
+import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
 // 단일 계열이므로 기본 팔레트의 1번(파랑)만 쓴다. 라이트·다크 각각 대비 검증을 통과한 값.
 const chartConfig = {
@@ -32,7 +33,7 @@ export function DistributionChart({
   bucketHeader: string;
 }) {
   return (
-    <>
+    <div className="relative">
       <ChartContainer
         config={chartConfig}
         className="aspect-auto h-56 w-full"
@@ -82,23 +83,26 @@ export function DistributionChart({
         </BarChart>
       </ChartContainer>
 
-      <table className="sr-only">
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{bucketHeader}</th>
-            <th scope="col">게임(종)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((r) => (
-            <tr key={r.label}>
-              <th scope="row">{r.label}</th>
-              <td>{r.gameCount}</td>
+      {/* 화면 낭독기와 키보드 사용자를 위한 같은 데이터의 표 (초점을 받으면 차트 위에 보인다) */}
+      <ChartDataTable label={`${caption} 표`}>
+        <table>
+          <caption>{caption}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{bucketHeader}</th>
+              <th scope="col">게임(종)</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
+          </thead>
+          <tbody>
+            {data.map((r) => (
+              <tr key={r.label}>
+                <th scope="row">{r.label}</th>
+                <td>{r.gameCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ChartDataTable>
+    </div>
   );
 }

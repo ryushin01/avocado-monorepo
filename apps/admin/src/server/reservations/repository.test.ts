@@ -136,6 +136,20 @@ describe("ReservationRepository", () => {
     expect(edited).toBe("changed");
     expect(await db.select().from(reservationTable)).toMatchObject([{ status: "seated", partySize: 2 }]);
   });
+
+  it("노쇼를 확인하는 사이 예약 시각이 미래로 바뀌면 노쇼로 처리하지 않는다", async () => {
+    const { db, repo } = await setup([
+      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
+    ]);
+    // 둘 다 13시 예약을 읽은 뒤, 시각 수정(19시)이 먼저 쓴다. 노쇼는 읽어 둔 13시로 판단했으므로 막아야 한다.
+    const [edited, noShow] = await Promise.all([
+      repo.update("a", "r1", input({ time: "19:00" }), now),
+      repo.setStatus("a", "r1", "no_show", now),
+    ]);
+    expect(edited).toMatchObject({ startsAt: at("2026-11-05T19:00") });
+    expect(noShow).toBe("changed");
+    expect(await db.select().from(reservationTable)).toMatchObject([{ status: "confirmed" }]);
+  });
 });
 
 describe("WaitlistRepository", () => {

@@ -14,7 +14,8 @@ function Table({ className, label, ...props }: React.ComponentProps<"table"> & {
 
   React.useEffect(() => {
     const container = containerRef.current
-    if (!container) return
+    // ResizeObserver가 없는 환경(jsdom 컴포넌트 테스트 등)에서는 넘침을 재지 않는다.
+    if (!container || typeof ResizeObserver === "undefined") return
     // 관찰을 시작할 때 한 번, 그 뒤로 크기가 바뀔 때마다 넘치는지 다시 본다.
     const observer = new ResizeObserver(() =>
       setScrollable(container.scrollWidth > container.clientWidth + 1)

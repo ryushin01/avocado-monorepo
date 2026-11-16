@@ -9,6 +9,7 @@ import {
   type ChartConfig,
 } from "@avocado/ui/components/chart";
 import { GAME_CATEGORY_LABELS, type GameCategory } from "@/entities/game";
+import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
 // 단일 계열이므로 기본 팔레트의 1번(파랑)만 쓴다. 라이트·다크 각각 대비 검증을 통과한 값.
 const chartConfig = {
@@ -25,7 +26,7 @@ export function CategoryChart({ data }: { data: Row[] }) {
   const rows = data.map((d) => ({ ...d, label: GAME_CATEGORY_LABELS[d.category] }));
 
   return (
-    <>
+    <div className="relative">
       <ChartContainer
         config={chartConfig}
         className="aspect-auto h-72 w-full"
@@ -92,26 +93,28 @@ export function CategoryChart({ data }: { data: Row[] }) {
         </BarChart>
       </ChartContainer>
 
-      {/* 화면 낭독기와 키보드 사용자를 위한 같은 데이터의 표 */}
-      <table className="sr-only">
-        <caption>유형별 보유 현황</caption>
-        <thead>
-          <tr>
-            <th scope="col">유형</th>
-            <th scope="col">보유 게임(종)</th>
-            <th scope="col">보유 박스(개)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.category}>
-              <th scope="row">{r.label}</th>
-              <td>{r.gameCount}</td>
-              <td>{r.boxCount}</td>
+      {/* 화면 낭독기와 키보드 사용자를 위한 같은 데이터의 표 (초점을 받으면 차트 위에 보인다) */}
+      <ChartDataTable label="유형별 보유 현황 표">
+        <table>
+          <caption>유형별 보유 현황</caption>
+          <thead>
+            <tr>
+              <th scope="col">유형</th>
+              <th scope="col">보유 게임(종)</th>
+              <th scope="col">보유 박스(개)</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.category}>
+                <th scope="row">{r.label}</th>
+                <td>{r.gameCount}</td>
+                <td>{r.boxCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ChartDataTable>
+    </div>
   );
 }

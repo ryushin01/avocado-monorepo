@@ -86,10 +86,11 @@
 - **표시 규칙**
   - 막대는 24px 이하 두께로, 값 끝만 4px 둥글게 처리합니다.
   - 값은 막대 끝에 적고, 마우스를 올리면 툴팁을 보여줍니다.
-  - **차트마다 같은 데이터의 `sr-only` 표**를 함께 둡니다. 화면 낭독기와 E2E 테스트가 이 표를 읽습니다.
+  - **차트마다 같은 데이터의 표**를 `ChartDataTable`로 함께 둡니다. 화면 낭독기와 E2E 테스트가 이 표를 읽습니다.
   - 표만 확인하면 차트가 그려지지 않아도 테스트가 통과합니다. 차트가 실제로 그려졌는지는 대시보드 E2E가 `svg.recharts-surface`로 확인합니다.
   - 작은 추이선(`Sparkline`)은 숫자를 옆 글자가 전하므로 화면 낭독기에서 숨깁니다. 여러 줄을 나란히 비교할 때는 `max`로 세로 축을 맞춥니다.
   - **화면 낭독기에서 숨긴 차트(`aria-hidden`)는 초점도 받지 않게** Recharts 차트에 `accessibilityLayer={false}`를 줍니다. Recharts 3은 기본으로 차트 표면에 `tabIndex=0`을 붙입니다.
+  - 그 대신 같은 데이터의 표를 `ChartDataTable`(`shared/ui/chart-data-table.tsx`)로 감쌉니다. 평소에는 `sr-only`이고, Tab으로 초점을 받으면 차트 위에 보여 툴팁에만 있는 값(박스 수, 잘린 이름)을 마우스 없이 볼 수 있습니다. 감싸는 요소는 `relative`이고, 영역 이름(`label`)은 화면 안에서 겹치지 않게 줍니다.
 - **스크린샷 주의:** Playwright `fullPage` 스크린샷은 창 크기를 바꿔 차트가 처음부터 다시 그려지는 순간을 찍습니다. 빈 차트처럼 나오므로 키가 큰 창으로 찍으세요.
 
 ## 폼
@@ -131,7 +132,7 @@
 
 ## 오류 처리와 로그
 
-- **화면:** 앱마다 `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`가 있고 표시는 `shared/ui/error-notice.tsx`입니다. 백오피스는 `(backoffice)/error.tsx`도 두어 오류가 나도 사이드바가 남습니다. 런처의 오류·없는 화면은 손님이 떠나도 30초 뒤 처음 화면으로 돌아갑니다.
+- **화면:** 앱마다 `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`가 있고 표시는 `shared/ui/error-notice.tsx`입니다. 백오피스는 `(backoffice)/error.tsx`도 두어 오류가 나도 사이드바가 남습니다. 런처의 오류·없는 화면은 손님이 떠나도 30초 뒤 경고 창을 띄우고, 20초 안에 연장하지 않으면 처음 화면으로 돌아갑니다(`shared/ui/idle-return.tsx`, KWCAG 6.2.1).
 - **Next.js 16의 오류 화면 prop은 `reset`이 아니라 `retry`입니다.** `error`는 `unknown`이라 `instanceof Error`로 좁힌 뒤 읽습니다.
 - **로그:** 서버 오류는 `@avocado/logger`가 한 줄 JSON으로 표준 오류에 남깁니다. 각 앱의 `src/instrumentation.ts`가 `onRequestError`로 넘기고, 백오피스 화면의 오류 번호는 로그의 `digest`와 같습니다.
 - **로그에 개인정보를 남기지 않습니다.** 요청 헤더와 쿼리 문자열(`phone4` 등)은 기록하지 않습니다. 직접 로그를 남길 때는 `logError`에 전화번호·이름·토큰을 넘기지 않습니다.

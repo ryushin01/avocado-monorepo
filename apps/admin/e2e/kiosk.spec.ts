@@ -160,3 +160,27 @@ test("키오스크 대기 등록 버튼을 빠르게 두 번 눌러도 한 번�
   await page.goto(ADMIN_PAGE);
   await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toHaveCount(1);
 });
+
+test("키오스크 결과 화면은 30초 동안 만지지 않으면 경고하고, 계속 보기로 연장하며, 그대로 두면 처음 화면으로 돌아간다", async ({ browser }) => {
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.clock.install();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "내 순서 확인" }).click();
+  await pressDigits(kiosk, "0000");
+  // 결과 화면이 그려진 뒤부터 센다('처음으로' 버튼은 숫자 패드 화면에도 있으므로 결과 문구를 기다린다).
+  await expect(kiosk.getByText("대기 중인 번호를 찾을 수 없습니다.", { exact: false })).toBeVisible();
+
+  // 30초 뒤 경고(연장할 시간 20초)
+  await kiosk.clock.fastForward(31_000);
+  const warning = kiosk.getByRole("alertdialog", { name: "곧 처음 화면으로 돌아갑니다" });
+  await expect(warning).toBeVisible();
+  await warning.getByRole("button", { name: "계속 보기" }).click();
+  await expect(warning).toBeHidden();
+  await expect(kiosk).toHaveURL(`${LAUNCHER_URL}/waitlist`);
+
+  // 다시 30초 + 경고 20초 동안 두면 처음 화면으로 새로 연다.
+  await kiosk.clock.fastForward(31_000);
+  await expect(warning).toBeVisible();
+  await kiosk.clock.fastForward(21_000);
+  await expect(kiosk).toHaveURL(`${LAUNCHER_URL}/`);
+});

@@ -77,7 +77,8 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
         title={`예약·대기 · ${cafe.name}`}
         description="키오스크에서 등록한 현장 대기와 전화 예약을 함께 관리합니다."
         actions={
-          <div className="flex flex-wrap gap-2">
+          // 15초마다 다시 받는 사이 보이는 매장이 바뀌면(폐점 등) 열린 등록 창과 입력을 새 매장으로 넘기지 않고 닫는다.
+          <div key={cafe.id} className="flex flex-wrap gap-2">
             <AddWaitlistDialog cafeId={cafe.id} />
             <CreateReservationButton cafeId={cafe.id} date={date < today ? today : date} />
           </div>

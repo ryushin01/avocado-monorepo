@@ -49,8 +49,16 @@ export interface ReservationRepository {
 export function createReservationRepository(db: Database): ReservationRepository {
   const isOpen = (r: Reservation) => OPEN_RESERVATION_STATUSES.includes(r.status);
   const byId = (cafeId: string, id: string) => and(eq(reservations.id, id), eq(reservations.cafeId, cafeId));
-  /** 읽은 뒤 상태가 그대로일 때만 바꾼다. 두 직원이 동시에 바꾸면 나중 것이 앞의 변경을 덮지 않게 한다. */
-  const unchanged = (r: Reservation) => and(byId(r.cafeId, r.id), eq(reservations.status, r.status));
+  /**
+   * 읽은 뒤 상태와 예약 시각이 그대로일 때만 바꾼다. 두 직원이 동시에 바꾸면 나중 것이 앞의 변경을 덮지 않고,
+   * 노쇼(예약 시각이 지나야 함)처럼 읽은 시각으로 판단한 변경이 그사이 바뀐 시각에 적용되지 않게 한다.
+   */
+  const unchanged = (r: Reservation) =>
+    and(
+      byId(r.cafeId, r.id),
+      eq(reservations.status, r.status),
+      eq(reservations.startsAt, new Date(r.startsAt)),
+    );
   const find = async (cafeId: string, id: string) => {
     const [row] = await db.select().from(reservations).where(byId(cafeId, id));
     return row ? toReservation(row) : null;

@@ -9,6 +9,7 @@ import { Button } from "@avocado/ui/components/button";
 import { Card, CardContent } from "@avocado/ui/components/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@avocado/ui/components/field";
 import { Input } from "@avocado/ui/components/input";
+import { errorIdOf, fieldA11y } from "@avocado/ui/lib/field-a11y";
 
 import {
   joinWaitlistAction,
@@ -16,10 +17,17 @@ import {
   lookupWaitlistAction,
 } from "@/shared/api/kiosk-actions";
 
+import { AlertMessage } from "@/shared/ui/alert-message";
 import { Keypad } from "@/shared/ui/keypad";
 import { PartySizeStepper } from "@/shared/ui/party-size-stepper";
 
 type Mode = "choose" | "join" | "check";
+
+/** 대기 등록 폼의 글자 칸 (오류가 있으면 이 순서대로 첫 칸에 초점을 둔다) */
+const FIELDS = ["name", "phone"] as const;
+const fieldId = (name: string) => `wait-${name}`;
+const SUBMIT_ID = "wait-submit";
+const PARTY_LABEL_ID = "wait-party-label";
 
 /** 대기 번호와 앞에 남은 팀 수 (등록 직후와 '내 순서 확인' 공통) */
 function WaitTicket({ entry }: { entry: KioskWaitlistEntry }) {
@@ -65,8 +73,13 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
   const router = useRouter();
 
   // 등록하면 위쪽 '지금 N팀이 기다리고 있습니다'도 새 숫자로 다시 그린다.
+  // 실패하면 다시 그린 폼에서 첫 오류 칸으로 초점을 옮겨, 무엇을 고칠지 바로 듣고 고칠 수 있게 한다.
   useEffect(() => {
     if (state.status === "done") router.refresh();
+    if (state.status === "error") {
+      const invalid = FIELDS.find((name) => state.fieldErrors[name]?.length);
+      document.getElementById(invalid ? fieldId(invalid) : SUBMIT_ID)?.focus();
+    }
   }, [state, router]);
 
   if (mode === "join" && state.status === "done") {
@@ -86,57 +99,70 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
     const values = state.status === "error" ? state.values : undefined;
     const errors = state.status === "error" ? state.fieldErrors : {};
     const err = (name: string) => errors[name]?.map((m) => ({ message: m }));
+    const invalid = (name: string) => Boolean(errors[name]?.length);
     return (
-      <form
-        // 실패하면 입력값(defaultValue)을 확실히 되살리도록 다시 그린다.
-        key={state.status === "error" ? `${state.message}:${JSON.stringify(state.values)}` : "new"}
-        action={joinAction}
-        noValidate className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <h2 className="text-2xl font-bold">대기 등록</h2>
-        {state.status === "error" && (
-          <p role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-destructive">
-            {state.message}
+        {/* 다시 그리는 폼 밖에 두어, 처음부터 있던 알림 영역의 내용만 바뀌게 한다. */}
+        <AlertMessage message={state.status === "error" ? state.message : undefined} />
+        <form
+          // 실패하면 입력값(defaultValue)을 확실히 되살리도록 다시 그린다.
+          key={state.status === "error" ? `${state.message}:${JSON.stringify(state.values)}` : "new"}
+          action={joinAction}
+          noValidate
+          className="flex flex-col gap-6"
+        >
+          <FieldGroup>
+            <Field>
+              <FieldLabel id={PARTY_LABEL_ID} className="text-base">인원</FieldLabel>
+              <PartySizeStepper
+                name="partySize"
+                labelledBy={PARTY_LABEL_ID}
+                defaultValue={values ? Number(values.partySize) : 2}
+              />
+            </Field>
+            <Field data-invalid={invalid("name")}>
+              <FieldLabel htmlFor={fieldId("name")} className="text-base">이름</FieldLabel>
+              <Input
+                id={fieldId("name")}
+                name="name"
+                autoComplete="off"
+                defaultValue={values?.name}
+                className="h-12 text-lg"
+                {...fieldA11y(fieldId("name"), invalid("name"))}
+              />
+              <FieldError id={errorIdOf(fieldId("name"))} errors={err("name")} />
+            </Field>
+            <Field data-invalid={invalid("phone")}>
+              <FieldLabel htmlFor={fieldId("phone")} className="text-base">휴대전화</FieldLabel>
+              <Input
+                id={fieldId("phone")}
+                name="phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="010-1234-5678"
+                defaultValue={values?.phone}
+                className="h-12 text-lg"
+                {...fieldA11y(fieldId("phone"), invalid("phone"))}
+              />
+              <FieldError id={errorIdOf(fieldId("phone"))} errors={err("phone")} />
+            </Field>
+          </FieldGroup>
+          <p className="text-sm text-muted-foreground">
+            전화번호는 순서 확인과 호출에만 쓰고, 화면에는 보여주지 않습니다.
           </p>
-        )}
-        <FieldGroup>
-          <Field>
-            <FieldLabel className="text-base">인원</FieldLabel>
-            <PartySizeStepper name="partySize" defaultValue={values ? Number(values.partySize) : 2} />
-          </Field>
-          <Field data-invalid={Boolean(err("name"))}>
-            <FieldLabel htmlFor="wait-name" className="text-base">이름</FieldLabel>
-            <Input id="wait-name" name="name" autoComplete="off" defaultValue={values?.name} className="h-12 text-lg" aria-invalid={Boolean(err("name"))} />
-            <FieldError errors={err("name")} />
-          </Field>
-          <Field data-invalid={Boolean(err("phone"))}>
-            <FieldLabel htmlFor="wait-phone" className="text-base">휴대전화</FieldLabel>
-            <Input
-              id="wait-phone"
-              name="phone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder="010-1234-5678"
-              defaultValue={values?.phone}
-              className="h-12 text-lg"
-              aria-invalid={Boolean(err("phone"))}
-            />
-            <FieldError errors={err("phone")} />
-          </Field>
-        </FieldGroup>
-        <p className="text-sm text-muted-foreground">
-          전화번호는 순서 확인과 호출에만 쓰고, 화면에는 보여주지 않습니다.
-        </p>
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" size="lg" className="h-12 px-6 text-base" onClick={reset}>
-            뒤로
-          </Button>
-          <Button type="submit" size="lg" className="h-12 flex-1 text-base" disabled={joining}>
-            {joining && <Loader2 className="animate-spin" />}
-            대기 등록
-          </Button>
-        </div>
-      </form>
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" size="lg" className="h-12 px-6 text-base" onClick={reset}>
+              뒤로
+            </Button>
+            <Button id={SUBMIT_ID} type="submit" size="lg" className="h-12 flex-1 text-base" disabled={joining}>
+              {joining && <Loader2 className="animate-spin" />}
+              대기 등록
+            </Button>
+          </div>
+        </form>
+      </div>
     );
   }
 
@@ -144,11 +170,7 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
     return (
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-bold">내 순서 확인</h2>
-        {message && (
-          <p role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-destructive">
-            {message}
-          </p>
-        )}
+        <AlertMessage message={message} />
         {found === null ? (
           <Keypad label="등록하신 휴대전화 번호 뒷자리 4자리를 눌러주세요" disabled={checking} onComplete={check} />
         ) : found.length === 0 ? (

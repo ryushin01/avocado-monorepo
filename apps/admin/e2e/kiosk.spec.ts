@@ -124,3 +124,22 @@ test("열어 둔 직원 화면은 새로고침하지 않아도 키오스크 대�
   await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toBeVisible({ timeout: 25_000 });
   await expect(page.getByTestId("live-updates")).toContainText(`${name}님이 등록했습니다.`);
 });
+
+test("키오스크 대기 등록: 잘못 쓴 칸은 오류 문구와 이어지고, 초점이 그 칸으로 간다", async ({ browser }) => {
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+  await expect(kiosk.getByRole("group", { name: "인원" })).toBeVisible();
+  await kiosk.getByLabel("이름").fill("김확인");
+  await kiosk.getByLabel("휴대전화").fill("1234");
+  await kiosk.getByRole("button", { name: "대기 등록", exact: true }).click();
+
+  await expect(kiosk.getByText("입력을 확인해주세요.")).toBeVisible();
+  const phone = kiosk.getByLabel("휴대전화");
+  await expect(phone).toBeFocused();
+  await expect(phone).toHaveAttribute("aria-invalid", "true");
+  await expect(phone).toHaveAccessibleDescription(/010-1234-5678 형식/);
+  // 맞게 쓴 칸에는 오류 표시를 붙이지 않는다.
+  await expect(kiosk.getByLabel("이름")).not.toHaveAttribute("aria-invalid");
+  await expect(kiosk.getByLabel("이름")).toHaveValue("김확인");
+});

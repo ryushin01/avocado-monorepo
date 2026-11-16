@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarCheck, CheckCircle2, Loader2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { type ReactNode, useState, useTransition } from "react";
 
 import type { KioskReservation } from "@avocado/domain/kiosk";
 import { Badge } from "@avocado/ui/components/badge";
@@ -11,6 +11,7 @@ import { Card, CardContent } from "@avocado/ui/components/card";
 import { checkInAction, lookupReservationsAction } from "@/shared/api/kiosk-actions";
 import { formatKstTime } from "@/shared/lib/format";
 
+import { AlertMessage } from "@/shared/ui/alert-message";
 import { Keypad } from "@/shared/ui/keypad";
 
 type Step =
@@ -39,8 +40,9 @@ export function ReservationFlow() {
       setStep({ name: "arrived", reservation: result.data.reservation });
     });
 
+  let content: ReactNode;
   if (step.name === "arrived") {
-    return (
+    content = (
       <div className="flex flex-col items-center gap-4 py-10 text-center">
         <CheckCircle2 className="size-16 text-emerald-600" />
         <h2 className="text-3xl font-bold">도착을 알렸습니다</h2>
@@ -52,11 +54,9 @@ export function ReservationFlow() {
         </Button>
       </div>
     );
-  }
-
-  if (step.name === "results") {
+  } else if (step.name === "results") {
     const { phone4, reservations } = step;
-    return (
+    content = (
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-bold">
           뒷자리 {phone4}로 찾은 오늘 예약 {reservations.length}건
@@ -103,17 +103,20 @@ export function ReservationFlow() {
         </Button>
       </div>
     );
+  } else {
+    content = (
+      <div className="flex flex-col gap-4">
+        <Keypad label="예약하신 휴대전화 번호 뒷자리 4자리를 눌러주세요" disabled={pending} onComplete={lookup} />
+        {pending && <Loader2 className="mx-auto size-6 animate-spin text-muted-foreground" aria-label="찾는 중" />}
+      </div>
+    );
   }
 
+  // 오류 알림은 단계가 바뀌어도 그대로 두고 내용만 바꾼다(오류와 함께 새로 생긴 영역은 화면 낭독기가 놓칠 수 있다).
   return (
     <div className="flex flex-col gap-4">
-      {step.message && (
-        <p role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-center text-destructive">
-          {step.message}
-        </p>
-      )}
-      <Keypad label="예약하신 휴대전화 번호 뒷자리 4자리를 눌러주세요" disabled={pending} onComplete={lookup} />
-      {pending && <Loader2 className="mx-auto size-6 animate-spin text-muted-foreground" aria-label="찾는 중" />}
+      <AlertMessage message={step.name === "enter" ? step.message : undefined} className="text-center" />
+      {content}
     </div>
   );
 }

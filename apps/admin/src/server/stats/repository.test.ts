@@ -7,7 +7,7 @@ import { createSeedData } from "@/db/seed-data";
 import { createTestDb } from "@/db/testing";
 import type { PlaySession } from "@/entities/play";
 
-import { createStatsRepository } from "./repository";
+import { createStatsRepository, summarizeStats } from "./repository";
 import { changeRate, parseStatPeriod } from "@/entities/stats/schema";
 
 const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open" });
@@ -154,5 +154,42 @@ describe("helpers", () => {
     expect(changeRate(110, 100)).toBe(10);
     expect(changeRate(2, 3)).toBe(-33.3);
     expect(changeRate(5, 0)).toBeNull();
+  });
+});
+
+describe("summarizeStats (기록이 많을 때)", () => {
+  it("두 기간의 기록이 13만 건이어도 멈추지 않고 모두 센다", () => {
+    // 매장 30곳 × 하루 약 80건 × 56일. 예전에는 Math.min(...시간대)가 인수 약 12만 5천 개부터 RangeError를 냈다.
+    const total = 130_000;
+    const cafes = Array.from({ length: 30 }, (_, i) => cafe(`c${i}`));
+    const to = Date.parse("2026-11-04T00:00:00+09:00");
+    const from = to - 56 * 86_400_000;
+    const plays: PlaySession[] = Array.from({ length: total }, (_, i) => {
+      const start = from + Math.floor((i * (to - from)) / total);
+      return {
+        id: `bulk${i}`,
+        cafeId: cafes[i % cafes.length].id,
+        gameId: "g1",
+        startedAt: new Date(start).toISOString(),
+        returnedAt: new Date(start + 60 * 60_000).toISOString(),
+        playerCount: 3,
+      };
+    });
+    const stats = summarizeStats(
+      {
+        plays,
+        cafes,
+        games: [game("g1", "카탄")],
+        inventory: cafes.map((c) => item(c.id, "g1", 2)),
+      },
+      cafes.map((c) => c.id),
+      28,
+      now,
+    );
+    expect(stats.kpis.plays.current + stats.kpis.plays.previous).toBe(total);
+    expect(stats.heatmap.hours).toHaveLength(24);
+    expect(stats.cafes).toHaveLength(30);
+    expect(stats.cafes.reduce((sum, c) => sum + c.plays.current + c.plays.previous, 0)).toBe(total);
+    expect(stats.turnover[0]).toMatchObject({ boxes: 60, plays: stats.kpis.plays.current, averageMinutes: 60 });
   });
 });

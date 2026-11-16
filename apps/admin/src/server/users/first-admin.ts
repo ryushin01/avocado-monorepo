@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomInt } from "node:crypto";
 
 import { and, eq } from "drizzle-orm";
 
@@ -18,10 +18,15 @@ export type FirstAdminError =
   | { error: "invalid"; message: string }
   | { error: UserSaveError };
 
-/** 첫 로그인 때 바꿀 임시 비밀번호. 사람이 옮겨 적기 쉽게 헷갈리는 글자(0·O·1·l·I)는 뺀다. */
+/** 임시 비밀번호에 쓰는 글자. 사람이 옮겨 적기 쉽게 헷갈리는 글자(0·O·1·l·I)는 뺀다. */
+export const TEMPORARY_PASSWORD_CHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+/**
+ * 첫 로그인 때 바꿀 임시 비밀번호.
+ * 바이트를 글자 수(57)로 나눈 나머지를 쓰면 앞쪽 글자가 더 자주 나오므로, 고르게 뽑는 randomInt를 쓴다.
+ */
 export function generateTemporaryPassword(length = 16): string {
-  const chars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from(randomBytes(length), (b) => chars[b % chars.length]).join("");
+  return Array.from({ length }, () => TEMPORARY_PASSWORD_CHARS[randomInt(TEMPORARY_PASSWORD_CHARS.length)]).join("");
 }
 
 /**

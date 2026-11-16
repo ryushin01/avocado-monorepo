@@ -105,3 +105,45 @@ describe("백오피스 API 호출", () => {
     expect(logs()).toEqual([]);
   });
 });
+
+describe("운영 설정", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("운영에서 설정이 빠지면 개발 기본값(강남점·localhost)을 쓰지 않고, 부르지 않은 채 빠진 이름을 남긴다", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BACKOFFICE_URL", "");
+    vi.stubEnv("LAUNCHER_CAFE_ID", "");
+    vi.stubEnv("KIOSK_API_TOKEN", "kio_secret_token");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.resetModules();
+    const { fetchCafeGames: fetchInProduction } = await import("./backoffice");
+
+    expect(await fetchInProduction()).toEqual({ ok: false, reason: "unreachable" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(logs()).toEqual([
+      expect.objectContaining({ event: "launcher_config_missing", missing: ["BACKOFFICE_URL", "LAUNCHER_CAFE_ID"] }),
+    ]);
+  });
+
+  it("빌드 중에는 설정이 없어도 기록하지 않는다", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
+    vi.stubEnv("BACKOFFICE_URL", "");
+    vi.stubEnv("LAUNCHER_CAFE_ID", "");
+    vi.stubEnv("KIOSK_API_TOKEN", "");
+    vi.resetModules();
+    const { fetchCafeGames: fetchWhileBuilding } = await import("./backoffice");
+
+    expect(await fetchWhileBuilding()).toEqual({ ok: false, reason: "unreachable" });
+    expect(logs()).toEqual([]);
+  });
+});

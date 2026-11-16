@@ -112,6 +112,30 @@ describe("ReservationRepository", () => {
     expect(await repo.checkIn("a", "r3", "5678", now)).toBe("not-found"); // 내일 예약
     expect(await repo.checkIn("a", "r1", "5678", now)).toMatchObject({ arrivedAt: now.toISOString() });
   });
+
+  it("두 직원이 동시에 상태를 바꾸면 먼저 바꾼 쪽만 남고, 나중 쪽은 changed로 막는다", async () => {
+    const { db, repo } = await setup([
+      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
+    ]);
+    const results = await Promise.all([repo.setStatus("a", "r1", "seated", now), repo.setStatus("a", "r1", "no_show", now)]);
+    expect(results.filter((r) => r === "changed")).toHaveLength(1);
+    const winner = results.find((r) => typeof r !== "string") as Reservation;
+    expect((await db.select().from(reservationTable))[0].status).toBe(winner.status);
+  });
+
+  it("수정하는 사이 입장 처리됐으면 수정이 상태를 되돌리지 않는다", async () => {
+    const { db, repo } = await setup([
+      { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T19:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
+    ]);
+    // 둘 다 '확정'을 읽은 뒤 입장 처리가 먼저 쓴다. 예전에는 수정이 읽어 둔 '확정'으로 다시 써서 입장이 사라졌다.
+    const [seated, edited] = await Promise.all([
+      repo.setStatus("a", "r1", "seated", now),
+      repo.update("a", "r1", input({ partySize: "5" }), now),
+    ]);
+    expect(seated).toMatchObject({ status: "seated" });
+    expect(edited).toBe("changed");
+    expect(await db.select().from(reservationTable)).toMatchObject([{ status: "seated", partySize: 2 }]);
+  });
 });
 
 describe("WaitlistRepository", () => {
@@ -160,6 +184,18 @@ describe("WaitlistRepository", () => {
     expect(await waits.setStatus("a", first.id, "left", now)).toBe("finished");
     expect((await waits.findForKiosk("a", "4444"))[0].ahead).toBe(0);
     expect(await waits.countActive("a")).toBe(1);
+  });
+
+  it("두 직원이 같은 대기를 동시에 입장·이탈로 바꾸면 나중 쪽은 changed로 막는다", async () => {
+    const { waits } = await setup();
+    const entry = await waits.add("a", guest("010-1111-2222"), now);
+    if (typeof entry === "string") throw new Error(entry);
+    const results = await Promise.all([
+      waits.setStatus("a", entry.id, "seated", now),
+      waits.setStatus("a", entry.id, "left", now),
+    ]);
+    expect(results.filter((r) => r === "changed")).toHaveLength(1);
+    expect(await waits.countActive("a")).toBe(0);
   });
 });
 

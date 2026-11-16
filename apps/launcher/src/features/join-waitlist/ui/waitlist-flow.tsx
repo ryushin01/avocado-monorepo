@@ -18,6 +18,7 @@ import {
 } from "@/shared/api/kiosk-actions";
 
 import { AlertMessage } from "@/shared/ui/alert-message";
+import { IdleReturn } from "@/shared/ui/idle-return";
 import { Keypad } from "@/shared/ui/keypad";
 import { PartySizeStepper } from "@/shared/ui/party-size-stepper";
 
@@ -28,6 +29,8 @@ const FIELDS = ["name", "phone"] as const;
 const fieldId = (name: string) => `wait-${name}`;
 const SUBMIT_ID = "wait-submit";
 const PARTY_LABEL_ID = "wait-party-label";
+/** 손님 정보(가린 이름·대기 번호)가 보이는 결과 화면을 남겨 두는 시간. 다음 손님이 보지 않게 짧게 둔다. */
+const RESULT_SECONDS = 30;
 
 /** 대기 번호와 앞에 남은 팀 수 (등록 직후와 '내 순서 확인' 공통) */
 function WaitTicket({ entry }: { entry: KioskWaitlistEntry }) {
@@ -85,6 +88,7 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
   if (mode === "join" && state.status === "done") {
     return (
       <div className="flex flex-col gap-4">
+        <IdleReturn seconds={RESULT_SECONDS} />
         <h2 className="text-2xl font-bold">대기 등록을 마쳤습니다</h2>
         <WaitTicket entry={state.entry} />
         <p className="text-muted-foreground">순서가 되면 직원이 이름을 불러드립니다. 번호를 기억해주세요.</p>
@@ -170,6 +174,7 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
     return (
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl font-bold">내 순서 확인</h2>
+        {found !== null && <IdleReturn seconds={RESULT_SECONDS} />}
         <AlertMessage message={message} />
         {found === null ? (
           <Keypad label="등록하신 휴대전화 번호 뒷자리 4자리를 눌러주세요" disabled={checking} onComplete={check} />

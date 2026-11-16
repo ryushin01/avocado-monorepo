@@ -12,12 +12,16 @@ import { checkInAction, lookupReservationsAction } from "@/shared/api/kiosk-acti
 import { formatKstTime } from "@/shared/lib/format";
 
 import { AlertMessage } from "@/shared/ui/alert-message";
+import { IdleReturn } from "@/shared/ui/idle-return";
 import { Keypad } from "@/shared/ui/keypad";
 
 type Step =
   | { name: "enter"; message?: string }
   | { name: "results"; phone4: string; reservations: KioskReservation[] }
   | { name: "arrived"; reservation: KioskReservation };
+
+/** 손님 정보(가린 이름·시각·뒷자리)가 보이는 결과 화면을 남겨 두는 시간 */
+const RESULT_SECONDS = 30;
 
 /** 예약 확인: 뒷자리 입력 → 내 예약 고르기 → 도착 알리기 */
 export function ReservationFlow() {
@@ -115,6 +119,8 @@ export function ReservationFlow() {
   // 오류 알림은 단계가 바뀌어도 그대로 두고 내용만 바꾼다(오류와 함께 새로 생긴 영역은 화면 낭독기가 놓칠 수 있다).
   return (
     <div className="flex flex-col gap-4">
+      {/* 조회 결과·도착 완료 화면은 다음 손님이 보지 않게 30초 동안 만지지 않으면 처음 화면으로 돌아간다. */}
+      {step.name !== "enter" && <IdleReturn seconds={RESULT_SECONDS} />}
       <AlertMessage message={step.name === "enter" ? step.message : undefined} className="text-center" />
       {content}
     </div>

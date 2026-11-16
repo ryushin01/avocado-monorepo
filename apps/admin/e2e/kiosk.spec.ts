@@ -143,3 +143,20 @@ test("키오스크 대기 등록: 잘못 쓴 칸은 오류 문구와 이어지�
   await expect(kiosk.getByLabel("이름")).not.toHaveAttribute("aria-invalid");
   await expect(kiosk.getByLabel("이름")).toHaveValue("김확인");
 });
+
+test("키오스크 대기 등록 버튼을 빠르게 두 번 눌러도 한 번만 등록하고 번호를 보여 준다", async ({ page, browser }) => {
+  const name = `두번${Date.now() % 100000}`;
+  const { phone } = uniquePhone();
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+  await kiosk.getByLabel("이름").fill(name);
+  await kiosk.getByLabel("휴대전화").fill(phone);
+  await kiosk.getByRole("button", { name: "대기 등록", exact: true }).dblclick();
+  // 두 번째 요청이 가면 같은 번호 중복으로 오류 화면이 대기표를 덮는다.
+  await expect(kiosk.getByText("대기 등록을 마쳤습니다")).toBeVisible();
+  await expect(kiosk.getByText("이 전화번호로 이미 대기 중입니다.")).toHaveCount(0);
+
+  await page.goto(ADMIN_PAGE);
+  await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toHaveCount(1);
+});

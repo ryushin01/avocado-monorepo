@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+// 요청 밖(테스트)에서는 connection()이 기다릴 요청이 없으므로 바로 넘어가게 한다.
+vi.mock("next/server", () => ({ connection: async () => {} }));
 vi.hoisted(() => {
   process.env.KIOSK_API_TOKEN = "kio_secret_token";
   process.env.LAUNCHER_CAFE_ID = "c_test";
@@ -103,5 +105,50 @@ describe("백오피스 API 호출", () => {
 
     expect(await fetchCafeGames()).toEqual({ ok: false, reason: "unreachable" });
     expect(logs()).toEqual([]);
+  });
+});
+
+describe("운영 설정", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("운영에서 설정이 빠지면 개발 기본값(강남점·localhost)을 쓰지 않고, 부르지 않은 채 빠진 이름을 남긴다", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BACKOFFICE_URL", "");
+    vi.stubEnv("LAUNCHER_CAFE_ID", "");
+    vi.stubEnv("KIOSK_API_TOKEN", "kio_secret_token");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.resetModules();
+    const { fetchCafeGames: fetchInProduction } = await import("./backoffice");
+
+    expect(await fetchInProduction()).toEqual({ ok: false, reason: "unreachable" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(logs()).toEqual([
+      expect.objectContaining({ event: "launcher_config_missing", missing: ["BACKOFFICE_URL", "LAUNCHER_CAFE_ID"] }),
+    ]);
+  });
+
+  it("요청 시점(connection) 뒤에 설정을 확인한다: 빌드 중 결과가 정적 화면에 굳지 않게", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BACKOFFICE_URL", "");
+    vi.stubEnv("LAUNCHER_CAFE_ID", "");
+    vi.stubEnv("KIOSK_API_TOKEN", "");
+    const order: string[] = [];
+    vi.doMock("next/server", () => ({ connection: async () => void order.push("connection") }));
+    vi.resetModules();
+    const { fetchCafeGames: fetchInProduction } = await import("./backoffice");
+    vi.mocked(console.error).mockImplementation(() => void order.push("log"));
+
+    await fetchInProduction();
+    expect(order).toEqual(["connection", "log"]);
+    vi.doUnmock("next/server");
   });
 });

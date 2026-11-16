@@ -82,7 +82,9 @@ export function UsageHeatmap({
           style={{ gridTemplateColumns: `2rem repeat(${cols}, minmax(0, 1fr))` }}
         >
           <div role="row" className="contents">
-            <span role="columnheader" aria-label="요일" />
+            <span role="columnheader">
+              <span className="sr-only">요일</span>
+            </span>
             {hours.map((h) => (
               <span
                 key={h}

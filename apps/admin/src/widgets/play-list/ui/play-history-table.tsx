@@ -14,7 +14,7 @@ import type { PlayEntry } from "@/entities/play";
 export function PlayHistoryTable({ plays }: { plays: PlayEntry[] }) {
   return (
     <div className="rounded-lg border">
-      <Table>
+      <Table label="지난 이용 기록">
         <TableHeader>
           <TableRow>
             <TableHead>이용 시작</TableHead>

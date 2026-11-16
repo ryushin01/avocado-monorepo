@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { openPglite } from "@/db/index";
 import { createTestDb } from "@/db/testing";
 
-import { createFirstAdmin, generateTemporaryPassword } from "./first-admin";
+import { createFirstAdmin, generateTemporaryPassword, TEMPORARY_PASSWORD_CHARS } from "./first-admin";
 import { createUserRepository } from "./repository";
 import { passwordSchema } from "@/entities/user/schema";
 
@@ -46,5 +46,16 @@ describe("generateTemporaryPassword", () => {
     expect(passwordSchema.safeParse(a).success).toBe(true);
     expect(a).toMatch(/^[a-km-zA-HJ-NP-Z2-9]{16}$/);
     expect(generateTemporaryPassword()).not.toBe(a);
+  });
+
+  it("글자를 고르게 뽑는다 (바이트 % 57처럼 앞쪽 글자가 1.25배 더 나오지 않는다)", () => {
+    const counts = new Map<string, number>();
+    for (let i = 0; i < 1800; i++) {
+      for (const c of generateTemporaryPassword(64)) counts.set(c, (counts.get(c) ?? 0) + 1);
+    }
+    // 글자마다 약 2,000번. 고르면 최대·최소 비율이 1.2를 넘을 일이 거의 없다(표준편차 약 2%).
+    expect(counts.size).toBe(TEMPORARY_PASSWORD_CHARS.length);
+    const values = [...counts.values()];
+    expect(Math.max(...values) / Math.min(...values)).toBeLessThan(1.2);
   });
 });

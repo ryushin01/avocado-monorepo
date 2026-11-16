@@ -37,7 +37,9 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
           <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Dices className="size-5" />
           </div>
-          <CardTitle className="text-xl">보드게임 카페 백오피스</CardTitle>
+          <CardTitle className="text-xl">
+            <h1>보드게임 카페 백오피스</h1>
+          </CardTitle>
           <CardDescription>직원 계정으로 로그인하세요.</CardDescription>
         </CardHeader>
         <CardContent>

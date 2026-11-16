@@ -12,6 +12,7 @@ import {
 import type { DailyPoint } from "@/entities/stats";
 
 import { formatShortDate, formatTickDate } from "@/shared/lib/format";
+import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
 /**
  * 일별 이용 추이. 이번 기간(파랑 실선)을 강조하고, 지난 기간(회색 점선)은 비교용으로 겹친다.
@@ -24,7 +25,7 @@ export function TrendChart({ data, period }: { data: DailyPoint[]; period: numbe
   } satisfies ChartConfig;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="relative flex flex-col gap-3">
       <ul className="flex flex-wrap gap-4 text-sm" aria-label="범례">
         <li className="flex items-center gap-2">
           <span className="h-0.5 w-5 rounded-full bg-[#2a78d6] dark:bg-[#3987e5]" aria-hidden />
@@ -39,7 +40,7 @@ export function TrendChart({ data, period }: { data: DailyPoint[]; period: numbe
         </li>
       </ul>
       <ChartContainer config={config} className="aspect-auto h-64 w-full" aria-hidden>
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
+        <LineChart accessibilityLayer={false} data={data} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="date"
@@ -83,25 +84,28 @@ export function TrendChart({ data, period }: { data: DailyPoint[]; period: numbe
           />
         </LineChart>
       </ChartContainer>
-      <table className="sr-only">
-        <caption>일별 이용 횟수</caption>
-        <thead>
-          <tr>
-            <th scope="col">날짜</th>
-            <th scope="col">{config.current.label}</th>
-            <th scope="col">{config.previous.label}의 같은 순서 날</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((d) => (
-            <tr key={d.date}>
-              <th scope="row">{formatShortDate(d.date)}</th>
-              <td>{d.current}</td>
-              <td>{d.previous}</td>
+      {/* 화면 낭독기와 키보드 사용자를 위한 같은 데이터의 표 (초점을 받으면 차트 위에 보인다) */}
+      <ChartDataTable label="일별 이용 횟수 표">
+        <table>
+          <caption>일별 이용 횟수</caption>
+          <thead>
+            <tr>
+              <th scope="col">날짜</th>
+              <th scope="col">{config.current.label}</th>
+              <th scope="col">{config.previous.label}의 같은 순서 날</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((d) => (
+              <tr key={d.date}>
+                <th scope="row">{formatShortDate(d.date)}</th>
+                <td>{d.current}</td>
+                <td>{d.previous}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ChartDataTable>
     </div>
   );
 }

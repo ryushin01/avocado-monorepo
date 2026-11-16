@@ -16,9 +16,9 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 
 ## 런처 설정
 
-런처는 매장마다 환경 변수로 어느 백오피스·매장을 볼지 정합니다(`apps/launcher/.env.example`).
+런처는 매장마다 환경 변수로 어느 백오피스·매장을 볼지 정합니다(`apps/launcher/.env.example`). 기본값은 개발 중에만 쓰고, 운영(`next start`)에서는 기본값 없이 빠진 변수를 `launcher_config_missing` 로그로 남기며 손님에게는 연결 안내를 보여 줍니다.
 
-| 변수 | 기본값 | 설명 |
+| 변수 | 기본값(개발 중) | 설명 |
 |---|---|---|
 | `BACKOFFICE_URL` | `http://localhost:3000` | 백오피스 주소 |
 | `LAUNCHER_CAFE_ID` | `c_gangnam` | 이 키오스크가 놓인 매장 |

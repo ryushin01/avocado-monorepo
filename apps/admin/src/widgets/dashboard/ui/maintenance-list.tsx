@@ -45,9 +45,10 @@ export function MaintenanceList({
 
   return (
     <ItemGroup className="gap-1" aria-label="점검 중인 게임">
+      {/* 항목이 링크라 역할을 바꾸지 않고 목록 항목으로 감싼다(ItemGroup은 role=list). */}
       {entries.map((entry) => (
+        <div key={`${entry.cafeId}:${entry.gameId}`} role="listitem">
         <Item
-          key={`${entry.cafeId}:${entry.gameId}`}
           size="sm"
           render={
             <Link
@@ -69,6 +70,7 @@ export function MaintenanceList({
             </ItemDescription>
           </ItemContent>
         </Item>
+        </div>
       ))}
     </ItemGroup>
   );

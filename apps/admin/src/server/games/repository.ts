@@ -1,5 +1,5 @@
 import { compareCatalog } from "@/entities/game";
-import { count, eq, sum } from "drizzle-orm";
+import { count, eq, ilike, or, sum } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
@@ -37,6 +37,16 @@ export function matchesGame(game: BoardGame, filter: GameListFilter = {}) {
 }
 
 export const byGameName = (a: BoardGame, b: BoardGame) => a.name.localeCompare(b.name, "ko");
+
+/**
+ * matchesGame의 이름 검색을 SQL 조건으로: 한글·영문 이름 부분 일치(대소문자 무시).
+ * 검색어의 %·_·\는 패턴이 아니라 글자로 찾는다. 검색어가 없으면 조건을 걸지 않는다(undefined).
+ */
+export function gameNameLike(q?: string) {
+  if (!q) return undefined;
+  const pattern = `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+  return or(ilike(games.name, pattern), ilike(games.englishName, pattern));
+}
 
 export function createGameRepository(db: Database): GameRepository {
   /** 게임별 보유 매장 수·총 수량. 폐점한 매장의 재고는 넣지 않는다. */

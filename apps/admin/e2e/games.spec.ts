@@ -143,15 +143,15 @@ test.describe("데스크톱 페이지네이션", () => {
     await expect(rows).toHaveCount(20);
     const firstOnPage1 = await rows.first().textContent();
     const pager = page.getByRole("navigation", { name: "페이지 이동" });
-    await expect(pager.getByRole("link", { name: "1페이지" })).toHaveAttribute(
+    await expect(pager.getByRole("link", { name: "1 페이지" })).toHaveAttribute(
       "aria-current",
       "page",
     );
     await expect(pager.getByRole("link", { name: "이전 페이지" })).toHaveCount(0);
 
-    await pager.getByRole("link", { name: "2페이지" }).click();
+    await pager.getByRole("link", { name: "2 페이지" }).click();
     await expect(page).toHaveURL(/category=strategy&page=2/);
-    await expect(pager.getByRole("link", { name: "2페이지" })).toHaveAttribute(
+    await expect(pager.getByRole("link", { name: "2 페이지" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -173,7 +173,7 @@ test.describe("데스크톱 페이지네이션", () => {
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: 8 });
 
     await page.goto("/games?category=strategy", { waitUntil: "commit" });
-    await page.getByRole("navigation", { name: "페이지 이동" }).getByRole("link", { name: "2페이지" }).click();
+    await page.getByRole("navigation", { name: "페이지 이동" }).getByRole("link", { name: "2 페이지" }).click();
 
     await expect(page).toHaveURL(/category=strategy&page=2/, { timeout: 30_000 });
     expect(errors).toEqual([]);
@@ -219,7 +219,7 @@ test.describe("카탈로그 정렬", () => {
     await expect(header).toHaveAttribute("aria-sort", "descending");
     await expect(firstRowCell(page, 4)).toHaveText("어려움");
 
-    await page.getByRole("link", { name: "2페이지" }).click();
+    await page.getByRole("link", { name: "2 페이지" }).click();
     await expect(page).toHaveURL(/sort=difficulty&order=desc&page=2/);
     await expect(header).toHaveAttribute("aria-sort", "descending");
 

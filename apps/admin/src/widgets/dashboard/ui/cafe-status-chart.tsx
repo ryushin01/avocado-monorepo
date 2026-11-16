@@ -65,6 +65,7 @@ export function CafeStatusChart({ cafes }: { cafes: CafeInventoryStats[] }) {
         aria-hidden
       >
         <BarChart
+          accessibilityLayer={false}
           data={rows}
           layout="vertical"
           margin={{ left: 0, right: 8, top: 0, bottom: 0 }}

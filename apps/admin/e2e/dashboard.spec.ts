@@ -6,6 +6,22 @@ const tile = (page: import("@playwright/test").Page, label: string) =>
   page.getByTestId("stat-tile").filter({ hasText: label });
 
 test.describe("대시보드 (관리자)", () => {
+  test("차트의 표는 키보드 초점을 받으면 차트 위에 보여, 툴팁에만 있던 박스 수와 전체 게임 이름을 볼 수 있다", async ({ page }) => {
+    await page.goto("/");
+    const region = page.getByRole("region", { name: "유형별 보유 현황 표" });
+    // 평소에는 화면에 보이지 않는다(화면 낭독기만 읽음).
+    expect((await region.boundingBox())?.width ?? 0).toBeLessThanOrEqual(1);
+    await region.focus();
+    await expect(region).toBeFocused();
+    expect((await region.boundingBox())?.width ?? 0).toBeGreaterThan(200);
+    await expect(region.getByRole("columnheader", { name: "보유 박스(개)" })).toBeVisible();
+
+    const ranking = page.getByRole("region", { name: "주간 인기 게임 순위 표" });
+    await ranking.focus();
+    expect((await ranking.boundingBox())?.width ?? 0).toBeGreaterThan(200);
+    await expect(ranking.getByRole("rowheader").first()).toBeVisible();
+  });
+
   test("전체 매장 요약, 유형별 차트, 매장별 현황을 보여준다", async ({ page }) => {
     await page.goto("/");
     // 매장 관리 테스트가 동시에 매장을 등록·폐점하므로 정확한 매장 수는 단위 테스트에서 본다.

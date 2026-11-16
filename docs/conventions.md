@@ -40,6 +40,8 @@
   - CLI가 만든 파일 안에서 같은 패키지의 컴포넌트를 `@avocado/ui/components/...`로 가져오면 상대 경로(`./button`)로 바꿉니다.
   - 테마(색·반경 토큰)는 `packages/ui/src/styles/globals.css`입니다. 앱의 `globals.css`는 이것을 가져오고 `@source`로 `packages/ui/src`를 알려줘야 공통 컴포넌트의 클래스가 빠지지 않습니다. 앱만의 색은 앱의 `globals.css`에서 덮어씁니다(홍보 사이트의 주황 강조색 등).
   - 아이콘은 lucide(`lucide-react`)를 씁니다.
+  - 두 앱이 함께 쓰는 훅·도우미도 이 패키지에 둡니다: `@avocado/ui/hooks/use-auto-refresh`(화면이 보이는 동안 주기적으로 `router.refresh()`), `@avocado/ui/lib/field-a11y`(입력 칸 접근성 속성).
+  - **목록 묶음(`ItemGroup`)은 `role="list"`입니다.** 안의 `Item`에 `role="listitem"`을 주고, 항목이 링크라면 `<div role="listitem">`으로 감쌉니다. 불러오는 중·없음 안내는 목록 밖에 둡니다.
 - **shadcn 스타일은 `base-nova`이고 Radix가 아니라 Base UI 기반입니다.**
   - 다른 요소로 렌더링할 때는 `asChild` 대신 `render` prop을 씁니다. 예: `<DialogTrigger render={<Button />}>`
   - **링크를 버튼처럼 보이게 할 때**는 `<Link className={buttonVariants()}>`를 씁니다.
@@ -52,6 +54,8 @@
   - **Base UI Checkbox**는 보이는 `role="checkbox"` 요소와 숨은 `<input>`이 따로 있습니다. 테스트에서는 `getByRole("checkbox", { name, exact: true })`로 찾습니다.
 - **shadcn 컴포넌트를 고친 곳**(다시 `add --overwrite`하면 사라지므로 주의, 모두 `packages/ui/src` 아래)
   - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
+  - `components/table.tsx`: `label`(표 이름)을 받고, 표가 가로로 넘칠 때만 바깥 영역이 이름 있는 영역(`role="region"`, `tabIndex=0`)이 되어 키보드로 스크롤할 수 있습니다. 같은 화면에 표가 여럿이면 `label`을 서로 다르게 줍니다
+  - `components/sonner.tsx`: 테마 기능이 없어 `next-themes` 대신 밝은 테마로 고정
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석. 끝에 닿은 버튼은 초점이 사라지지 않게 `disabled` 대신 `aria-disabled`를 쓰고, 화면 밖 슬라이드는 탭 순서에서 빠지도록 `inert`를 겁니다
   - `dialog`, `sheet`, `breadcrumb`, `spinner`, `carousel`, `pagination`, `sidebar`: 화면 낭독기가 읽는 영어 기본 문구를 한국어로 바꿈
@@ -82,9 +86,11 @@
 - **표시 규칙**
   - 막대는 24px 이하 두께로, 값 끝만 4px 둥글게 처리합니다.
   - 값은 막대 끝에 적고, 마우스를 올리면 툴팁을 보여줍니다.
-  - **차트마다 같은 데이터의 `sr-only` 표**를 함께 둡니다. 화면 낭독기와 E2E 테스트가 이 표를 읽습니다.
+  - **차트마다 같은 데이터의 표**를 `ChartDataTable`로 함께 둡니다. 화면 낭독기와 E2E 테스트가 이 표를 읽습니다.
   - 표만 확인하면 차트가 그려지지 않아도 테스트가 통과합니다. 차트가 실제로 그려졌는지는 대시보드 E2E가 `svg.recharts-surface`로 확인합니다.
   - 작은 추이선(`Sparkline`)은 숫자를 옆 글자가 전하므로 화면 낭독기에서 숨깁니다. 여러 줄을 나란히 비교할 때는 `max`로 세로 축을 맞춥니다.
+  - **화면 낭독기에서 숨긴 차트(`aria-hidden`)는 초점도 받지 않게** Recharts 차트에 `accessibilityLayer={false}`를 줍니다. Recharts 3은 기본으로 차트 표면에 `tabIndex=0`을 붙입니다.
+  - 그 대신 같은 데이터의 표를 `ChartDataTable`(`shared/ui/chart-data-table.tsx`)로 감쌉니다. 평소에는 `sr-only`이고, Tab으로 초점을 받으면 차트 위에 보여 툴팁에만 있는 값(박스 수, 잘린 이름)을 마우스 없이 볼 수 있습니다. 감싸는 요소는 `relative`이고, 영역 이름(`label`)은 화면 안에서 겹치지 않게 줍니다.
 - **스크린샷 주의:** Playwright `fullPage` 스크린샷은 창 크기를 바꿔 차트가 처음부터 다시 그려지는 순간을 찍습니다. 빈 차트처럼 나오므로 키가 큰 창으로 찍으세요.
 
 ## 폼
@@ -98,6 +104,7 @@
 - **`onSubmit`만 있는 폼은 하이드레이션 전에 브라우저가 GET으로 제출합니다.** 입력값이 주소에 실리므로, 비밀번호·개인정보를 받는 폼은 Server Action(`action`)을 쓰거나 로그인 폼처럼 준비될 때까지 제출 버튼을 막고 `method="post"`를 둡니다.
 - **검증은 zod 스키마 하나로 서버에서 합니다.** 폼에는 `noValidate`를 붙여 브라우저 기본 검증을 끄고, 서버 오류 메시지를 일관되게 보여줍니다.
 - **글자 칸은 `FormTextField`, 대화상자 아래 버튼은 `DialogFormFooter`**(`shared/ui`)를 씁니다. 라벨·값 복원·오류 문구 연결과 처리 중 막기를 한곳에서 맞춥니다.
+- **중복 제출:** 폼 액션(`useActionState`)은 처리 중 상태가 다음 클릭 전에 반영돼 제출 버튼이 막힙니다. 새로 만드는 등록 폼도 `pending`으로 버튼을 막고, 더블 클릭 E2E로 한 건만 생기는지 확인합니다(`e2e/reservations.spec.ts`, `e2e/kiosk.spec.ts`).
 - **오류 문구와 도움말은 칸에 잇습니다.** 선택 상자·여러 줄 칸·체크박스처럼 직접 만드는 칸은 `fieldA11y(칸 id, 잘못됐는지, { described })`(`shared/lib/field-a11y.ts`)를 펼쳐 넣고, 짝이 되는 `FieldError`·`FieldDescription`에 `errorIdOf(칸 id)`·`descriptionIdOf(칸 id)`를 id로 줍니다. 잘못된 값일 때만 `aria-invalid`를 붙이고, 오류 문구는 `aria-errormessage`와 `aria-describedby`로 함께 잇습니다(KWCAG 7.3.1).
 
 ## 테스트
@@ -117,6 +124,7 @@
   - 테스트는 기본으로 관리자로 로그인한 상태입니다. `e2e/auth.setup.ts`가 먼저 실제 로그인 화면으로 로그인해 세션을 저장합니다. 스태프로 확인할 때는 `loginAs(context, USERS.hongdaeStaff)`를 씁니다(`e2e/helpers.ts`).
   - E2E 서버는 매번 새 메모리 DB(`PGLITE_DATA_DIR=memory://`)로 시작하고, 프로덕션 모드라 `SEED_DEMO=1`로 개발용 시드를 넣습니다. 로그인 화면에 개발용 계정 안내가 나오지 않으므로 테스트는 `e2e/helpers.ts`의 계정을 씁니다.
   - 모바일 목록은 `waitForMobileList()`로 목록이 실제로 보일 때까지 기다린 뒤 다룹니다. Suspense 스트리밍 중에는 숨은 영역에 먼저 그려졌다가 옮겨지기 때문입니다.
+  - **접근성:** `e2e/a11y.spec.ts`가 백오피스 모든 메뉴·로그인과 키오스크 화면을 axe(WCAG 2.2 A·AA)로 검사합니다. 새 화면을 만들면 여기에 더합니다. axe를 통과해도 KWCAG 준수는 아니므로 키보드·화면 낭독기로 직접도 확인합니다. 홍보 사이트는 Lighthouse(접근성 100점)가 검사합니다.
 - **의존성:** Dependabot이 매주 업데이트 PR을 올립니다(`.github/dependabot.yml`). CI는 운영 의존성의 높음 이상 취약점이 있으면 실패합니다(`pnpm audit --prod --audit-level high`).
 - **CI:** `main` 푸시와 PR마다 GitHub Actions(`.github/workflows/ci.yml`)가 다섯 가지를 모두 실행합니다(단위 테스트는 커버리지와 함께). E2E가 실패하면 Playwright 기록을 7일간 보관합니다.
   - Turborepo는 환경 변수를 작업에 넘기지 않으므로, 작업이 읽어야 하는 변수는 `turbo.json`에 적습니다(E2E의 `CI` 등).
@@ -124,7 +132,7 @@
 
 ## 오류 처리와 로그
 
-- **화면:** 앱마다 `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`가 있고 표시는 `shared/ui/error-notice.tsx`입니다. 백오피스는 `(backoffice)/error.tsx`도 두어 오류가 나도 사이드바가 남습니다. 런처의 오류·없는 화면은 손님이 떠나도 30초 뒤 처음 화면으로 돌아갑니다.
+- **화면:** 앱마다 `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`가 있고 표시는 `shared/ui/error-notice.tsx`입니다. 백오피스는 `(backoffice)/error.tsx`도 두어 오류가 나도 사이드바가 남습니다. 런처의 오류·없는 화면은 손님이 떠나도 30초 뒤 경고 창을 띄우고, 20초 안에 연장하지 않으면 처음 화면으로 돌아갑니다(`shared/ui/idle-return.tsx`, KWCAG 6.2.1).
 - **Next.js 16의 오류 화면 prop은 `reset`이 아니라 `retry`입니다.** `error`는 `unknown`이라 `instanceof Error`로 좁힌 뒤 읽습니다.
 - **로그:** 서버 오류는 `@avocado/logger`가 한 줄 JSON으로 표준 오류에 남깁니다. 각 앱의 `src/instrumentation.ts`가 `onRequestError`로 넘기고, 백오피스 화면의 오류 번호는 로그의 `digest`와 같습니다.
 - **로그에 개인정보를 남기지 않습니다.** 요청 헤더와 쿼리 문자열(`phone4` 등)은 기록하지 않습니다. 직접 로그를 남길 때는 `logError`에 전화번호·이름·토큰을 넘기지 않습니다.
@@ -151,6 +159,7 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 | 처음 내려받은 저장소에서 `Failed query: CREATE SCHEMA` (ENOENT, mkdir) | PGlite가 상위 폴더(`.data`)를 만들어 주지 않음. 이미 폴더가 있는 컴퓨터와 메모리 DB를 쓰는 E2E·CI에서는 드러나지 않음 | `openPglite`에서 폴더를 먼저 만듦 (`src/db/index.test.ts`) |
 | 서버 로그에 손님 전화번호가 찍힘 | Drizzle 오류 메시지에 쿼리 값(`params:`)이 들어 있고 Next.js가 이를 그대로 출력함 | 백오피스 `instrumentation.ts`의 `register`에서 `redactConsoleErrors()`로 가림. `server/log-redaction.test.ts`가 실제 DB 오류로 확인하므로 Drizzle을 올려 형식이 바뀌면 이 테스트가 실패함 |
 | 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
+| 운영 키오스크가 로그 없이 늘 "연결할 수 없습니다" | 요청 시점 데이터를 읽기 전에 바로 돌아오는 분기(설정 확인 등)가 빌드 중에 실행되면, 그 결과가 정적 화면(`index.html`)에 굳음 | 그런 함수는 맨 앞에서 `await connection()`을 부른다(`launcher/src/shared/api/backoffice.ts`). 확인: 빌드 뒤 `grep -l "연결할 수 없습니다" apps/launcher/.next/server/app/*.html`이 비어 있어야 함 |
 | 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
 | `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
 | 느린 기기에서 페이지 번호 등을 눌러도 반응이 없고 React 오류 #418이 남 | `useWindowVirtualizer`는 첫 렌더링에서 `window.scrollY`를 읽어, 하이드레이션 전에 스크롤하면 서버와 다른 항목을 그림. 항목 수가 달라지면 `useId` 값도 달라짐. `md:hidden` 목록도 데스크톱에서 하이드레이션되므로 함께 해당됨 | `initialOffset: 0`으로 첫 렌더링을 맞추되, 라이브러리가 마운트할 때 창을 그 위치로 옮기므로 `scrollToFn`에서 그 한 번을 막음 (`shared/ui/infinite-list.tsx`) |
@@ -175,3 +184,6 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 | 루트 `pnpm e2e`에서만 가끔 `ERR_CONNECTION_REFUSED`와 함께 방금 만든 데이터가 사라짐 | 개발 서버(`next dev`)는 메모리가 한도의 80%를 넘으면 스스로 다시 켜짐(`devMemoryThresholdRestart`). 메모리 DB가 초기화되고 잠깐 접속이 끊김 | E2E는 프로덕션 빌드로 돌린다 (`playwright.config.ts`의 `webServer`) |
 | CI에서만 저장소 단위 테스트가 "Test timed out in 5000ms" | 테스트마다 새 PGlite를 열고 마이그레이션을 적용해 느린 컴퓨터에서는 5초를 넘김 | 백오피스 Vitest 설정의 `testTimeout: 30_000` |
 | 비활성 Select 값이 제출되지 않음 | 비활성 폼 컨트롤은 값을 보내지 않음 | 숨은 `<input>`으로 같은 값을 보냄 (직원 수정의 역할) |
+| Vitest에서만 `invariant expected app router to be mounted` (공통 UI의 훅·컴포넌트) | `packages/ui`가 peer 버전 고정 때문에 앱과 다른 `next`를 따로 설치함. Next 빌드는 앱의 `next`로 맞춰 주지만 Vitest는 다른 사본을 읽어 `vi.mock("next/navigation")`이 닿지 않음 | `packages/ui`의 `next`는 peer를 범위로 두고 같은 버전을 devDependencies에 적음. 확인: `readlink -f packages/ui/node_modules/next apps/admin/node_modules/next`가 같아야 함 |
+| 기록이 많을 때만 `RangeError: Maximum call stack size exceeded` | `Math.min(...배열)`·`Math.max(...배열)`이 원소 수만큼 인수를 넘김(Node는 약 12만 5천 개부터 실패) | 반복문이나 `reduce`로 구함 (`server/stats/repository.ts`) |
+| axe `aria-hidden-focus`: 숨긴 차트 안에 초점 받는 요소 | Recharts 3의 `accessibilityLayer`(기본 켜짐)가 차트 표면에 `tabIndex=0`을 붙임 | 같은 데이터를 sr-only 표로 주는 차트는 `accessibilityLayer={false}` |

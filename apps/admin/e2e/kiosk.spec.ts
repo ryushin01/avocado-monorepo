@@ -105,3 +105,109 @@ test("키오스크의 없는 주소는 안내 화면에서 처음 화면으로 �
   await page.getByRole("link", { name: "처음 화면으로" }).click();
   await expect(page).toHaveURL(`${LAUNCHER_URL}/`);
 });
+
+test("열어 둔 직원 화면은 새로고침하지 않아도 키오스크 대기 등록을 보여 주고 알린다", async ({ page, browser }) => {
+  const name = `실시간${Date.now() % 100000}`;
+  const { phone } = uniquePhone();
+  await page.goto(ADMIN_PAGE);
+  await expect(page.getByRole("heading", { name: /^현장 대기 \d+팀$/ })).toBeVisible();
+
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+  await kiosk.getByLabel("이름").fill(name);
+  await kiosk.getByLabel("휴대전화").fill(phone);
+  await kiosk.getByRole("button", { name: "대기 등록", exact: true }).click();
+  await expect(kiosk.getByText("대기 등록을 마쳤습니다")).toBeVisible();
+
+  // 직원 화면은 다시 열지 않는다. 15초마다 다시 받으므로 그 안에 나타나고, 화면 낭독기에도 알린다.
+  await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toBeVisible({ timeout: 25_000 });
+  await expect(page.getByTestId("live-updates")).toContainText(`${name}님이 등록했습니다.`);
+});
+
+test("키오스크 대기 등록: 잘못 쓴 칸은 오류 문구와 이어지고, 초점이 그 칸으로 간다", async ({ browser }) => {
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+  await expect(kiosk.getByRole("group", { name: "인원" })).toBeVisible();
+  await kiosk.getByLabel("이름").fill("김확인");
+  await kiosk.getByLabel("휴대전화").fill("1234");
+  await kiosk.getByRole("button", { name: "대기 등록", exact: true }).click();
+
+  await expect(kiosk.getByText("입력을 확인해주세요.")).toBeVisible();
+  const phone = kiosk.getByLabel("휴대전화");
+  await expect(phone).toBeFocused();
+  await expect(phone).toHaveAttribute("aria-invalid", "true");
+  await expect(phone).toHaveAccessibleDescription(/010-1234-5678 형식/);
+  // 맞게 쓴 칸에는 오류 표시를 붙이지 않는다.
+  await expect(kiosk.getByLabel("이름")).not.toHaveAttribute("aria-invalid");
+  await expect(kiosk.getByLabel("이름")).toHaveValue("김확인");
+});
+
+test("키오스크 대기 등록 버튼을 빠르게 두 번 눌러도 한 번만 등록하고 번호를 보여 준다", async ({ page, browser }) => {
+  const name = `두번${Date.now() % 100000}`;
+  const { phone } = uniquePhone();
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+  await kiosk.getByLabel("이름").fill(name);
+  await kiosk.getByLabel("휴대전화").fill(phone);
+  await kiosk.getByRole("button", { name: "대기 등록", exact: true }).dblclick();
+  // 두 번째 요청이 가면 같은 번호 중복으로 오류 화면이 대기표를 덮는다.
+  await expect(kiosk.getByText("대기 등록을 마쳤습니다")).toBeVisible();
+  await expect(kiosk.getByText("이 전화번호로 이미 대기 중입니다.")).toHaveCount(0);
+
+  await page.goto(ADMIN_PAGE);
+  await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toHaveCount(1);
+});
+
+test("키오스크 결과 화면은 30초 동안 만지지 않으면 경고하고, 계속 보기로 연장하며, 그대로 두면 처음 화면으로 돌아간다", async ({ browser }) => {
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.clock.install();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "내 순서 확인" }).click();
+  await pressDigits(kiosk, "0000");
+  // 결과 화면이 그려진 뒤부터 센다('처음으로' 버튼은 숫자 패드 화면에도 있으므로 결과 문구를 기다린다).
+  await expect(kiosk.getByText("대기 중인 번호를 찾을 수 없습니다.", { exact: false })).toBeVisible();
+
+  // 30초 뒤 경고(연장할 시간 20초)
+  await kiosk.clock.fastForward(31_000);
+  const warning = kiosk.getByRole("alertdialog", { name: "곧 처음 화면으로 돌아갑니다" });
+  await expect(warning).toBeVisible();
+  await warning.getByRole("button", { name: "계속 보기" }).click();
+  await expect(warning).toBeHidden();
+  await expect(kiosk).toHaveURL(`${LAUNCHER_URL}/waitlist`);
+
+  // 다시 30초 + 경고 20초 동안 두면 처음 화면으로 새로 연다.
+  await kiosk.clock.fastForward(31_000);
+  await expect(warning).toBeVisible();
+  await kiosk.clock.fastForward(21_000);
+  await expect(kiosk).toHaveURL(`${LAUNCHER_URL}/`);
+});
+
+test("다른 날짜의 예약을 보고 있어도 오늘 손님의 키오스크 도착을 알린다", async ({ page, browser }) => {
+  test.skip(kstHour() >= 23, "오늘 남은 예약 시각이 없음");
+  const name = `도착${Date.now() % 100000}`;
+  const { phone, last4 } = uniquePhone();
+  await page.goto(ADMIN_PAGE);
+  await page.getByRole("button", { name: "예약 등록" }).click();
+  const dialog = page.getByRole("dialog", { name: "예약 등록" });
+  await dialog.getByLabel("이름").fill(name);
+  await dialog.getByLabel("휴대전화").fill(phone);
+  await dialog.getByLabel("날짜").fill(kstDate(0));
+  await dialog.getByLabel("시각").fill(`${String(kstHour() + 1).padStart(2, "0")}:00`);
+  await dialog.getByRole("button", { name: "등록" }).click();
+  await expect(page.getByText(`'${name}' 예약을 등록했습니다.`)).toBeVisible();
+
+  // 직원은 내일 예약을 보고 있다.
+  await page.goto(`${ADMIN_PAGE}&date=${kstDate(1)}`);
+  await expect(page.getByRole("heading", { name: /^예약 · / })).toBeVisible();
+
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/reservation`);
+  await pressDigits(kiosk, last4);
+  await kiosk.getByRole("button", { name: "도착했어요" }).click();
+  await expect(kiosk.getByText("도착을 알렸습니다")).toBeVisible();
+
+  await expect(page.getByTestId("live-updates")).toContainText(`${name}님이 도착을 알렸습니다.`, { timeout: 25_000 });
+});

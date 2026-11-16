@@ -20,7 +20,7 @@ import type { InventoryEntry } from "@/entities/inventory";
 export function InventoryTable({ entries }: { entries: InventoryEntry[] }) {
   return (
     <div className="rounded-lg border">
-      <Table>
+      <Table label="재고 목록">
         <TableHeader>
           <TableRow>
             <TableHead>이름</TableHead>

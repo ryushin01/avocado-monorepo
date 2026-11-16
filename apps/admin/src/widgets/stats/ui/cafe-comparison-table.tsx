@@ -20,7 +20,7 @@ import { Sparkline } from "./sparkline";
 export function CafeComparisonTable({ cafes, period }: { cafes: CafeStats[]; period: number }) {
   const max = Math.max(1, ...cafes.flatMap((c) => c.daily));
   return (
-    <Table>
+    <Table label="매장 비교">
       <caption className="sr-only">매장별 이용 비교</caption>
       <TableHeader>
         <TableRow>

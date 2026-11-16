@@ -12,7 +12,7 @@ import {
   CreateReservationButton,
 } from "@/features/manage-reservation";
 import { ReservationList, WaitlistBoard } from "@/widgets/reservation-board";
-import { formatShortDate } from "@/shared/lib/format";
+import { formatShortDate, formatTime } from "@/shared/lib/format";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { resolveCafe, visibleCafes } from "@/entities/user";
 import { listCafes } from "@/server/cafes/data";
@@ -23,6 +23,8 @@ import { listReservations, listWaitlistToday } from "@/server/reservations/data"
 import { OPEN_RESERVATION_STATUSES } from "@/entities/reservation";
 import { parseReservationDate } from "@/entities/reservation/schema";
 import { ACTIVE_WAITLIST_STATUSES } from "@/entities/waitlist";
+
+import { LiveUpdates } from "./live-updates";
 
 export default function ReservationsPage({ searchParams }: PageProps<"/reservations">) {
   return (
@@ -66,6 +68,7 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
     });
   const activeWaits = waitlist.entries.filter((e) => ACTIVE_WAITLIST_STATUSES.includes(e.status));
   const openReservations = reservations.filter((r) => OPEN_RESERVATION_STATUSES.includes(r.status));
+  const arrivals = openReservations.filter((r) => r.arrivedAt);
 
   return (
     <>
@@ -91,6 +94,12 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
           showCategory={false}
         />
       )}
+
+      <LiveUpdates
+        key={`${cafe.id}:${date}`}
+        waiting={activeWaits.map((e) => ({ id: e.id, label: `${e.number}번 ${e.name}` }))}
+        arrived={arrivals.map((r) => ({ id: r.id, label: `${formatTime(r.startsAt)} 예약 ${r.name}` }))}
+      />
 
       <section aria-labelledby="waitlist-heading" className="flex flex-col gap-3">
         <h2 id="waitlist-heading" className="text-lg font-semibold">

@@ -105,3 +105,22 @@ test("키오스크의 없는 주소는 안내 화면에서 처음 화면으로 �
   await page.getByRole("link", { name: "처음 화면으로" }).click();
   await expect(page).toHaveURL(`${LAUNCHER_URL}/`);
 });
+
+test("열어 둔 직원 화면은 새로고침하지 않아도 키오스크 대기 등록을 보여 주고 알린다", async ({ page, browser }) => {
+  const name = `실시간${Date.now() % 100000}`;
+  const { phone } = uniquePhone();
+  await page.goto(ADMIN_PAGE);
+  await expect(page.getByRole("heading", { name: /^현장 대기 \d+팀$/ })).toBeVisible();
+
+  const kiosk = await (await browser.newContext({ viewport: { width: 1024, height: 900 } })).newPage();
+  await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+  await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+  await kiosk.getByLabel("이름").fill(name);
+  await kiosk.getByLabel("휴대전화").fill(phone);
+  await kiosk.getByRole("button", { name: "대기 등록", exact: true }).click();
+  await expect(kiosk.getByText("대기 등록을 마쳤습니다")).toBeVisible();
+
+  // 직원 화면은 다시 열지 않는다. 15초마다 다시 받으므로 그 안에 나타나고, 화면 낭독기에도 알린다.
+  await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toBeVisible({ timeout: 25_000 });
+  await expect(page.getByTestId("live-updates")).toContainText(`${name}님이 등록했습니다.`);
+});

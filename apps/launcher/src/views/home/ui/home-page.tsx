@@ -5,13 +5,18 @@ import { Suspense } from "react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@avocado/ui/components/card";
 import { Skeleton } from "@avocado/ui/components/skeleton";
 
+import { AutoRefresh } from "@/shared/ui/auto-refresh";
 import { ConnectionError } from "@/shared/ui/connection-error";
 import { fetchCafeGames } from "@/shared/api/backoffice";
 
-/** 시작 화면: 매장 이름과 큰 메뉴 버튼 */
+/**
+ * 시작 화면: 매장 이름과 큰 메뉴 버튼.
+ * 키오스크는 이 화면에 오래 머물러서 "지금 바로 이용 가능" 수가 낡지 않게 1분마다 다시 받는다.
+ */
 export default function HomePage() {
   return (
     <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-10 p-8">
+      <AutoRefresh seconds={60} />
       <Suspense fallback={<Skeleton className="h-24 w-96" />}>
         <Welcome />
       </Suspense>

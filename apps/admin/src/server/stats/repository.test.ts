@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { New } from "@/db/mappers";
 
 import type { Cafe } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
@@ -10,8 +11,8 @@ import type { PlaySession } from "@/entities/play";
 import { createStatsRepository, summarizeStats } from "./repository";
 import { changeRate, parseStatPeriod } from "@/entities/stat";
 
-const cafe = (id: string): Cafe => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open", version: 1 });
-const game = (id: string, name: string): BoardGame => ({
+const cafe = (id: string): New<Cafe> => ({ id, name: `${id}점`, region: "", openedAt: "2024-01-01", status: "open" });
+const game = (id: string, name: string): New<BoardGame> => ({
   id,
   name,
   categories: ["family"],
@@ -21,15 +22,13 @@ const game = (id: string, name: string): BoardGame => ({
   playTimeMax: 60,
   difficulty: "easy",
   createdAt: "2026-10-01T00:00:00.000Z",
-  version: 1,
 });
-const item = (cafeId: string, gameId: string, quantity: number, status: InventoryItem["status"] = "available"): InventoryItem => ({
+const item = (cafeId: string, gameId: string, quantity: number, status: InventoryItem["status"] = "available"): New<InventoryItem> => ({
   cafeId,
   gameId,
   quantity,
   status,
   updatedAt: "2026-10-01T00:00:00.000Z",
-  version: 1,
 });
 let seq = 0;
 /** kst: "2026-11-02T14:00" 같은 한국 시각, minutes: 이용 시간 (없으면 이용 중) */
@@ -177,12 +176,14 @@ describe("summarizeStats (기록이 많을 때)", () => {
         playerCount: 3,
       };
     });
+    // summarizeStats는 DB 없이 도는 계산이라 읽어 온 행처럼 버전을 붙여 넘긴다.
+    const read = <T extends object>(row: T) => ({ ...row, version: 1 });
     const stats = summarizeStats(
       {
         plays,
-        cafes,
-        games: [game("g1", "카탄")],
-        inventory: cafes.map((c) => item(c.id, "g1", 2)),
+        cafes: cafes.map(read),
+        games: [read(game("g1", "카탄"))],
+        inventory: cafes.map((c) => read(item(c.id, "g1", 2))),
       },
       cafes.map((c) => c.id),
       28,

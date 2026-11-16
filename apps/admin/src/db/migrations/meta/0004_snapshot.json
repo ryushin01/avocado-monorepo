@@ -1,5 +1,5 @@
 {
-  "id": "e1a54e42-06eb-4848-807b-461905214873",
+  "id": "58714df9-8530-423b-aea5-4052bfa21757",
   "prevId": "e75fb76c-afd4-4739-bddb-25ba39a35ffe",
   "version": "7",
   "dialect": "postgresql",
@@ -165,7 +165,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 1
+          "default": "nextval('row_version')"
         }
       },
       "indexes": {},
@@ -263,7 +263,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 1
+          "default": "nextval('row_version')"
         }
       },
       "indexes": {},
@@ -313,7 +313,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 1
+          "default": "nextval('row_version')"
         }
       },
       "indexes": {},
@@ -712,7 +712,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 1
+          "default": "nextval('row_version')"
         }
       },
       "indexes": {
@@ -817,7 +817,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": 1
+          "default": "nextval('row_version')"
         }
       },
       "indexes": {
@@ -970,7 +970,18 @@
   },
   "enums": {},
   "schemas": {},
-  "sequences": {},
+  "sequences": {
+    "public.row_version": {
+      "name": "row_version",
+      "schema": "public",
+      "increment": "1",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "2147483647",
+      "cache": "1",
+      "cycle": false
+    }
+  },
   "roles": {},
   "policies": {},
   "views": {},

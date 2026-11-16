@@ -3,12 +3,14 @@ import {
   date,
   index,
   integer,
+  pgSequence,
   pgTable,
   primaryKey,
   text,
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import type { AuditAction } from "@/entities/audit";
 import type { Role } from "@/entities/user";
@@ -22,10 +24,13 @@ import type { WaitlistStatus } from "@/entities/waitlist";
 const at = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
 
 /**
- * 편집 폼의 낙관적 잠금. 직원이 폼으로 고치는 행은 바꿀 때마다 1씩 올리고, 저장할 때 폼을 연 시점의 값과 같아야 쓴다.
+ * 편집 폼의 낙관적 잠금. 직원이 폼으로 고치는 행은 바꿀 때마다 새 버전을 받고, 저장할 때 폼을 연 시점의 값과 같아야 쓴다.
  * 그사이 다른 직원이 바꿨으면 덮어쓰지 않고 다시 보게 한다(repository의 "changed").
+ * 버전은 모든 표가 함께 쓰는 시퀀스에서 받아 같은 값이 다시 나오지 않는다. 그래서 재고를 제외했다가 같은 게임을
+ * 다시 등록한 새 행도 예전 행의 버전과 겹치지 않아, 예전에 연 폼이 새 행을 덮어쓰지 못한다.
  */
-const version = () => integer("version").notNull().default(1);
+export const rowVersion = pgSequence("row_version", { maxValue: 2147483647 });
+const version = () => integer("version").notNull().default(sql`nextval('row_version')`);
 
 export const cafes = pgTable("cafes", {
   id: text("id").primaryKey(),

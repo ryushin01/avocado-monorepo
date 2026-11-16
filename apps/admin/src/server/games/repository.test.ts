@@ -93,8 +93,8 @@ describe("GameRepository (카탈로그)", () => {
       id: created.id,
       name: "아그리콜라 2판",
       createdAt: created.createdAt,
-      version: created.version + 1,
     });
+    expect(typeof updated !== "string" && updated.version).not.toBe(created.version);
     expect(typeof updated !== "string" && updated.englishName).toBeUndefined();
     expect(await repo.update("nope", input(), 1)).toBe("not-found");
   });
@@ -110,10 +110,8 @@ describe("GameRepository (카탈로그)", () => {
     // 먼저 저장된 쪽만 남고, 옛 버전으로 다시 저장해도 바뀌지 않는다.
     const saved = [a, b].find((r) => typeof r !== "string");
     expect(await repo.update(created.id, input({ name: "다" }), created.version)).toBe("changed");
-    expect(await repo.get(created.id)).toMatchObject({
-      name: typeof saved !== "string" && saved?.name,
-      version: created.version + 1,
-    });
+    if (!saved || typeof saved === "string") throw new Error("저장된 쪽이 없음");
+    expect(await repo.get(created.id)).toMatchObject({ name: saved.name, version: saved.version });
   });
 
   it("시드 게임은 모두 로컬 썸네일이 있고, 원본 이미지를 바꾸면 썸네일을 지운다", async () => {
@@ -123,8 +121,9 @@ describe("GameRepository (카탈로그)", () => {
     const game = items[0];
     const base = input({ name: game.name, imageUrl: game.imageUrl });
     const kept = await repo.update(game.id, base, game.version);
-    expect(typeof kept !== "string" && kept.thumbnailUrl).toBe(game.thumbnailUrl);
-    const changed = await repo.update(game.id, { ...base, imageUrl: "https://example.com/a.png" }, game.version + 1);
+    if (typeof kept === "string") throw new Error(kept);
+    expect(kept.thumbnailUrl).toBe(game.thumbnailUrl);
+    const changed = await repo.update(game.id, { ...base, imageUrl: "https://example.com/a.png" }, kept.version);
     expect(typeof changed !== "string" && changed.thumbnailUrl).toBeUndefined();
   });
 });

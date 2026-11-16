@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { Cafe } from "@/entities/cafe";
 import { formatPhone, isMobilePhone, maskName, normalizePhone } from "@/entities/guest";
+import { eq } from "drizzle-orm";
+
 import { reservations as reservationTable } from "@/db/schema";
 import { createSeedData } from "@/db/seed-data";
 import { createTestDb } from "@/db/testing";
@@ -13,7 +15,7 @@ import { reservationInputSchema } from "@/entities/reservation/index.server";
 import type { New } from "@/db/mappers";
 import type { Reservation } from "@/entities/reservation";
 
-const cafe = (id: string, status: Cafe["status"] = "open"): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status, version: 1 });
+const cafe = (id: string, status: Cafe["status"] = "open"): New<Cafe> => ({ id, name: id, region: "", openedAt: "2024-01-01", status });
 // 지금: 2026-11-05 15:00 (한국)
 const now = new Date("2026-11-05T06:00:00.000Z");
 const at = (kst: string) => new Date(`${kst}:00+09:00`).toISOString();
@@ -27,6 +29,12 @@ const input = (patch: Record<string, string> = {}) =>
     time: "19:00",
     ...patch,
   });
+
+/** 지금 버전(수정 폼을 막 연 것처럼). 버전은 DB 시퀀스가 정해 미리 알 수 없다. */
+async function versionOf(db: Awaited<ReturnType<typeof createTestDb>>, id: string) {
+  const [row] = await db.select({ version: reservationTable.version }).from(reservationTable).where(eq(reservationTable.id, id));
+  return row.version;
+}
 
 async function setup(reservations: New<Reservation>[] = []) {
   const db = await createTestDb({
@@ -96,8 +104,8 @@ describe("ReservationRepository", () => {
       { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
     // 이미 지난 시각이지만 시각은 그대로 두고 인원만 바꿈
-    expect(await repo.update("a", "r1", input({ time: "13:00", partySize: "3", status: "pending" }), 1, now)).toMatchObject({ partySize: 3, status: "confirmed", version: 2 });
-    expect(await repo.update("a", "r1", input({ time: "12:00" }), 2, now)).toBe("past");
+    expect(await repo.update("a", "r1", input({ time: "13:00", partySize: "3", status: "pending" }), await versionOf(db, "r1"), now)).toMatchObject({ partySize: 3, status: "confirmed" });
+    expect(await repo.update("a", "r1", input({ time: "12:00" }), await versionOf(db, "r1"), now)).toBe("past");
     expect((await db.select().from(reservationTable))[0].memo).toBeNull();
   });
 
@@ -105,18 +113,21 @@ describe("ReservationRepository", () => {
     const { db, repo } = await setup([
       { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T19:00"), status: "pending", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
-    // 두 직원이 같은 버전(1)으로 연 폼에서 인원과 메모를 따로 고쳐 동시에 저장하면, 먼저 저장한 쪽만 남는다.
+    // 두 직원이 같은 버전으로 연 폼에서 인원과 메모를 따로 고쳐 동시에 저장하면, 먼저 저장한 쪽만 남는다.
+    const opened = await versionOf(db, "r1");
     const [a, b] = await Promise.all([
-      repo.update("a", "r1", input({ partySize: "4", status: "pending" }), 1, now),
-      repo.update("a", "r1", input({ memo: "창가 자리", status: "pending" }), 1, now),
+      repo.update("a", "r1", input({ partySize: "4", status: "pending" }), opened, now),
+      repo.update("a", "r1", input({ memo: "창가 자리", status: "pending" }), opened, now),
     ]);
     expect([a, b].filter((r) => r === "changed")).toHaveLength(1);
     // 확정(상태 변경)도 버전을 올리므로, 그 전에 연 폼으로는 저장되지 않는다.
-    expect(await repo.setStatus("a", "r1", "confirmed", now)).toMatchObject({ status: "confirmed", version: 3 });
-    expect(await repo.update("a", "r1", input({ partySize: "6" }), 2, now)).toBe("changed");
+    const beforeConfirm = await versionOf(db, "r1");
+    expect(await repo.setStatus("a", "r1", "confirmed", now)).toMatchObject({ status: "confirmed" });
+    expect(await repo.update("a", "r1", input({ partySize: "6" }), beforeConfirm, now)).toBe("changed");
     // 키오스크 도착은 수정 폼이 고치는 값이 아니어서 버전을 올리지 않는다.
-    expect(await repo.checkIn("a", "r1", "5678", now)).toMatchObject({ version: 3 });
-    expect(await repo.update("a", "r1", input({ partySize: "6" }), 3, now)).toMatchObject({ partySize: 6, version: 4 });
+    const afterConfirm = await versionOf(db, "r1");
+    expect(await repo.checkIn("a", "r1", "5678", now)).toMatchObject({ version: afterConfirm });
+    expect(await repo.update("a", "r1", input({ partySize: "6" }), afterConfirm, now)).toMatchObject({ partySize: 6 });
     expect(await db.select().from(reservationTable)).toMatchObject([{ status: "confirmed", partySize: 6 }]);
   });
 
@@ -148,9 +159,10 @@ describe("ReservationRepository", () => {
       { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T19:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
     // 둘 다 '확정'을 읽은 뒤 입장 처리가 먼저 쓴다. 예전에는 수정이 읽어 둔 '확정'으로 다시 써서 입장이 사라졌다.
+    const opened = await versionOf(db, "r1");
     const [seated, edited] = await Promise.all([
       repo.setStatus("a", "r1", "seated", now),
-      repo.update("a", "r1", input({ partySize: "5" }), 1, now),
+      repo.update("a", "r1", input({ partySize: "5" }), opened, now),
     ]);
     expect(seated).toMatchObject({ status: "seated" });
     expect(edited).toBe("changed");
@@ -162,8 +174,9 @@ describe("ReservationRepository", () => {
       { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
     // 둘 다 13시 예약을 읽은 뒤, 시각 수정(19시)이 먼저 쓴다. 노쇼는 읽어 둔 13시로 판단했으므로 막아야 한다.
+    const opened = await versionOf(db, "r1");
     const [edited, noShow] = await Promise.all([
-      repo.update("a", "r1", input({ time: "19:00" }), 1, now),
+      repo.update("a", "r1", input({ time: "19:00" }), opened, now),
       repo.setStatus("a", "r1", "no_show", now),
     ]);
     expect(edited).toMatchObject({ startsAt: at("2026-11-05T19:00") });

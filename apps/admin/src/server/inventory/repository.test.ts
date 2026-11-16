@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import type { New } from "@/db/mappers";
+import { eq } from "drizzle-orm";
 
 import type { Cafe } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
@@ -13,8 +15,8 @@ import { createInventoryRepository, distributions } from "./repository";
 import { createSeedInventory } from "./seed";
 import type { InventoryItem } from "@/entities/inventory";
 
-const cafe = (id: string): Cafe => ({ id, name: id, region: "", openedAt: "2024-01-01", status: "open", version: 1 });
-const game = (id: string, name: string, categories: BoardGame["categories"]): BoardGame => ({
+const cafe = (id: string): New<Cafe> => ({ id, name: id, region: "", openedAt: "2024-01-01", status: "open" });
+const game = (id: string, name: string, categories: BoardGame["categories"]): New<BoardGame> => ({
   id,
   name,
   categories,
@@ -24,19 +26,17 @@ const game = (id: string, name: string, categories: BoardGame["categories"]): Bo
   playTimeMax: 60,
   difficulty: "normal",
   createdAt: "2026-10-01T00:00:00.000Z",
-  version: 1,
 });
 const item = (
   cafeId: string,
   gameId: string,
-  patch: Partial<InventoryItem> = {},
-): InventoryItem => ({
+  patch: Partial<New<InventoryItem>> = {},
+): New<InventoryItem> => ({
   cafeId,
   gameId,
   quantity: 1,
   status: "available",
   updatedAt: "2026-10-01T00:00:00.000Z",
-  version: 1,
   ...patch,
 });
 
@@ -110,9 +110,23 @@ describe("InventoryRepository", () => {
     expect([a, b].filter((r) => r === "changed")).toHaveLength(1);
     // 상태 메뉴(버전 없이 바로 바꿈)도 버전을 올리므로, 그 전에 연 폼으로는 저장되지 않는다.
     const beforeStatus = (await repo.get("a", "g1"))!.version;
-    expect(await repo.update("a", "g1", { status: "maintenance" })).toMatchObject({ version: beforeStatus + 1 });
+    const status = await repo.update("a", "g1", { status: "maintenance" });
+    expect(typeof status !== "string" && status.version).not.toBe(beforeStatus);
     expect(await repo.update("a", "g1", { quantity: 9, status: "available" }, beforeStatus)).toBe("changed");
-    expect(await repo.get("a", "g1")).toMatchObject({ status: "maintenance", version: beforeStatus + 1 });
+    expect(await repo.get("a", "g1")).toMatchObject({ status: "maintenance" });
+  });
+
+  it("제외했다가 같은 게임을 다시 등록해도, 그 전에 연 수정 폼은 새 재고를 덮어쓰지 않는다", async () => {
+    const { db, repo } = await setup();
+    const opened = (await repo.get("a", "g1"))!.version;
+    // 이용 중인 박스가 없어야 제외할 수 있다.
+    await db.delete(playSessions).where(eq(playSessions.gameId, "g1"));
+    expect(await repo.remove("a", "g1")).toBe(true);
+    const readded = await repo.add("a", "g1", 5);
+    // 버전은 모든 표가 함께 쓰는 시퀀스에서 받아 다시 나오지 않는다(행을 지우고 새로 만들어도 1부터 시작하지 않음).
+    expect(readded?.version).not.toBe(opened);
+    expect(await repo.update("a", "g1", { quantity: 2, status: "available" }, opened)).toBe("changed");
+    expect(await repo.get("a", "g1")).toMatchObject({ quantity: 5 });
   });
 
   it("제외하면 그 매장에서만 빠진다", async () => {
@@ -212,6 +226,7 @@ describe("InventoryRepository", () => {
 describe("distributions", () => {
   const g = (min: number, max: number, timeMin: number) => ({
     ...game("x", "x", ["family"]),
+    version: 1,
     minPlayers: min,
     maxPlayers: max,
     playTimeMin: timeMin,

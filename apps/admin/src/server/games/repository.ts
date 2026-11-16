@@ -116,7 +116,7 @@ export function createGameRepository(db: Database): GameRepository {
           imageUrl: input.imageUrl ?? null,
           // 원본 이미지를 바꾸면 예전 원본으로 만든 썸네일은 더 이상 맞지 않는다.
           thumbnailUrl: (input.imageUrl ?? null) === current.imageUrl ? current.thumbnailUrl : null,
-          version: nextVersion(games.version),
+          version: nextVersion(),
         })
         .where(and(eq(games.id, id), eq(games.version, version)))
         .returning();

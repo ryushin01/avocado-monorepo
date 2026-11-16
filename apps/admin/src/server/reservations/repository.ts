@@ -115,7 +115,7 @@ export function createReservationRepository(db: Database): ReservationRepository
           startsAt: new Date(input.startsAt),
           memo: input.memo ?? null,
           status,
-          version: nextVersion(reservations.version),
+          version: nextVersion(),
         })
         .where(and(byId(cafeId, id), eq(reservations.version, version)))
         .returning();
@@ -134,7 +134,7 @@ export function createReservationRepository(db: Database): ReservationRepository
           status,
           closedAt: OPEN_RESERVATION_STATUSES.includes(status) ? null : now,
           // 상태도 수정 폼이 고치는 값이라, 열려 있던 수정 폼이 이 변경을 덮지 않게 버전을 올린다.
-          version: nextVersion(reservations.version),
+          version: nextVersion(),
         })
         .where(unchanged(current))
         .returning();

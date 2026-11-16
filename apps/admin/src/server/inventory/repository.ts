@@ -190,7 +190,7 @@ export function createInventoryRepository(db: Database): InventoryRepository {
         if (patch.quantity !== undefined && patch.quantity < current.inUse) return "in-use" as const;
         const [row] = await tx
           .update(inventoryItems)
-          .set({ ...patch, updatedAt: new Date(), version: nextVersion(inventoryItems.version) })
+          .set({ ...patch, updatedAt: new Date(), version: nextVersion() })
           .where(key(cafeId, gameId))
           .returning();
         return { ...toInventoryItem(row), game: current.game, inUse: current.inUse };

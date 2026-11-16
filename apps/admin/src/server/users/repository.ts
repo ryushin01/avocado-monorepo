@@ -1,4 +1,4 @@
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, ne, or, sql } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
@@ -69,21 +69,25 @@ export function createUserRepository(db: Database): UserRepository {
     (await q.select({ id: cafes.id }).from(cafes).where(and(eq(cafes.id, cafeId!), eq(cafes.status, "open"))))
       .length > 0;
   /**
-   * 재직 중인 관리자 줄을 id 순서로 잠그고 id를 돌려준다. 직원을 고치는 트랜잭션은 모두 이것부터 해서,
-   * 두 관리자가 동시에 서로를 퇴사·강등해도 둘 다 "다른 관리자가 있다"고 보고 관리자가 0명이 되지 않게 하고,
-   * 잠그는 순서를 같게 해 교착도 막는다.
+   * 고칠 직원과 재직 중인 관리자 줄을 한 번에 id 순서로 잠근다. 직원을 고치는 트랜잭션은 모두 이것부터 해서,
+   * 두 관리자가 동시에 서로를 퇴사·강등해도 둘 다 "다른 관리자가 있다"고 보고 관리자가 0명이 되지 않게 한다.
+   * 대상 직원도 같은 쿼리·같은 순서로 잠가, 그사이 관리자로 바뀐 직원 때문에 잠그는 순서가 엇갈려 교착되지 않게 한다.
    */
-  const lockActiveAdmins = async (q: Database) =>
-    (
-      await q
-        .select({ id: users.id })
-        .from(users)
-        .where(and(eq(users.active, true), eq(users.role, "admin")))
-        .orderBy(users.id)
-        .for("update")
-    ).map((u) => u.id);
+  const lockForChange = async (q: Database, id: string) => {
+    const rows = await q
+      .select()
+      .from(users)
+      .where(or(eq(users.id, id), and(eq(users.active, true), eq(users.role, "admin"))))
+      .orderBy(users.id)
+      .for("update");
+    const target = rows.find((row) => row.id === id);
+    return {
+      target: target ? toUser(target) : null,
+      activeAdmins: rows.filter((row) => row.active && row.role === "admin").map((row) => row.id),
+    };
+  };
 
-  /** 바뀐 뒤의 user가 규칙에 맞는지. activeAdmins: 잠근 재직 중 관리자 id(lockActiveAdmins) */
+  /** 바뀐 뒤의 user가 규칙에 맞는지. activeAdmins: 잠근 재직 중 관리자 id(lockForChange) */
   async function check(
     q: Database,
     before: User | undefined,
@@ -105,11 +109,6 @@ export function createUserRepository(db: Database): UserRepository {
     return null;
   }
 
-  /** 트랜잭션 안에서 직원 한 명을 그 줄을 잠그고 읽는다. */
-  const lockUser = async (q: Database, id: string) => {
-    const [row] = await q.select().from(users).where(eq(users.id, id)).for("update");
-    return row ? toUser(row) : null;
-  };
 
   /**
    * 관리자가 정해 준 비밀번호(등록·재설정)는 임시로 보고, 다음 로그인 때 본인이 바꾸게 한다.
@@ -143,26 +142,26 @@ export function createUserRepository(db: Database): UserRepository {
     },
 
     async create(input, passwordHash) {
-      const user = normalize({ ...input, id: newId("u"), active: true, version: 1 });
+      const user = normalize({ ...input, id: newId("u"), active: true, version: 0 });
       // 새 직원은 관리자를 줄이지 않으므로 관리자 줄을 잠그지 않는다.
       const error = await check(db, undefined, user, []);
       if (error) return error;
-      await db.insert(users).values({ id: user.id, ...save(user, passwordHash) });
-      return { ...user, mustChangePassword: true };
+      // 버전은 DB가 시퀀스에서 정한다.
+      const [row] = await db.insert(users).values({ id: user.id, ...save(user, passwordHash) }).returning();
+      return toUser(row);
     },
 
     async update(id, input, actorId, version, passwordHash) {
       return db.transaction(async (tx) => {
-        const admins = await lockActiveAdmins(tx);
-        const before = await lockUser(tx, id);
+        const { target: before, activeAdmins } = await lockForChange(tx, id);
         if (!before) return "not-found" as const;
         if (before.version !== version) return "changed" as const;
         const after = normalize({ ...before, cafeId: undefined, ...input, id });
-        const error = await check(tx, before, after, admins, actorId);
+        const error = await check(tx, before, after, activeAdmins, actorId);
         if (error) return error;
         const [row] = await tx
           .update(users)
-          .set({ ...save(after, passwordHash, id !== actorId), version: nextVersion(users.version) })
+          .set({ ...save(after, passwordHash, id !== actorId), version: nextVersion() })
           .where(eq(users.id, id))
           .returning();
         return toUser(row);
@@ -171,15 +170,14 @@ export function createUserRepository(db: Database): UserRepository {
 
     async setActive(id, active, actorId) {
       return db.transaction(async (tx) => {
-        const admins = await lockActiveAdmins(tx);
-        const before = await lockUser(tx, id);
+        const { target: before, activeAdmins } = await lockForChange(tx, id);
         if (!before) return "not-found" as const;
-        const error = await check(tx, before, { ...before, active }, admins, actorId);
+        const error = await check(tx, before, { ...before, active }, activeAdmins, actorId);
         if (error) return error;
         // 재직 여부도 수정 폼이 함께 저장하는 값이라, 열려 있던 수정 폼이 이 변경을 덮지 않게 버전을 올린다.
         const [row] = await tx
           .update(users)
-          .set({ active, version: nextVersion(users.version) })
+          .set({ active, version: nextVersion() })
           .where(eq(users.id, id))
           .returning();
         return toUser(row);

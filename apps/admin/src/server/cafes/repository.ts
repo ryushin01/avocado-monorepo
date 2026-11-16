@@ -111,7 +111,7 @@ export function createCafeRepository(db: Database): CafeRepository {
           ...input,
           address: input.address ?? null,
           phone: input.phone ?? null,
-          version: nextVersion(cafes.version),
+          version: nextVersion(),
         })
         .where(and(eq(cafes.id, id), eq(cafes.version, version)))
         .returning();
@@ -129,7 +129,7 @@ export function createCafeRepository(db: Database): CafeRepository {
       }
       const [row] = await db
         .update(cafes)
-        .set({ status, closedAt: status === "closed" ? new Date() : null, version: nextVersion(cafes.version) })
+        .set({ status, closedAt: status === "closed" ? new Date() : null, version: nextVersion() })
         .where(eq(cafes.id, id))
         .returning();
       return toCafe(row);

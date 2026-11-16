@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+// 요청 밖(테스트)에서는 connection()이 기다릴 요청이 없으므로 바로 넘어가게 한다.
+vi.mock("next/server", () => ({ connection: async () => {} }));
 vi.hoisted(() => {
   process.env.KIOSK_API_TOKEN = "kio_secret_token";
   process.env.LAUNCHER_CAFE_ID = "c_test";
@@ -134,16 +136,19 @@ describe("운영 설정", () => {
     ]);
   });
 
-  it("빌드 중에는 설정이 없어도 기록하지 않는다", async () => {
+  it("요청 시점(connection) 뒤에 설정을 확인한다: 빌드 중 결과가 정적 화면에 굳지 않게", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("NEXT_PHASE", "phase-production-build");
     vi.stubEnv("BACKOFFICE_URL", "");
     vi.stubEnv("LAUNCHER_CAFE_ID", "");
     vi.stubEnv("KIOSK_API_TOKEN", "");
+    const order: string[] = [];
+    vi.doMock("next/server", () => ({ connection: async () => void order.push("connection") }));
     vi.resetModules();
-    const { fetchCafeGames: fetchWhileBuilding } = await import("./backoffice");
+    const { fetchCafeGames: fetchInProduction } = await import("./backoffice");
+    vi.mocked(console.error).mockImplementation(() => void order.push("log"));
 
-    expect(await fetchWhileBuilding()).toEqual({ ok: false, reason: "unreachable" });
-    expect(logs()).toEqual([]);
+    await fetchInProduction();
+    expect(order).toEqual(["connection", "log"]);
+    vi.doUnmock("next/server");
   });
 });

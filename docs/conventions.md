@@ -158,6 +158,7 @@ CodeRabbit이 PR을 한국어로 리뷰합니다. 설정은 `.coderabbit.yaml`�
 | 처음 내려받은 저장소에서 `Failed query: CREATE SCHEMA` (ENOENT, mkdir) | PGlite가 상위 폴더(`.data`)를 만들어 주지 않음. 이미 폴더가 있는 컴퓨터와 메모리 DB를 쓰는 E2E·CI에서는 드러나지 않음 | `openPglite`에서 폴더를 먼저 만듦 (`src/db/index.test.ts`) |
 | 서버 로그에 손님 전화번호가 찍힘 | Drizzle 오류 메시지에 쿼리 값(`params:`)이 들어 있고 Next.js가 이를 그대로 출력함 | 백오피스 `instrumentation.ts`의 `register`에서 `redactConsoleErrors()`로 가림. `server/log-redaction.test.ts`가 실제 DB 오류로 확인하므로 Drizzle을 올려 형식이 바뀌면 이 테스트가 실패함 |
 | 런처 빌드·첫 요청 때 `backoffice_unreachable`이 찍힐 것 같음 | 프리렌더링이 끝나면 Next.js가 진행 중인 `fetch`를 끊음 | 메시지가 `During prerendering`이면 장애가 아니므로 로그를 남기지 않음 |
+| 운영 키오스크가 로그 없이 늘 "연결할 수 없습니다" | 요청 시점 데이터를 읽기 전에 바로 돌아오는 분기(설정 확인 등)가 빌드 중에 실행되면, 그 결과가 정적 화면(`index.html`)에 굳음 | 그런 함수는 맨 앞에서 `await connection()`을 부른다(`launcher/src/shared/api/backoffice.ts`). 확인: 빌드 뒤 `grep -l "연결할 수 없습니다" apps/launcher/.next/server/app/*.html`이 비어 있어야 함 |
 | 브라우저 번들에 zod가 들어가 커짐 | 클라이언트 컴포넌트가 가져오는 공개 API에 zod 스키마가 있으면 최상위 실행 코드라 트리 셰이킹되지 않음 | 스키마는 `@/entities/<이름>/schema`로 나누고, `index.ts`에는 타입만 `export type`으로 둠 |
 | `src/pages`를 만들었더니 라우트가 이상해짐 | Next.js가 `src/pages`를 Pages Router로 읽음 | FSD의 pages 레이어는 `src/views`를 씀 |
 | 느린 기기에서 페이지 번호 등을 눌러도 반응이 없고 React 오류 #418이 남 | `useWindowVirtualizer`는 첫 렌더링에서 `window.scrollY`를 읽어, 하이드레이션 전에 스크롤하면 서버와 다른 항목을 그림. 항목 수가 달라지면 `useId` 값도 달라짐. `md:hidden` 목록도 데스크톱에서 하이드레이션되므로 함께 해당됨 | `initialOffset: 0`으로 첫 렌더링을 맞추되, 라이브러리가 마운트할 때 창을 그 위치로 옮기므로 `scrollToFn`에서 그 한 번을 막음 (`shared/ui/infinite-list.tsx`) |

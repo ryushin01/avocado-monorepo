@@ -35,7 +35,7 @@ test.describe("재고 관리 (관리자)", () => {
 
     // 페이지를 넘겨도 매장이 유지된다.
     const pager = page.getByRole("navigation", { name: "페이지 이동" });
-    await pager.getByRole("link", { name: "2페이지" }).click();
+    await pager.getByRole("link", { name: "2 페이지" }).click();
     await expect(page).toHaveURL(/cafe=c_hongdae&page=2/);
   });
 

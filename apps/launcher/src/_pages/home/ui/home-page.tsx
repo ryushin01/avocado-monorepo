@@ -29,6 +29,11 @@ export default function HomePage() {
         <MenuCard href="/reservation" icon={CalendarCheck} title="예약 확인" description="전화번호 뒷자리로 오늘 예약을 확인하고 도착을 알립니다." />
         <MenuCard href="/waitlist" icon={ListOrdered} title="대기 등록" description="자리가 나면 순서대로 안내해드립니다. 내 순서도 확인할 수 있습니다." />
       </nav>
+
+      {/* 앱 아이콘(Flaticon 아이콘)의 출처 표기. 손님이 키오스크 밖으로 나가지 않게 링크는 걸지 않는다. */}
+      <p className="text-center text-sm text-muted-foreground">
+        로고 아이콘: <span lang="en">Avocado icons created by amonrat rungreangfangsai - Flaticon</span>
+      </p>
     </main>
   );
 }

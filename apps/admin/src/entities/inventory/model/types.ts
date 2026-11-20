@@ -18,6 +18,8 @@ export type InventoryItem = {
   quantity: number;
   status: InventoryStatus;
   updatedAt: string;
+  /** 편집 폼의 낙관적 잠금용 행 버전. 바꿀 때마다 새 값을 받는다(db/schema.ts의 version). */
+  version: number;
 };
 
 export type InventoryEntry = InventoryItem & {

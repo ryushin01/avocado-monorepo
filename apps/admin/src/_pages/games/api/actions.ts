@@ -7,19 +7,29 @@ import { recordAudit } from "@/server/audit/data";
 import { getCurrentUser } from "@/server/auth/current-user";
 import type { AuditAction } from "@/entities/audit";
 import { canManageCatalog } from "@/entities/user";
-import { formDataToObject, formError, type FormState } from "@/shared/lib/form";
+import {
+  editConflictMessage,
+  formDataToObject,
+  formError,
+  parseVersion,
+  STALE_FORM_MESSAGE,
+  type FormState,
+} from "@/shared/lib/form";
 import { createGame, listCatalog, updateGame } from "@/server/games/data";
 import { gameInputSchema, gameListFilterSchema } from "@/entities/game/index.server";
-import type { CatalogEntry, GameListFilter } from "@/entities/game";
+import type { BoardGame, CatalogEntry, GameListFilter } from "@/entities/game";
+import type { GameSaveError } from "@/server/games/repository";
 import type { ListResult } from "@/shared/lib/list";
 
 const FORBIDDEN = "게임 정보는 관리자만 등록·수정할 수 있습니다.";
 const NOT_FOUND = "게임을 찾을 수 없습니다. 목록을 새로고침해주세요.";
 
+type Values = Record<string, string | string[]>;
+
 async function submitGameForm(
   formData: FormData,
   action: AuditAction,
-  save: (input: z.infer<typeof gameInputSchema>) => Promise<{ name: string } | null>,
+  save: (input: z.infer<typeof gameInputSchema>, values: Values) => Promise<BoardGame | GameSaveError | "stale">,
   done: (name: string) => string,
 ): Promise<FormState> {
   const values = formDataToObject(formData);
@@ -29,8 +39,13 @@ async function submitGameForm(
   const parsed = gameInputSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
 
-  const game = await save(parsed.data);
-  if (!game) return formError(values, NOT_FOUND);
+  const game = await save(parsed.data, values);
+  if (game === "stale") return formError(values, STALE_FORM_MESSAGE);
+  if (game === "not-found") return formError(values, NOT_FOUND);
+  if (game === "changed") {
+    revalidatePath("/games");
+    return formError(values, editConflictMessage("이 게임을"));
+  }
 
   await recordAudit(actor, { action, targetName: game.name });
   revalidatePath("/games");
@@ -53,7 +68,11 @@ export async function updateGameAction(
   return submitGameForm(
     formData,
     "game.update",
-    (input) => updateGame(id, input),
+    // 폼을 연 시점의 버전과 같을 때만 저장한다(낙관적 잠금).
+    async (input, values) => {
+      const version = parseVersion(values);
+      return version === null ? "stale" : updateGame(id, input, version);
+    },
     (name) => `'${name}'을(를) 수정했습니다.`,
   );
 }

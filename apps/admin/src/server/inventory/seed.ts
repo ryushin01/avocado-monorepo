@@ -1,3 +1,4 @@
+import type { New } from "@/db/mappers";
 import type { Cafe } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
 import { hash01 } from "@/shared/lib/hash";
@@ -9,13 +10,13 @@ import type { InventoryItem, InventoryStatus } from "@/entities/inventory";
  * 수량·상태는 원본 데이터에 없으므로 매장·게임 조합으로 고정 생성한다.
  */
 export function createSeedInventory(
-  cafes: Cafe[],
-  games: BoardGame[],
-): InventoryItem[] {
+  cafes: New<Cafe>[],
+  games: New<BoardGame>[],
+): New<InventoryItem>[] {
   const base = Date.UTC(2026, 9, 1);
   return cafes.flatMap((cafe, cafeIndex) => {
     const ratio = 0.55 + (cafeIndex % 3) * 0.1;
-    return games.flatMap((game): InventoryItem[] => {
+    return games.flatMap((game): New<InventoryItem>[] => {
       const key = `${cafe.id}:${game.id}`;
       if (hash01(key) >= ratio) return [];
       const roll = hash01(`${key}:status`);

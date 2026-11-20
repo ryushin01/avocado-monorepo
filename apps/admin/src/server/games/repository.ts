@@ -1,10 +1,11 @@
 import { compareCatalog } from "@/entities/game";
-import { count, eq, ilike, or, sum } from "drizzle-orm";
+import { and, count, eq, ilike, or, sum } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
 import { toGame } from "@/db/mappers";
 import { cafes, games, inventoryItems } from "@/db/schema";
+import { nextVersion } from "@/db/version";
 import { slice, type ListRange, type ListResult } from "@/shared/lib/list";
 
 import type {
@@ -21,9 +22,14 @@ export interface GameRepository {
   list(filter?: GameListFilter, range?: ListRange): Promise<ListResult<CatalogEntry>>;
   get(id: string): Promise<BoardGame | null>;
   create(input: GameInput): Promise<BoardGame>;
-  /** 없는 id면 null */
-  update(id: string, input: GameInput): Promise<BoardGame | null>;
+  /**
+   * version: 수정 폼을 연 시점의 버전. 없는 게임이면 "not-found",
+   * 그사이 다른 관리자가 고쳤으면 덮어쓰지 않고 "changed".
+   */
+  update(id: string, input: GameInput, version: number): Promise<BoardGame | GameSaveError>;
 }
+
+export type GameSaveError = "not-found" | "changed";
 
 /** 이름(한글·영문 부분 일치)과 카테고리로 거르는 공통 조건 */
 export function matchesGame(game: BoardGame, filter: GameListFilter = {}) {
@@ -97,9 +103,10 @@ export function createGameRepository(db: Database): GameRepository {
       return toGame(row);
     },
 
-    async update(id, input) {
+    async update(id, input, version) {
       const [current] = await db.select().from(games).where(eq(games.id, id));
-      if (!current) return null;
+      if (!current) return "not-found";
+      if (current.version !== version) return "changed";
       const [row] = await db
         .update(games)
         .set({
@@ -109,10 +116,11 @@ export function createGameRepository(db: Database): GameRepository {
           imageUrl: input.imageUrl ?? null,
           // 원본 이미지를 바꾸면 예전 원본으로 만든 썸네일은 더 이상 맞지 않는다.
           thumbnailUrl: (input.imageUrl ?? null) === current.imageUrl ? current.thumbnailUrl : null,
+          version: nextVersion(),
         })
-        .where(eq(games.id, id))
+        .where(and(eq(games.id, id), eq(games.version, version)))
         .returning();
-      return toGame(row);
+      return row ? toGame(row) : "changed";
     },
   };
 }

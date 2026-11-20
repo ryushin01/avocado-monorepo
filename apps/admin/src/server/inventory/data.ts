@@ -36,8 +36,9 @@ export async function updateInventory(
   cafeId: string,
   gameId: string,
   patch: InventoryUpdate,
+  version?: number,
 ) {
-  return (await repository()).update(cafeId, gameId, patch);
+  return (await repository()).update(cafeId, gameId, patch, version);
 }
 
 export async function removeInventory(cafeId: string, gameId: string) {

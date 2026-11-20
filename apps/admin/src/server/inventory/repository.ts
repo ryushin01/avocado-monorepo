@@ -3,6 +3,7 @@ import { and, count, eq, inArray, isNull, notInArray } from "drizzle-orm";
 import type { Database } from "@/db/index";
 import { toCafe, toGame, toInventoryItem } from "@/db/mappers";
 import { cafes, games, inventoryItems, playSessions } from "@/db/schema";
+import { nextVersion } from "@/db/version";
 import type { Cafe } from "@/entities/cafe";
 import { byGameName, matchesGame } from "@/server/games/repository";
 import { GAME_CATEGORIES, type BoardGame } from "@/entities/game";
@@ -54,10 +55,11 @@ export type InventoryUpdate = { quantity?: number; status?: InventoryStatus };
 /**
  * - not-found: 그 매장에 없는 게임
  * - in-use: 이용 중인 박스가 있어 제외할 수 없거나, 이용 중인 수보다 적게 줄이려 함
+ * - changed: 수정 폼을 연 뒤 다른 직원이 먼저 수량·상태를 바꿈 (버전이 다름)
  *
  * 상태(점검 중·폐기)는 이용 중이어도 바꿀 수 있다. 새로 빌려주지 않을 뿐, 지금 쓰는 박스는 반납받는다.
  */
-export type InventoryChangeError = "not-found" | "in-use";
+export type InventoryChangeError = "not-found" | "in-use" | "changed";
 
 /** 백엔드를 바꾸면 이 인터페이스의 구현만 교체한다. */
 export interface InventoryRepository {
@@ -67,7 +69,13 @@ export interface InventoryRepository {
   /** 이미 있거나 매장·게임이 없으면 null */
   add(cafeId: string, gameId: string, quantity: number): Promise<InventoryEntry | null>;
   get(cafeId: string, gameId: string): Promise<InventoryEntry | null>;
-  update(cafeId: string, gameId: string, patch: InventoryUpdate): Promise<InventoryEntry | InventoryChangeError>;
+  /** version을 주면(수정 폼) 그 버전일 때만 바꾼다. 상태 메뉴처럼 한 값만 바로 바꿀 때는 주지 않는다. */
+  update(
+    cafeId: string,
+    gameId: string,
+    patch: InventoryUpdate,
+    version?: number,
+  ): Promise<InventoryEntry | InventoryChangeError>;
   remove(cafeId: string, gameId: string): Promise<true | InventoryChangeError>;
   /** cafeIds 매장들의 요약. 대시보드에서 쓴다. */
   summarize(cafeIds: string[], maintenanceLimit?: number): Promise<InventorySummary>;
@@ -173,14 +181,16 @@ export function createInventoryRepository(db: Database): InventoryRepository {
       return entryOf(db, cafeId, gameId);
     },
 
-    async update(cafeId, gameId, patch) {
+    async update(cafeId, gameId, patch, version) {
       return db.transaction(async (tx) => {
         const current = await entryOf(tx, cafeId, gameId, { lock: true });
         if (!current) return "not-found" as const;
+        // 줄을 잠근 뒤 비교하므로 확인과 쓰기 사이에 다른 변경이 끼지 않는다.
+        if (version !== undefined && current.version !== version) return "changed" as const;
         if (patch.quantity !== undefined && patch.quantity < current.inUse) return "in-use" as const;
         const [row] = await tx
           .update(inventoryItems)
-          .set({ ...patch, updatedAt: new Date() })
+          .set({ ...patch, updatedAt: new Date(), version: nextVersion() })
           .where(key(cafeId, gameId))
           .returning();
         return { ...toInventoryItem(row), game: current.game, inUse: current.inUse };

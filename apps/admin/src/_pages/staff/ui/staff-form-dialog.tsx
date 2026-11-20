@@ -72,26 +72,64 @@ export function StaffFormDialog({
   onOpenChange: (open: boolean) => void;
   trigger?: ReactElement;
 }) {
-  const form = useDialogForm(action, {
-    defaults: toFormValues(user),
-    onSuccess: () => onOpenChange(false),
-  });
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger render={trigger} />}
       <DialogContent className="sm:max-w-md">
-        <form key={form.formKey} action={form.formAction} noValidate>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
-          {/* form이 다시 마운트될 때(제출 후) 역할 선택도 입력값으로 되돌린다. */}
-          <StaffFields form={form} cafes={cafes} lockRole={lockRole} isNew={!user} />
-          <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
-        </form>
+        {/* 창을 열 때마다 새로 마운트되어 그때의 값·버전으로 시작한다. */}
+        <StaffForm
+          title={title}
+          description={description}
+          submitLabel={submitLabel}
+          user={user}
+          cafes={cafes}
+          lockRole={lockRole}
+          action={action}
+          onSaved={() => onOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
+  );
+}
+
+function StaffForm({
+  title,
+  description,
+  submitLabel,
+  user: latest,
+  cafes,
+  lockRole,
+  action,
+  onSaved,
+}: {
+  title: string;
+  description: string;
+  submitLabel: string;
+  user?: User;
+  cafes: CafeOption[];
+  lockRole: boolean;
+  action: (prev: FormState, formData: FormData) => Promise<FormState>;
+  onSaved: () => void;
+}) {
+  // 창을 연 시점의 값. 열려 있는 동안 화면이 다시 받아져도 이 값과 버전을 쓰고,
+  // 그사이 다른 직원이 고쳤다면 저장할 때 서버가 버전으로 알아채 덮어쓰지 않는다.
+  const [user] = useState(latest);
+  const form = useDialogForm(action, {
+    defaults: toFormValues(user),
+    onSuccess: onSaved,
+  });
+
+  return (
+    <form key={form.formKey} action={form.formAction} noValidate>
+      {user && <input type="hidden" name="version" value={user.version} />}
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
+      {/* form이 다시 마운트될 때(제출 후) 역할 선택도 입력값으로 되돌린다. */}
+      <StaffFields form={form} cafes={cafes} lockRole={lockRole} isNew={!user} />
+      <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
+    </form>
   );
 }
 

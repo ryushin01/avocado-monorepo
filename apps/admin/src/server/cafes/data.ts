@@ -24,8 +24,8 @@ export async function createCafe(input: CafeInput) {
   return (await repository()).create(input);
 }
 
-export async function updateCafe(id: string, input: CafeInput) {
-  return (await repository()).update(id, input);
+export async function updateCafe(id: string, input: CafeInput, version: number) {
+  return (await repository()).update(id, input, version);
 }
 
 export async function setCafeStatus(id: string, status: CafeStatus) {

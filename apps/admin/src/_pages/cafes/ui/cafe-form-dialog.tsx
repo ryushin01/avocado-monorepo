@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
@@ -49,9 +49,45 @@ export function CafeFormDialog({
   onOpenChange: (open: boolean) => void;
   trigger?: ReactElement;
 }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger render={trigger} />}
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
+        {/* 창을 열 때마다 새로 마운트되어 그때의 값·버전으로 시작한다. */}
+        <CafeForm
+          title={title}
+          description={description}
+          submitLabel={submitLabel}
+          cafe={cafe}
+          action={action}
+          onSaved={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CafeForm({
+  title,
+  description,
+  submitLabel,
+  cafe: latest,
+  action,
+  onSaved,
+}: {
+  title: string;
+  description: string;
+  submitLabel: string;
+  cafe?: Cafe;
+  action: (prev: FormState, formData: FormData) => Promise<FormState>;
+  onSaved: () => void;
+}) {
+  // 창을 연 시점의 값. 열려 있는 동안 화면이 다시 받아져도 이 값과 버전을 쓰고,
+  // 그사이 다른 직원이 고쳤다면 저장할 때 서버가 버전으로 알아채 덮어쓰지 않는다.
+  const [cafe] = useState(latest);
   const form = useDialogForm(action, {
     defaults: toFormValues(cafe),
-    onSuccess: () => onOpenChange(false),
+    onSuccess: onSaved,
   });
 
   const textField = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
@@ -59,33 +95,29 @@ export function CafeFormDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger && <DialogTrigger render={trigger} />}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
-        <form key={form.formKey} action={form.formAction} noValidate>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
+    <form key={form.formKey} action={form.formAction} noValidate>
+      {cafe && <input type="hidden" name="version" value={cafe.version} />}
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
 
-          <FieldGroup className="py-4">
-            <FormErrorAlert message={form.formError} />
-            {textField("name", "매장 이름", { placeholder: "예: 강남점" })}
-            <div className="grid grid-cols-2 gap-4">
-              {textField("region", "지역", { placeholder: "예: 서울" })}
-              {textField("openedAt", "개점일", { type: "date" })}
-            </div>
-            {textField("address", "주소 (선택)")}
-            {textField("phone", "전화번호 (선택)", {
-              type: "tel",
-              inputMode: "tel",
-              placeholder: "02-1234-5678",
-            })}
-          </FieldGroup>
+      <FieldGroup className="py-4">
+        <FormErrorAlert message={form.formError} />
+        {textField("name", "매장 이름", { placeholder: "예: 강남점" })}
+        <div className="grid grid-cols-2 gap-4">
+          {textField("region", "지역", { placeholder: "예: 서울" })}
+          {textField("openedAt", "개점일", { type: "date" })}
+        </div>
+        {textField("address", "주소 (선택)")}
+        {textField("phone", "전화번호 (선택)", {
+          type: "tel",
+          inputMode: "tel",
+          placeholder: "02-1234-5678",
+        })}
+      </FieldGroup>
 
-          <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
-        </form>
-      </DialogContent>
-    </Dialog>
+      <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
+    </form>
   );
 }

@@ -2,9 +2,13 @@
 
 [![CI](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml)
 
-**[홍보 사이트 데모 보기](https://avocado-web-ryushin01.vercel.app/)** · 백오피스와 키오스크는 서버와 DB가 필요해 [로컬에서 실행](#시작하기)합니다.
+**데모:** [홍보 사이트](https://avocado-web-ryushin01.vercel.app/) · [백오피스](https://avocado-admin-ryushin01.vercel.app/) · [매장 키오스크](https://avocado-kiosk-ryushin01.vercel.app/) — 백오피스는 로그인 화면의 "본사 관리자로 둘러보기" 버튼으로 바로 들어갑니다(직접 입력: `admin@example.com` / `avocado1234`).
 
-> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 데모는 홍보 사이트만 공개합니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
+> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
+
+> **백오피스·키오스크 데모:** 키오스크(강남점)에서 현장 대기를 등록하고 백오피스 예약·대기 화면을 다른 탭에 열어 두면, 새로고침 없이 나타납니다(15초마다 갱신). 직원이 호출하면 키오스크의 "내 순서 확인"에 바로 보입니다.
+>
+> 데모는 PostgreSQL 대신 서버 메모리의 PGlite에 개발용 시드를 넣어 돌립니다(`NEXT_PUBLIC_DEMO_MODE=1`). 그래서 바꾼 내용은 30분마다, 또 서버가 한동안 쉬었다 다시 켜질 때 처음 상태로 돌아가고, 비밀번호는 바꿀 수 없습니다. 방문자가 한꺼번에 몰려 Vercel이 서버를 여러 대로 늘리면 잠시 화면마다 데이터가 달라 보일 수 있습니다.
 
 본사와 매장 직원이 쓰는 백오피스, 매장 손님이 쓰는 태블릿 키오스크, 일반 방문자가 보는 홍보 사이트를 한 저장소에서 관리합니다. 재고, 대여·반납, 예약, 현장 대기가 백오피스와 키오스크 사이에서 이어집니다.
 

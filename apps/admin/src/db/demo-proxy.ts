@@ -35,24 +35,22 @@ const toJson = (value: unknown) => JSON.stringify(value, (_key, v: unknown) => (
 /** baseUrl(배포 주소)의 /api/demo/db로 SQL을 보내는 Drizzle. 쿼리 코드는 PGlite·PostgreSQL과 똑같이 쓴다. */
 export function openDemoProxyDb(baseUrl: string): Database {
   const url = new URL(DEMO_DB_PATH, baseUrl).toString();
-  const connect = (session?: string) =>
-    drizzle(
-      async (sql, params, method) => {
-        const query = () => send(url, { sql, params, method, session });
-        // 트랜잭션 안의 쿼리는 이미 차례로 가고, 줄을 세우면 그 트랜잭션을 기다리는 쿼리 뒤에 막히므로 바로 보낸다.
-        return { rows: await (session ? query() : inLine(query)) };
-      },
-      { schema },
-    );
-  const db = connect();
+  const connect = (inLine: Line, session?: string) =>
+    drizzle(async (sql, params, method) => ({ rows: await inLine(() => send(url, { sql, params, method, session })) }), {
+      schema,
+    });
+  const db = connect(sharedLine);
   // pg-proxy 드라이버는 트랜잭션을 지원하지 않아 직접 만든다. begin부터 commit·rollback까지 같은 세션 번호를 붙여,
   // 받는 쪽이 그사이 다른 쿼리를 끼우지 않게 한다(중첩 트랜잭션·tx.rollback()은 쓰지 않는다).
+  // 트랜잭션 안의 쿼리는 공용 줄이 아닌 트랜잭션마다의 줄에 세운다. 공용 줄에 세우면 이 트랜잭션을 기다리는 쿼리 뒤에 막힌다.
+  // 같은 트랜잭션에서 Promise.all로 동시에 보낸 쿼리도 이 줄에서 하나씩, 부른 순서대로 가고, commit·rollback은 그 뒤에 간다.
   db.transaction = (async (run) => {
     const session = randomUUID();
-    const control = (sql: string) => send(url, { sql, params: [], method: "execute", session });
+    const txLine = createLine();
+    const control = (sql: string) => txLine(() => send(url, { sql, params: [], method: "execute", session }));
     await control("begin");
     try {
-      const result = await run(connect(session) as never);
+      const result = await run(connect(txLine, session) as never);
       await control("commit");
       return result;
     } catch (error) {
@@ -63,16 +61,22 @@ export function openDemoProxyDb(baseUrl: string): Database {
   return db as unknown as Database;
 }
 
-/**
- * 이 인스턴스가 보내는 쿼리를 한 번에 하나씩 보낸다. 화면 하나가 쿼리 수십 개를 한꺼번에 보내면 Vercel이
- * 받는 쪽 함수를 여러 대로 늘리고, 대마다 메모리 DB가 따로 생겨 데이터가 갈라진다.
- */
-let line: Promise<unknown> = Promise.resolve();
-function inLine<T>(task: () => Promise<T>): Promise<T> {
-  const result = line.then(task, task);
-  line = result.catch(() => {});
-  return result;
+/** 넣은 순서대로 하나씩 실행하는 줄. 앞의 작업이 실패해도 다음 작업은 실행한다. */
+type Line = <T>(task: () => Promise<T>) => Promise<T>;
+function createLine(): Line {
+  let tail: Promise<unknown> = Promise.resolve();
+  return (task) => {
+    const result = tail.then(task, task);
+    tail = result.catch(() => {});
+    return result;
+  };
 }
+
+/**
+ * 이 인스턴스가 트랜잭션 밖에서 보내는 쿼리를 한 번에 하나씩 보낸다. 화면 하나가 쿼리 수십 개를 한꺼번에 보내면
+ * Vercel이 받는 쪽 함수를 여러 대로 늘리고, 대마다 메모리 DB가 따로 생겨 데이터가 갈라진다.
+ */
+const sharedLine = createLine();
 
 async function send(url: string, query: ProxyQuery): Promise<unknown[]> {
   const key = proxyKey();

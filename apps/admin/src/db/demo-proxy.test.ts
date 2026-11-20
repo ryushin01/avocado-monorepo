@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { getTableName, isTable } from "drizzle-orm";
+import { eq, getTableName, isTable } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 
 import { createWaitlistRepository } from "@/server/waitlist/repository";
@@ -59,6 +59,44 @@ describe("공개 데모 DB 중계", () => {
     ).rejects.toThrow("취소");
     expect(await outside[0]).toEqual(before.map((c) => ({ name: c.name })));
     expect(await owner.select().from(schema.cafes)).toEqual(before);
+  });
+
+  it("한 트랜잭션에서 Promise.all로 동시에 보낸 쿼리를 모두 처리하고, 결과로 이어서 쓴다", async () => {
+    // 테이블 고르기처럼: 트랜잭션 안에서 두 쿼리를 동시에 읽고, 그 결과로 쓴다.
+    const sent: string[] = [];
+    const realFetch = globalThis.fetch;
+    vi.stubGlobal("fetch", (url: string, init: RequestInit) => {
+      sent.push((JSON.parse(String(init.body)) as { sql: string }).sql.split(" ")[0]);
+      return realFetch(url, init);
+    });
+    const name = await remote.transaction(async (tx) => {
+      const [cafeRows, gameRows] = await Promise.all([
+        tx.select().from(schema.cafes).where(eq(schema.cafes.id, "c_gangnam")).for("update"),
+        tx.select({ id: schema.games.id }).from(schema.games),
+      ]);
+      await tx.update(schema.cafes).set({ name: `${cafeRows[0].name} ${gameRows.length}` }).where(eq(schema.cafes.id, "c_gangnam"));
+      return `${cafeRows[0].name} ${gameRows.length}`;
+    });
+    const [cafe] = await owner.select().from(schema.cafes).where(eq(schema.cafes.id, "c_gangnam"));
+    expect(cafe.name).toBe(name);
+    // begin → 두 select(부른 순서대로) → update → commit
+    expect(sent).toEqual(["begin", "select", "select", "update", "commit"]);
+  });
+
+  it("한 트랜잭션에서 동시에 보낸 쿼리 하나가 실패하면 함께 보낸 쓰기까지 모두 되돌린다", async () => {
+    const before = await owner.select().from(schema.cafes);
+    const [cafe] = before;
+    await expect(
+      remote.transaction(async (tx) => {
+        await Promise.all([
+          tx.update(schema.cafes).set({ name: "바뀐 매장" }),
+          tx.insert(schema.cafes).values(cafe), // 같은 id라 실패
+        ]);
+      }),
+    ).rejects.toThrow();
+    expect(await owner.select().from(schema.cafes)).toEqual(before);
+    // 되돌린 뒤에도 다음 요청은 정상
+    expect(await remote.select().from(schema.cafes)).toEqual(before);
   });
 
   it("PostgreSQL 오류의 code를 그대로 넘긴다", async () => {

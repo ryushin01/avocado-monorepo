@@ -12,6 +12,7 @@ import { SidebarInset, SidebarProvider } from "@avocado/ui/components/sidebar";
 import { TooltipProvider } from "@avocado/ui/components/tooltip";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { listCafes } from "@/server/cafes/data";
+import { DemoNotice } from "@/shared/ui/demo-notice";
 
 export function BackofficeLayout({ children }: LayoutProps<"/">) {
   return (
@@ -32,6 +33,7 @@ export function BackofficeLayout({ children }: LayoutProps<"/">) {
         />
         <SidebarInset>
           <PageHeader />
+          <DemoNotice />
           {/* 본문 바로가기는 반복되는 머리글 뒤로 이동한다. */}
           <div id="main" tabIndex={-1} className="flex flex-1 flex-col gap-4 p-4 md:p-6">
             {children}

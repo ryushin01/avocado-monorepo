@@ -1,5 +1,6 @@
 import "server-only";
 
+import { logError } from "@avocado/logger";
 import { hash } from "bcryptjs";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
@@ -7,6 +8,7 @@ import { DEV_PASSWORD } from "@/server/auth/mock-users";
 import { DEMO_RESET_MINUTES, isDemoMode } from "@/shared/config";
 
 import { openDemoProxyDb } from "./demo-proxy";
+import { createDemoResetter, type DbTarget, type DemoResetter, openSharedDemoDb, selectDbTarget } from "./demo-shared";
 import { type Database, openPglite, openPostgres } from "./index";
 import { insertSeedData, isEmpty } from "./seed";
 import { createSeedData } from "./seed-data";
@@ -15,20 +17,59 @@ import { createSeedData } from "./seed-data";
  * 서버 전체가 함께 쓰는 DB 연결.
  * - DATABASE_URL이 있으면 PostgreSQL, 없으면 PGlite(PGLITE_DATA_DIR, 기본 .data/pglite).
  * - 처음 열 때 마이그레이션을 적용하고, 비어 있으면 개발용 시드를 넣는다(운영에서는 SEED_DEMO=1일 때만).
- * - 공개 데모(NEXT_PUBLIC_DEMO_MODE=1)는 메모리 PGlite 하나를 /api/demo/db로 함께 쓴다(getDemoOwnerDb, demo-proxy.ts).
+ * - 공개 데모(NEXT_PUBLIC_DEMO_MODE=1)는 DATABASE_URL이 있으면 그 PostgreSQL을 모든 함수가 함께 쓰고(getSharedDemoDb, demo-shared.ts),
+ *   없으면 메모리 PGlite 하나를 /api/demo/db로 함께 쓴다(getDemoOwnerDb, demo-proxy.ts).
  * 개발 서버 HMR로 모듈이 다시 로드돼도 연결을 유지하도록 globalThis에 보관한다.
  */
-const globalForDb = globalThis as { dbPromise?: Promise<Database>; dbOpenedAt?: number; demoProxyDb?: Database };
+const globalForDb = globalThis as {
+  dbPromise?: Promise<Database>;
+  dbOpenedAt?: number;
+  demoProxyDb?: Database;
+  sharedDemoDb?: Promise<Database>;
+  resetSharedDemoDb?: DemoResetter;
+};
 
-export function getDb(): Promise<Database> {
-  // 빌드 중(정적 화면 미리 만들기)에는 배포가 아직 없으므로 데모도 이 프로세스의 메모리 DB를 쓴다.
-  if (isDemoMode() && process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) {
-    return Promise.resolve((globalForDb.demoProxyDb ??= openDemoProxyDb(demoBaseUrl())));
-  }
-  return getLocalDb();
+/** 이 프로세스가 쓸 DB 종류. 데모 빌드 중(정적 화면 미리 만들기)에는 배포가 아직 없으므로 이 프로세스의 메모리 DB(local)를 쓴다. */
+export function dbTarget(): DbTarget {
+  return selectDbTarget({
+    demo: isDemoMode(),
+    building: process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD,
+    databaseUrl: process.env.DATABASE_URL,
+  });
 }
 
-/** 공개 데모의 실제 메모리 DB. /api/demo/db만 직접 쓰고, 나머지는 getDb()로 그 경로를 거친다. */
+export function getDb(): Promise<Database> {
+  switch (dbTarget()) {
+    case "demo-shared":
+      return getSharedDemoDb(process.env.DATABASE_URL ?? "");
+    case "demo-proxy":
+      return Promise.resolve((globalForDb.demoProxyDb ??= openDemoProxyDb(demoBaseUrl())));
+    case "local":
+      return getLocalDb();
+  }
+}
+
+/**
+ * 공개 데모가 함께 쓰는 PostgreSQL(Neon). 처음 열 때 마이그레이션을 적용하고,
+ * 요청마다 되돌릴 때가 됐는지 보고(대부분 메모리에서 끝난다) 됐으면 한 인스턴스만 시드로 되돌린다.
+ */
+async function getSharedDemoDb(url: string): Promise<Database> {
+  const db = await (globalForDb.sharedDemoDb ??= openSharedDemoDb(url, process.env.DATABASE_URL_UNPOOLED || url).catch(
+    (error: unknown) => {
+      globalForDb.sharedDemoDb = undefined;
+      throw error;
+    },
+  ));
+  const resetIfDue = (globalForDb.resetSharedDemoDb ??= createDemoResetter({
+    intervalMs: DEMO_RESET_MINUTES * 60_000,
+    seed: async (now) => ({ data: createSeedData({}, now), passwordHash: await hash(DEV_PASSWORD, 10) }),
+    onError: (error) => logError("admin", "demo_reset_failed", { error }),
+  }));
+  await resetIfDue(db);
+  return db;
+}
+
+/** DATABASE_URL이 없는 공개 데모의 실제 메모리 DB. /api/demo/db만 직접 쓰고, 나머지는 getDb()로 그 경로를 거친다. */
 export function getDemoOwnerDb(): Promise<Database> {
   return getLocalDb();
 }

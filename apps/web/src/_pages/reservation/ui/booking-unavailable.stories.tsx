@@ -17,4 +17,5 @@ type Story = StoryObj<typeof meta>;
 /** 온라인 예약을 열지 않았을 때(설정 없음) 매장 전화번호로 안내한다. */
 export const Off: Story = {};
 
-export const Unreachable: Story = { args: { reason: "unreachable" } };
+/** 예약 서버에 닿지 않을 때. 제목 id가 고정이라 문서 페이지에는 Off만 둔다. */
+export const Unreachable: Story = { tags: ["!autodocs"], args: { reason: "unreachable" } };

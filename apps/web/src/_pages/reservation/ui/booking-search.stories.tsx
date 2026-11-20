@@ -29,7 +29,11 @@ type Story = StoryObj<typeof meta>;
 /** 1단계: 매장·날짜·인원. 주소(GET)로 보내 JS 없이도 동작한다. */
 export const Default: Story = {};
 
-/** 매장을 고르지 않고 '빈 시간 보기'를 누르면 매장 칸에 오류를 잇는다. */
+/**
+ * 매장을 고르지 않고 '빈 시간 보기'를 누르면 매장 칸에 오류를 잇는다.
+ * 칸 id가 고정이라(페이지에 하나뿐인 폼) 문서 페이지에는 Default만 둔다.
+ */
 export const MissingCafe: Story = {
+  tags: ["!autodocs"],
   args: { query: { cafe: undefined, date: "2026-11-21", partySize: 2, submitted: true } },
 };

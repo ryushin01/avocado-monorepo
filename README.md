@@ -4,7 +4,7 @@
 
 **공개 데모:** [홍보 사이트](https://avocado-web-ryushin01.vercel.app/) · [백오피스](https://avocado-admin-ryushin01.vercel.app/) · [키오스크](https://avocado-kiosk-ryushin01.vercel.app/) ([둘러보는 법](docs/demo.md))
 
-> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 백오피스·키오스크 공개 데모는 30분마다 처음 상태로 돌아가는 메모리 DB를 씁니다([docs/demo.md](docs/demo.md)). 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
+> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 백오피스·키오스크 공개 데모는 30분마다 처음 상태로 돌아가는 데모 전용 DB를 씁니다([docs/demo.md](docs/demo.md)). 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
 
 본사와 매장 직원이 쓰는 백오피스, 매장 손님이 쓰는 태블릿 키오스크, 일반 방문자가 보는 홍보 사이트를 한 저장소에서 관리합니다. 재고, 대여·반납, 예약, 현장 대기가 백오피스와 키오스크 사이에서 이어지고, 손님은 홍보 사이트에서 온라인으로 예약합니다.
 
@@ -138,8 +138,9 @@ docs/
 | [개발 가이드](docs/development.md) | pnpm, 런처 설정, 스크립트 전체, 데이터 가져오기 |
 | [코드 규칙](docs/conventions.md) | FSD, UI, 폼, 테스트 규칙과 알려진 함정 |
 | [배포](docs/deployment.md) | 환경 변수, 첫 관리자 만들기, 마이그레이션, 보안 |
+| [실기기 QA 체크리스트](docs/qa-checklist.md) | 매장 태블릿·화면 낭독기·휴대전화로 확인할 것 (릴리스 태그 전) |
 | [백오피스](apps/admin/README.md) | 기능, 개발용 계정 |
-| [백오피스 구조](apps/admin/docs/architecture.md) | 도메인 모델, 권한, 키오스크 API, 렌더링 규칙 |
+| [백오피스 구조](apps/admin/docs/architecture.md) | 도메인 모델, 권한, 키오스크·온라인 예약 API, 테이블 배정, 렌더링 규칙 |
 | [런처](apps/launcher/README.md), [홍보 사이트](apps/web/README.md) | 앱별 안내 |
 | [시퀀스 다이어그램](docs/sequence-diagrams.md) | 키오스크 예약 확인·도착 알림, 현장 대기 등록, 대여와 반납 |
 | [변경 기록](CHANGELOG.md) | 버전별 변경 |

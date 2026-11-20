@@ -42,6 +42,15 @@ export function selectDbTarget({
 /** 마이그레이션과 데모 되돌리기를 한 번에 한 곳만 하게 하는 PostgreSQL 권고 잠금 번호(임의의 고정값) */
 export const DEMO_LOCK_KEY = 20_261_120;
 
+/** 잠금(권고 잠금·표 잠금)을 이보다 오래 기다리면 접는다. 요청이 끝없이 걸려 있지 않게 한다. */
+const LOCK_TIMEOUT = "20s";
+/**
+ * 잠금을 쥔 연결이 이보다 오래 쉬면 PostgreSQL이 그 연결을 끊어 잠금을 푼다.
+ * Vercel은 요청이 끊긴 인스턴스를 멈출 수 있어, 잠금을 받은 직후 멈추면 연결만 남아 잠금을 영영 쥐고 있게 된다.
+ * LOCK_TIMEOUT보다 짧아야 기다리던 쪽이 그 안에 잠금을 받는다.
+ */
+const HOLDER_IDLE_TIMEOUT = "15s";
+
 /**
  * 공개 데모의 공유 DB를 연다. 마이그레이션은 잠금을 잡고 한 인스턴스씩 적용한다(처음 뜬 여러 함수가 함께 만들지 않게).
  * migrationUrl: 세션 잠금이 한 연결에 머물도록 풀러를 거치지 않는 주소(Neon의 DATABASE_URL_UNPOOLED). 없으면 url.
@@ -49,6 +58,10 @@ export const DEMO_LOCK_KEY = 20_261_120;
 export async function openSharedDemoDb(url: string, migrationUrl = url): Promise<Database> {
   const lockClient = postgres(migrationUrl, { max: 1, onnotice: () => {} });
   try {
+    // 이 연결에만 거는 설정: 잠금을 오래 기다리지 않고, 잠금을 쥔 채 멈추면(쉬거나 트랜잭션 중에 쉬면) 서버가 끊는다.
+    await lockClient`select set_config('lock_timeout', ${LOCK_TIMEOUT}, false),
+      set_config('idle_session_timeout', ${HOLDER_IDLE_TIMEOUT}, false),
+      set_config('idle_in_transaction_session_timeout', ${HOLDER_IDLE_TIMEOUT}, false)`;
     await lockClient`select pg_advisory_lock(${DEMO_LOCK_KEY})`;
     await migrate(drizzle({ client: lockClient }), { migrationsFolder: MIGRATIONS });
   } finally {
@@ -72,9 +85,6 @@ const resetState = demoSchema.table("reset_state", {
 
 /** 되돌릴 때 비우는 앱 표 전부 (drizzle 마이그레이션 기록과 reset_state는 다른 스키마라 남는다) */
 const APP_TABLES = Object.values(schema).flatMap((value) => (isTable(value) ? [getTableName(value as PgTable)] : []));
-
-/** 잠금·표 잠금을 이보다 오래 기다리면 이번 되돌리기를 접고 잠시 뒤 다시 한다. */
-const LOCK_TIMEOUT = "20s";
 
 /**
  * not-due: 이 인스턴스가 아는 마지막 되돌린 시각으로 보아 아직 때가 아니다(DB에 묻지 않음).
@@ -111,7 +121,10 @@ export function createDemoResetter({ intervalMs, seed, retryMs = 10_000, onError
   async function run(db: Database, now: number): Promise<ResetOutcome> {
     try {
       const { outcome, resetAt } = await db.transaction(async (tx) => {
+        // 잠금을 오래 기다리면 이번 되돌리기를 접고 잠시 뒤 다시 한다. 되돌리는 중에 인스턴스가 멈추면 서버가 연결을 끊어
+        // 트랜잭션을 되돌리고 잠금(권고 잠금과 TRUNCATE의 표 잠금)을 푼다.
         await tx.execute(sql.raw(`set local lock_timeout = '${LOCK_TIMEOUT}'`));
+        await tx.execute(sql.raw(`set local idle_in_transaction_session_timeout = '${HOLDER_IDLE_TIMEOUT}'`));
         await tx.execute(sql`select pg_advisory_xact_lock(${DEMO_LOCK_KEY})`);
         await tx.execute(sql`create schema if not exists avocado_demo`);
         await tx.execute(

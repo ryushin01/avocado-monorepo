@@ -163,7 +163,7 @@ docs/
 | Geist · Geist Mono 글꼴 | The Geist Project Authors(Vercel) | SIL OFL 1.1 | [vercel/geist-font](https://github.com/vercel/geist-font) |
 | Gowun Dodum(고운돋움) 글꼴 | The Gowun Dodum Project Authors(류양희) | SIL OFL 1.1 | [yangheeryu/Gowun-Dodum](https://github.com/yangheeryu/Gowun-Dodum) |
 | Comfortaa 글꼴 | Johan Aakerlund | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Comfortaa) |
-| 아보카도 로고 (세 앱의 파비콘·로고, 키오스크 앱 아이콘) | [amonrat rungreangfangsai](https://www.flaticon.com/authors/amonrat-rungreangfangsai) | Flaticon 라이선스 (출처 표기: 홍보 사이트 바닥글, 백오피스 로그인 화면, 키오스크 시작 화면. 매장 태블릿에 설치한 키오스크 앱에서는 손님이 나가지 않게 링크 없이 글자로) | [Flaticon](https://www.flaticon.com/) 아이콘 6974016 (원본 512px: `apps/launcher/public/icon-512.png`) |
+| 아보카도 로고 (세 앱의 파비콘·로고, 키오스크 앱 아이콘, 홍보 사이트 공유 이미지) | [amonrat rungreangfangsai](https://www.flaticon.com/authors/amonrat-rungreangfangsai) | Flaticon 라이선스 (출처 표기: 홍보 사이트 바닥글, 백오피스 로그인 화면, 키오스크 시작 화면. 매장 태블릿에 설치한 키오스크 앱에서는 손님이 나가지 않게 링크 없이 글자로) | [Flaticon](https://www.flaticon.com/) 아이콘 6974016 (원본 512px: `apps/launcher/public/icon-512.png`) |
 | 보드게임 상자 그림(게임 썸네일) | 각 게임의 출판사 | 확인 안 됨 (저작권은 출판사에 있고, 사용 허락을 받지 않은 포트폴리오용 썸네일) | [BoardGameGeek](https://boardgamegeek.com) (avocado 데이터의 게임별 `bggId`) |
 
 홍보 사이트의 사진과 10위권 배지는 원작 avocado 프로젝트의 자료를 줄여 옮겼고(`pnpm import:avocado-media`), 매장·직원·손님 데이터는 가상 데이터입니다.

@@ -26,12 +26,12 @@ export const CATEGORY_BANNERS: Partial<Record<string, { src: string; alt: string
   wargame: { src: "/images/banners/wargame.webp", alt: "카드 위에 놓인 주사위들", position: "50% 25%" },
 };
 
-/** 링크를 공유할 때 보이는 사진. 화면별 openGraph가 부모 값을 통째로 바꾸므로 파일 규칙 대신 주소를 직접 적는다. */
+/** 링크를 공유할 때 보이는 그림(아보카도 로고·로고 글자·사이트 문구). 화면별 openGraph가 부모 값을 통째로 바꾸므로 파일 규칙 대신 주소를 직접 적는다. */
 export const SHARE_IMAGE = {
-  url: "/images/og.jpg",
+  url: "/images/og.png",
   width: 1200,
   height: 630,
-  alt: "지도 위에 흩어진 주사위와 말",
+  alt: "아보카도 그림과 avocado 로고 글자, 보드게임, 함께라서 더 즐겁게, 아보카도 보드게임 카페",
 };
 
 /** 메뉴와 바닥글의 사이트 안내 링크 */

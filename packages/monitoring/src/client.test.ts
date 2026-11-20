@@ -28,11 +28,32 @@ afterEach(() => {
 });
 
 const load = async (dsn?: string) => {
-  if (dsn) vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", dsn);
-  return import("./index");
+  const { createMonitoring } = await import("./client");
+  const { createSentryOptions } = await import("./options");
+  return createMonitoring(createSentryOptions({ dsn, service: "web" }));
 };
 
 describe("initMonitoring", () => {
+  it("Sentry를 받지 못하면(일시적인 연결 끊김 등) 간격을 두고 다시 받는다", async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    sentry.init.mockImplementationOnce(() => {
+      throw new Error("청크를 받지 못함");
+    });
+    const { initMonitoring, captureException } = await load("https://key@o1.ingest.sentry.io/1");
+    initMonitoring();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sentry.init).toHaveBeenCalledTimes(1);
+    // 간격(30초) 전에는 오류가 와도 다시 받지 않는다.
+    captureException(new Error("곧바로"));
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(sentry.init).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(10_000);
+    await vi.waitFor(() => expect(sentry.init).toHaveBeenCalledTimes(2));
+    captureException(new Error("다시 받은 뒤"));
+    expect(sentry.captureException).toHaveBeenCalledWith(expect.objectContaining({ message: "다시 받은 뒤" }));
+  });
+
   it("DSN이 없으면 Sentry를 받지 않는다", async () => {
     const { initMonitoring, captureException } = await load();
     initMonitoring();

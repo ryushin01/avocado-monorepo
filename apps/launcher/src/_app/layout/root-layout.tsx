@@ -2,6 +2,9 @@ import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 
+import { OfflineNotice } from "../pwa/offline-notice";
+import { RegisterServiceWorker } from "../pwa/register-service-worker";
+
 import "../styles/globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -23,7 +26,9 @@ export function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ko" className={`${geistSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-muted/40">
         <SkipLink />
+        <OfflineNotice />
         {children}
+        <RegisterServiceWorker />
       </body>
     </html>
   );

@@ -52,6 +52,24 @@ export function redactConsoleErrors() {
   };
 }
 
+/** 오류가 아닌 운영 기록(매일 정리한 수 등)을 같은 한 줄 JSON 형식으로 표준 출력에 남긴다. */
+export function logInfo(service: string, event: string, fields: Fields = {}) {
+  console.info(JSON.stringify({ level: "info", time: new Date().toISOString(), service, event, ...fields }));
+}
+
+/** logError로 남긴 오류를 외부 모니터링(Sentry 등)에도 보내는 함수. 앱의 instrumentation.ts가 정한다. */
+export type ErrorReporter = (report: { service: string; event: string; error?: Error; fields: Fields }) => void;
+
+let reporter: ErrorReporter | undefined;
+
+/**
+ * 앞으로 logError로 남기는 오류를 reporter에도 넘긴다. 오류 객체는 로그와 같게 쿼리 값을 가린 사본을 넘긴다.
+ * fields에는 로그와 마찬가지로 손님 정보·토큰을 넣지 않는다(규칙: docs/conventions.md의 오류 처리와 로그).
+ */
+export function reportErrorsTo(next: ErrorReporter | undefined) {
+  reporter = next;
+}
+
 export function logError(service: string, event: string, fields: Fields = {}) {
   const { error, ...rest } = fields;
   console.error(
@@ -64,6 +82,17 @@ export function logError(service: string, event: string, fields: Fields = {}) {
       ...(error === undefined ? {} : describeError(error)),
     }),
   );
+  if (!reporter) return;
+  try {
+    reporter({
+      service,
+      event,
+      error: error === undefined ? undefined : error instanceof Error ? redactError(error) : new Error(redactSecrets(String(error))),
+      fields: rest,
+    });
+  } catch {
+    // 모니터링으로 보내지 못해도 로그는 이미 남았다. 오류 처리 중에 다른 오류를 일으키지 않는다.
+  }
 }
 
 /** instrumentation.ts의 onRequestError에서 부른다. digest는 오류 화면의 오류 번호와 같다. */

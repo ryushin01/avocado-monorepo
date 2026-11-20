@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-// 세 앱(홍보 사이트·백오피스·키오스크)은 같은 Noto 아보카도 아이콘을 쓴다.
+// 세 앱(홍보 사이트·백오피스·키오스크)은 같은 아보카도 로고 아이콘을 쓴다(원본은 키오스크 public/icon-512.png).
 // 한 앱만 바꾸거나 사진을 옮기는 스크립트가 옛 로고로 덮어쓰면 여기서 걸린다.
 // 다른 앱의 파일도 읽으므로 turbo 입력에 넣어 두었다(apps/web/turbo.json).
 const APPS = ["web", "admin", "launcher"] as const;

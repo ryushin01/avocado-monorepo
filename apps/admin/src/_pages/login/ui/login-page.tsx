@@ -38,7 +38,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = SEED_USERS.flatMap((u) =>
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main id="main" tabIndex={-1} className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
+    <main id="main" tabIndex={-1} className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -65,6 +65,17 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
           </CardFooter>
         )}
       </Card>
+      {/* 파비콘·사이드바 로고(Flaticon 아이콘)의 출처 표기 */}
+      <p className="text-center text-xs text-muted-foreground">
+        로고 아이콘:{" "}
+        <a
+          href="https://www.flaticon.com/authors/amonrat-rungreangfangsai"
+          lang="en"
+          className="inline-flex min-h-6 items-center underline underline-offset-4"
+        >
+          Avocado icons created by amonrat rungreangfangsai - Flaticon
+        </a>
+      </p>
     </main>
   );
 }

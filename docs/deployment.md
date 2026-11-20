@@ -111,7 +111,7 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 2. 소스맵을 올리려면 빌드 환경에 `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`(비밀 값)을 넣습니다. 없으면 소스맵 없이 보냅니다.
 3. Sentry의 알림 규칙으로 새 오류·`backoffice_unreachable` 같은 이벤트를 메일로 받습니다.
 
-- **보내는 것:** 서버 요청 오류(`onRequestError`), 화면 오류(오류 화면에 잡힌 것), `logError`로 남기는 오류(키오스크의 백오피스 연결 실패·설정 빠짐, 변경 이력 실패, 보관 기간 정리 실패 등). 같은 로그 이벤트는 10분에 한 번만 보내 무료 한도(월 5천 건)를 지킵니다.
+- **보내는 것:** 서버 요청 오류(`onRequestError`), 화면 오류(오류 화면에 잡힌 것), `logError`로 남기는 오류(키오스크의 백오피스 연결 실패·설정 빠짐, 변경 이력 실패, 보관 기간 정리 실패 등). 같은 로그 이벤트는 10분에 한 번만 보내 양을 줄입니다. 이벤트 종류마다 따로 세므로(두 종류가 계속 나면 30일에 8,640건) 무료 한도(월 5천 건)를 보장하지는 않습니다. Sentry 프로젝트의 사용량 알림과 한도(Spike Protection)를 함께 켜 두세요.
 - **보내지 않는 것:** 쿠키, 요청 헤더·본문, 쿼리 문자열, 사용자 정보, 방문 기록·클릭 기록. DB 오류 메시지의 쿼리 값(손님 전화번호 등)은 서버 로그와 같은 규칙으로 가립니다(`scrubEvent`). 브라우저는 같은 주소의 `/monitoring`으로 보내므로 CSP를 넓히지 않습니다.
 
 ## 운영 데이터
@@ -127,7 +127,7 @@ pnpm --filter @avocado/admin start      # 3000번 포트 (런처 3001, 홈페이
 백업에는 손님 이름·휴대전화가 들어 있습니다. 저장소에 넣지 말고(`backups/`는 git 제외) 접근을 제한한 곳에 암호화해 보관하고, 보관 기간(90일)이 지난 백업은 지웁니다.
 
 - **관리형 PostgreSQL:** 호스팅의 자동 백업·특정 시점 복원(Neon은 과거 시점에서 브랜치를 만들어 복원)을 씁니다. 무료 요금제는 되돌릴 수 있는 기간이 짧으므로 아래 논리 백업을 함께 둡니다.
-- **논리 백업:** `DATABASE_URL=… pnpm --filter @avocado/admin db:backup`이 pg_dump로 일반 SQL 파일을 만듭니다(PostgreSQL 클라이언트 도구 필요). `DATABASE_URL`이 없으면 개발 DB(PGlite)를 같은 형식으로 내보냅니다.
+- **논리 백업:** `DATABASE_URL=… pnpm --filter @avocado/admin db:backup`이 pg_dump로 일반 SQL 파일을 만듭니다(PostgreSQL 클라이언트 도구 필요). `DATABASE_URL`이 없으면 개발 DB(PGlite)를 같은 형식으로 내보냅니다. 파일은 이 계정만 읽을 수 있게(0600, 기본 `backups/` 폴더는 0700) 만들고, 이름에 초 단위 시각과 임의 꼬리표를 붙여 앞 백업을 덮지 않습니다. 실패하면 덜 만든 파일을 지우고, 오류 내용(손님 정보가 든 SQL) 대신 오류 코드만 보입니다.
 - **복원:** 빈 DB를 만들고 `psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -f <백업 파일>`로 넣은 뒤, 백오피스의 `DATABASE_URL`을 그 DB로 바꿔 띄웁니다. 백업에 마이그레이션 적용 기록이 들어 있어, 서버가 처음 열 때 이미 적용한 마이그레이션은 다시 하지 않고 백업 뒤에 생긴 것만 이어서 올립니다.
 - **복원 시험:** `src/db/backup.test.ts`가 시드를 넣은 DB를 pg_dump로 백업하고 새 DB에 복원해, 모든 표의 내용이 같고 앱이 마이그레이션을 다시 하지 않는지 CI에서 매번 확인합니다. 손으로 확인할 때는 `pnpm --filter @avocado/admin db:restore <백업 파일>`이 개발용 PGlite DB(`.data/pglite-restored`)로 복원하고, `PGLITE_DATA_DIR=.data/pglite-restored`로 띄워 로그인·목록을 봅니다.
 - [ ] 운영을 시작하면 분기마다 한 번 최신 백업을 시험용 DB에 복원해 로그인·예약 목록을 확인합니다.

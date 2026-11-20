@@ -20,6 +20,8 @@ describe("GET /api/cron/retention", () => {
     vi.stubEnv("CRON_SECRET", "s3cret");
     expect((await call()).status).toBe(401);
     expect((await call("Bearer wrong")).status).toBe(401);
+    // 글자 수는 같고 바이트 수가 다른 값(é는 2바이트)도 오류 없이 401이다.
+    expect((await call("Bearer sécret")).status).toBe(401);
     expect(prune).not.toHaveBeenCalled();
   });
 

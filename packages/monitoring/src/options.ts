@@ -1,4 +1,4 @@
-import type { ErrorEvent } from "@sentry/nextjs";
+import type { Breadcrumb, ErrorEvent } from "@sentry/nextjs";
 
 import { redactSecrets } from "@avocado/logger";
 
@@ -22,6 +22,7 @@ export function createSentryOptions({ dsn, service }: { dsn: string | undefined;
       stackFrameVariables: false,
     },
     beforeSend: scrubEvent,
+    beforeBreadcrumb: scrubBreadcrumb,
   };
 }
 
@@ -47,11 +48,25 @@ export function scrubEvent(event: ErrorEvent) {
     delete event.request.data;
   }
   delete event.user;
+  if (event.breadcrumbs) event.breadcrumbs = event.breadcrumbs.flatMap((b) => scrubBreadcrumb(b) ?? []);
   if (event.message) event.message = redactSecrets(event.message);
   for (const value of event.exception?.values ?? []) {
     if (value.value) value.value = redactSecrets(value.value);
   }
   return event;
+}
+
+/**
+ * 오류 앞에 남는 기록(브레드크럼)을 거른다. 서버는 콘솔·요청 기록을 기본으로 남긴다.
+ * - 콘솔 기록은 버린다: SDK가 console.error의 원문 인수를 담으므로, 가려서 찍기 전의 DB 오류(손님 전화번호)가 들 수 있다.
+ * - 요청 기록의 주소에서 쿼리 문자열과 # 뒤를 뺀다(키오스크의 전화번호 뒷자리 조회 등). 남는 메시지도 가린다.
+ */
+export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
+  if (breadcrumb.category === "console") return null;
+  const url = breadcrumb.data?.url;
+  if (typeof url === "string") breadcrumb.data = { ...breadcrumb.data, url: url.split(/[?#]/)[0] };
+  if (breadcrumb.message) breadcrumb.message = redactSecrets(breadcrumb.message);
+  return breadcrumb;
 }
 
 /** 방문 기록(세션)과 이동·클릭 기록(브레드크럼)은 오류 수집에 필요하지 않아 브라우저에서 끈다. */

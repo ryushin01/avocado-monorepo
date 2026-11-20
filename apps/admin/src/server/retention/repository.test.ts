@@ -4,7 +4,7 @@ import { auditLogs, loginAttempts, rateLimits, reservations, waitlistEntries } f
 import { createTestDb } from "@/db/testing";
 import { DAY } from "@/shared/lib/kst-time";
 
-import { createRetentionRepository, RETENTION_DAYS } from "./repository";
+import { AUDIT_RETENTION_YEARS, createRetentionRepository, RETENTION_DAYS } from "./repository";
 
 const now = new Date("2026-11-16T03:00:00.000Z");
 const ago = (days: number, extraMs = 0) => new Date(now.getTime() - days * DAY - extraMs);
@@ -39,8 +39,8 @@ describe("RetentionRepository", () => {
     const { db, repo } = await setup();
     const audit = { actorId: "u_admin", actorName: "김관리", action: "game.create" as const, targetName: "카탄" };
     await db.insert(auditLogs).values([
-      { ...audit, id: "a_old", at: ago(RETENTION_DAYS.audit, 1) },
-      { ...audit, id: "a_keep", at: ago(RETENTION_DAYS.audit - 1) },
+      { ...audit, id: "a_old", at: new Date("2024-11-16T02:59:59.999Z") },
+      { ...audit, id: "a_keep", at: new Date("2024-11-16T03:00:00.000Z") },
     ]);
     await db.insert(loginAttempts).values([
       { email: "old@example.com", failures: 2, lastFailedAt: ago(2) },
@@ -57,5 +57,28 @@ describe("RetentionRepository", () => {
     expect((await db.select().from(rateLimits)).map((r) => r.key)).toEqual(["kiosk:now"]);
     // 다시 불러도 더 지울 것이 없다.
     expect(await repo.prune(now)).toEqual({ reservations: 0, waitlistEntries: 0, auditLogs: 0, loginAttempts: 0, rateLimits: 0 });
+  });
+
+  it("변경 이력의 2년은 달력으로 센다(윤년이 끼면 730일보다 길다)", async () => {
+    expect(AUDIT_RETENTION_YEARS).toBe(2);
+    const { db, repo } = await setup();
+    const audit = { actorId: "u_admin", actorName: "김관리", action: "game.create" as const, targetName: "카탄" };
+    // 2028년은 윤년이라 2026-11-16 15시의 기록은 730일은 지났어도 아직 두 돌 전이다.
+    const leapNow = new Date("2028-11-16T03:00:00.000Z");
+    await db.insert(auditLogs).values([
+      { ...audit, id: "a_two_years", at: new Date("2026-11-16T02:00:00.000Z") },
+      { ...audit, id: "a_730_days", at: new Date("2026-11-16T15:00:00.000Z") },
+    ]);
+    expect(await repo.prune(leapNow)).toMatchObject({ auditLogs: 1 });
+    expect((await db.select().from(auditLogs)).map((a) => a.id)).toEqual(["a_730_days"]);
+  });
+
+  it("지난 기록이 많아도 정해 둔 수씩 나눠 지우고 모두 센다", async () => {
+    const { db, insertReservation } = await setup();
+    for (let i = 0; i < 5; i++) await insertReservation(`r_old_${i}`, ago(RETENTION_DAYS.guests + 1 + i));
+    await insertReservation("r_keep", ago(1));
+    const repo = createRetentionRepository(db, { batchSize: 2 });
+    expect(await repo.prune(now)).toMatchObject({ reservations: 5 });
+    expect((await db.select().from(reservations)).map((r) => r.id)).toEqual(["r_keep"]);
   });
 });

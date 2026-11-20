@@ -1,11 +1,12 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 import { logError, logInfo } from "@avocado/logger";
 
 import { pruneExpiredRecords } from "./data";
 
-const matches = (given: string, expected: string) =>
-  given.length === expected.length && timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+const digest = (value: string) => createHash("sha256").update(value).digest();
+/** 해시끼리 비교해 길이가 달라도 같은 시간이 걸리고, 글자 수는 같고 바이트 수가 다른 값에도 오류가 나지 않는다. */
+const matches = (given: string, expected: string) => timingSafeEqual(digest(given), digest(expected));
 
 /**
  * 하루 한 번 보관 기간이 지난 기록을 지운다(Vercel Cron: apps/admin/vercel.json).

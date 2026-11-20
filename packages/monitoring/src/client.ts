@@ -4,6 +4,9 @@ type SentryModule = typeof import("./sentry");
 
 /** Sentry를 받기 전에 모아 둘 오류 수. 오류가 반복돼도 메모리를 계속 쓰지 않게 한다. */
 const MAX_EARLY_ERRORS = 20;
+/** Sentry를 받지 못했을 때 다시 받기까지 기다리는 시간. 실패할 때마다 두 배로 늘리고 10분을 넘기지 않는다. */
+const RETRY_BASE_MS = 30_000;
+const RETRY_MAX_MS = 10 * 60_000;
 
 /**
  * 브라우저 오류 모니터링. 앱마다 한 번 만들어(shared의 monitoring) instrumentation-client.ts와 오류 화면에서 쓴다.
@@ -12,6 +15,8 @@ const MAX_EARLY_ERRORS = 20;
 export function createMonitoring(sentryOptions: SentryOptions) {
   let sentry: Promise<SentryModule | null> | null = null;
   let ready: SentryModule | null = null;
+  let failures = 0;
+  let retryAt = 0;
   /** Sentry를 받는 동안 난 오류. type이 있으면 전역 처리기가 잡은 처리되지 않은 오류다. */
   const early: { error: unknown; type?: string }[] = [];
   const keep = (error: unknown, type?: string) => {
@@ -20,7 +25,7 @@ export function createMonitoring(sentryOptions: SentryOptions) {
 
   /** 받는 동안 난 오류는 MAX_EARLY_ERRORS까지 모았다가 처리되지 않은 오류로 보낸다. DSN이 없으면 아무것도 하지 않는다. */
   function initMonitoring() {
-    if (!sentryOptions.enabled || sentry || typeof window === "undefined") return;
+    if (!sentryOptions.enabled || sentry || typeof window === "undefined" || Date.now() < retryAt) return;
     const onError = (event: ErrorEvent) => keep(event.error ?? event.message, "onerror");
     const onRejection = (event: PromiseRejectionEvent) => keep(event.reason, "onunhandledrejection");
     window.addEventListener("error", onError);
@@ -34,6 +39,7 @@ export function createMonitoring(sentryOptions: SentryOptions) {
       .then((Sentry) => {
         Sentry.init({ ...sentryOptions, integrations: withoutVisitorTracking });
         stopBuffering();
+        failures = 0;
         ready = Sentry;
         for (const { error, type } of early.splice(0)) {
           if (type) captureUnhandled(Sentry, error, type);
@@ -42,10 +48,16 @@ export function createMonitoring(sentryOptions: SentryOptions) {
         return Sentry;
       })
       // Sentry를 받지 못해도 화면은 그대로 돈다. 모아 둔 오류는 버리고, 원인은 개발자 도구에 남긴다.
+      // 일시적인 연결 끊김일 수 있으므로 간격을 두고 다시 받는다(키오스크는 하루 종일 켜져 있다).
       .catch((error: unknown) => {
         console.warn("오류 모니터링(Sentry)을 불러오지 못했습니다.", error);
         stopBuffering();
         early.length = 0;
+        failures += 1;
+        const delay = Math.min(RETRY_BASE_MS * 2 ** (failures - 1), RETRY_MAX_MS);
+        retryAt = Date.now() + delay;
+        sentry = null;
+        setTimeout(initMonitoring, delay);
         return null;
       });
   }

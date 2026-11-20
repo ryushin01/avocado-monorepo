@@ -1,7 +1,7 @@
 import type { ErrorEvent } from "@sentry/nextjs";
 import { describe, expect, it } from "vitest";
 
-import { createSentryOptions, scrubEvent, withoutVisitorTracking } from "./options";
+import { createSentryOptions, scrubBreadcrumb, scrubEvent, withoutVisitorTracking } from "./options";
 
 const DSN = "https://key@example.ingest.sentry.io/1";
 
@@ -60,5 +60,30 @@ describe("withoutVisitorTracking", () => {
   it("방문 세션과 브레드크럼만 뺀다", () => {
     const integrations = [{ name: "BrowserSession" }, { name: "Breadcrumbs" }, { name: "GlobalHandlers" }];
     expect(withoutVisitorTracking(integrations)).toEqual([{ name: "GlobalHandlers" }]);
+  });
+});
+
+describe("scrubBreadcrumb", () => {
+  it("콘솔 기록은 버린다(가리기 전 원문 인수가 들 수 있음)", () => {
+    expect(scrubBreadcrumb({ category: "console", message: "params: 01012345678" })).toBeNull();
+    expect(createSentryOptions({ dsn: DSN, service: "admin" }).beforeBreadcrumb).toBe(scrubBreadcrumb);
+  });
+
+  it("요청 기록의 주소에서 쿼리 문자열과 # 뒤를 뺀다", () => {
+    const crumb = scrubBreadcrumb({
+      category: "fetch",
+      data: { method: "GET", url: "https://admin.example.com/api/kiosk/cafes/c_a/reservations?phone4=5678#x", status_code: 200 },
+    });
+    expect(crumb?.data).toEqual({ method: "GET", url: "https://admin.example.com/api/kiosk/cafes/c_a/reservations", status_code: 200 });
+  });
+
+  it("오류에 붙은 기록도 보내기 전에 거른다", () => {
+    const event = {
+      breadcrumbs: [
+        { category: "console", message: "Failed query params: 01012345678" },
+        { category: "fetch", data: { url: "https://admin.example.com/a?phone4=1234" } },
+      ],
+    } as ErrorEvent;
+    expect(scrubEvent(event)?.breadcrumbs).toEqual([{ category: "fetch", data: { url: "https://admin.example.com/a" } }]);
   });
 });

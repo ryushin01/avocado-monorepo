@@ -15,10 +15,11 @@ import {
 } from "@avocado/ui/components/card";
 import { Skeleton } from "@avocado/ui/components/skeleton";
 
-import { LoginForm } from "@/features/auth";
+import { DemoLogin, LoginForm, type DemoAccount } from "@/features/auth";
 import { DEV_PASSWORD, SEED_USERS } from "@/server/auth/mock-users";
 import { authOptions } from "@/server/auth/options";
 import { ROLE_LABELS } from "@/entities/user";
+import { isDemoMode } from "@/shared/config";
 import { firstParam } from "@/shared/lib/search-params";
 
 export const metadata: Metadata = { title: "로그인 · 보드게임 카페 백오피스" };
@@ -28,6 +29,12 @@ const ERRORS: Record<string, string> = {
   CredentialsSignin: "이메일 또는 비밀번호가 맞지 않습니다.",
   locked: "로그인을 5번 잘못해 15분 동안 잠겼습니다. 잠시 후 다시 시도하거나 관리자에게 문의해주세요.",
 };
+
+// 공개 데모의 바로 로그인 버튼: 본사 관리자와 강남점(데모 키오스크 매장) 스태프
+const DEMO_LABELS: Record<string, string> = { u_admin: "본사 관리자", u_staff_gangnam: "강남점 스태프" };
+const DEMO_ACCOUNTS: DemoAccount[] = SEED_USERS.flatMap((u) =>
+  DEMO_LABELS[u.id] ? [{ email: u.email, name: u.name, label: DEMO_LABELS[u.id] }] : [],
+);
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
@@ -71,5 +78,12 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/login">, "searchP
   // 같은 사이트 안의 경로로만 돌아간다.
   const callback = firstParam(params.callbackUrl);
   const callbackUrl = callback?.startsWith("/") && !callback.startsWith("//") ? callback : "/";
-  return <LoginForm callbackUrl={callbackUrl} initialError={error ? (ERRORS[error] ?? ERRORS.CredentialsSignin) : undefined} />;
+  const form = <LoginForm callbackUrl={callbackUrl} initialError={error ? (ERRORS[error] ?? ERRORS.CredentialsSignin) : undefined} />;
+  if (!isDemoMode()) return form;
+  return (
+    <>
+      {form}
+      <DemoLogin accounts={DEMO_ACCOUNTS} password={DEV_PASSWORD} callbackUrl={callbackUrl} />
+    </>
+  );
 }

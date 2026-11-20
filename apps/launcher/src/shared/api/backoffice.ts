@@ -13,6 +13,8 @@ import {
 import { connection } from "next/server";
 import type { ZodType } from "zod";
 
+import { isDemoMode } from "@/shared/config";
+
 import { LAUNCHER_CONFIG, missingLauncherConfig } from "./config";
 
 export type ApiResult<T> =
@@ -45,7 +47,8 @@ async function call<T>(
     const res = await fetch(url, {
       method: init?.method ?? "GET",
       cache: "no-store",
-      signal: AbortSignal.timeout(5000),
+      // 공개 데모의 백오피스는 한동안 쉬면 메모리 DB를 새로 만드느라 첫 응답이 느리다.
+      signal: AbortSignal.timeout(isDemoMode() ? 15_000 : 5000),
       headers: {
         ...(apiToken ? { authorization: `Bearer ${apiToken}` } : {}),
         ...(init ? { "content-type": "application/json" } : {}),

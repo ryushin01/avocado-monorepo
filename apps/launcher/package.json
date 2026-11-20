@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@feature-sliced/steiger-plugin": "^0.8.2",
+    "@storybook/nextjs-vite": "10.6.7",
     "@tailwindcss/turbopack": "^4.3.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19",

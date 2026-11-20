@@ -39,7 +39,16 @@ try {
   for (const story of stories) {
     await page.goto(`${base}/iframe.html?id=${encodeURIComponent(story.id)}&viewMode=story`);
     // 빈 알림 영역처럼 보이지 않는 첫 자식도 있으므로 붙었는지만 기다린다.
-    await page.waitForSelector("#storybook-root > *", { state: "attached", timeout: 15_000 });
+    // 그리지 못한 스토리는 Storybook의 오류 문구와 함께 실패로 남기고 다음 스토리로 넘어간다.
+    const rendered = await page
+      .waitForSelector("#storybook-root > *", { state: "attached", timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!rendered) {
+      const reason = (await page.locator("#error-message").textContent().catch(() => null))?.trim() || "시간 안에 그려지지 않음";
+      failures.push(`${story.title} › ${story.name}: 그리지 못함 — ${reason.slice(0, 300)}`);
+      continue;
+    }
     // 열린 상태 스토리(대화상자·메뉴·알림)는 마운트 뒤 나타나며 움직이므로, 애니메이션이 끝난 모습을 검사한다.
     await page.waitForTimeout(200);
     await page.evaluate(() => Promise.race([

@@ -2,6 +2,8 @@
 
 /* 공통 UI 패키지의 클래스도 Tailwind가 찾도록 소스 위치를 알려준다. */
 @source "../../../../../packages/ui/src";
+/* 앱 src. 앱 빌드는 저절로 찾지만, Storybook처럼 다른 폴더에서 이 CSS를 쓸 때도 홈페이지 전용 클래스(bg-page 등)를 만든다. */
+@source "../..";
 
 /* avocado의 색: 어두운 바탕 위에 흰 패널, 주황 강조색 */
 :root {

@@ -1,6 +1,22 @@
-import type { Preview } from "@storybook/nextjs-vite";
+import type { Decorator, Preview } from "@storybook/nextjs-vite";
 
-import "../src/styles/globals.css";
+import webCss from "../../../apps/web/src/_app/styles/globals.css?inline";
+
+import "./storybook.css";
+
+/**
+ * 홈페이지 스토리는 홈페이지 색(어두운 바탕, 주황 강조, 전용 색)을 그 스토리를 보는 동안만 덧씌운다.
+ * 스타일을 스토리와 함께 그렸다가 지우므로 다른 스토리로 새지 않는다. 백오피스·키오스크는 공통 테마 그대로다.
+ */
+const withAppTheme: Decorator = (Story, context) =>
+  context.title.startsWith("홈페이지/") ? (
+    <>
+      <style>{webCss}</style>
+      <Story />
+    </>
+  ) : (
+    <Story />
+  );
 
 const preview: Preview = {
   parameters: {
@@ -11,6 +27,7 @@ const preview: Preview = {
     a11y: { test: "error" },
     controls: { expanded: true },
   },
+  decorators: [withAppTheme],
   tags: ["autodocs"],
 };
 

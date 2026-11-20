@@ -74,6 +74,7 @@
 | 데이터 | PostgreSQL, Drizzle ORM, PGlite | 개발과 테스트는 설치 없이 PGlite로 돌고, 운영은 `DATABASE_URL`로 PostgreSQL에 붙습니다 |
 | 인증·검증 | Auth.js 4, zod 4 | 이메일·비밀번호 로그인과 서버 쪽 입력 검증을 씁니다 |
 | 테스트 | Vitest 5, Testing Library, Playwright, axe-core | 규칙은 단위 테스트로, 화면 흐름과 접근성은 프로덕션 빌드 대상 E2E로 확인합니다 |
+| 부품 문서 | Storybook 10 (`@storybook/nextjs-vite`, a11y 애드온) | 공통 UI 부품을 앱 밖에서 상태별로 보고, CI가 모든 스토리를 axe로 검사합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙, jsx-a11y), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
 | 성능 예산 | size-limit, Lighthouse CI(홍보 사이트) | 번들 크기와 Lighthouse 점수가 기준 아래로 떨어지면 PR을 막습니다 |
 | 배포 | Vercel(홍보 사이트, 백오피스·키오스크 공개 데모) | `main`에 머지하면 세 앱이 자동 배포됩니다(PR 미리보기 배포는 껐음). 공개 데모 설정은 [docs/demo.md](docs/demo.md) |
@@ -103,6 +104,8 @@ pnpm dev                                # 세 앱을 모두 띄움 (DB 설치 �
 | `pnpm lint` | ESLint, Steiger(FSD 구조) |
 | `pnpm test` | 단위·컴포넌트 테스트 |
 | `pnpm e2e` | E2E 테스트 |
+| `pnpm storybook` | 공통 UI 부품 Storybook (http://localhost:6006, a11y 패널로 axe 결과 확인) |
+| `pnpm build-storybook && pnpm test:stories` | Storybook을 빌드하고 모든 스토리를 axe로 검사 |
 | `pnpm --dir apps/admin screenshots` | README 화면과 키오스크 흐름 GIF 다시 만들기 (개발용 시드) |
 | `pnpm --filter @avocado/web size` / `lhci` | 홍보 사이트 번들 크기 / Lighthouse 기준 검사 (먼저 빌드 필요) |
 

@@ -15,7 +15,7 @@ import * as schema from "./schema";
 export type Database = PgDatabase<PgQueryResultHKT, typeof schema>;
 
 /** 마이그레이션 SQL 위치 (앱 폴더에서 실행한다고 가정: next dev·start, vitest 모두 apps/admin이 작업 폴더) */
-const MIGRATIONS = path.join(process.cwd(), "src/db/migrations");
+export const MIGRATIONS = path.join(process.cwd(), "src/db/migrations");
 
 /**
  * Node 안에서 도는 PostgreSQL(PGlite). 개발·테스트용.

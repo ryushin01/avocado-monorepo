@@ -27,7 +27,8 @@ export async function BookingSteps({ searchParams }: { searchParams: Promise<Rec
           const open = availability.data.slots.filter((slot) => slot.available).length;
           return open > 0
             ? `${cafe.name} ${formatBookingDate(date, today)} ${partySize}명: 빈 시간 ${open}개를 찾았습니다.`
-            : `이날은 ${partySize}명이 앉을 빈 시간이 없습니다. 다른 날짜나 매장을 골라 주세요.`;
+            : // 날짜만 바꿔 다시 찾아도 빈 결과 문구가 달라지게(같은 글자면 다시 읽히지 않음) 매장·날짜를 넣는다.
+              `${cafe.name} ${formatBookingDate(date, today)}: ${partySize}명이 앉을 빈 시간이 없습니다. 다른 날짜나 매장을 골라 주세요.`;
         })()
       : "";
 

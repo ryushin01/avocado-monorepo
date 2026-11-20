@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, Plus } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 
 import { addInventoryAction, searchAddableGamesAction } from "../api/actions";
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
@@ -63,7 +63,7 @@ export function AddInventoryDialog({
         게임 추가
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <form key={form.formKey} action={form.formAction} noValidate>
+        <form action={form.formAction} noValidate>
           <DialogHeader>
             <DialogTitle>재고에 게임 추가</DialogTitle>
             <DialogDescription>
@@ -74,59 +74,62 @@ export function AddInventoryDialog({
 
           <FieldGroup className="py-4">
             <FormErrorAlert message={form.formError} />
-            <Field data-invalid={form.invalid("gameId")}>
-              <FieldLabel htmlFor="inventory-game">게임</FieldLabel>
-              {games === null || loading ? (
-                <div className="flex h-8 items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" />
-                  게임 목록을 불러오는 중…
-                </div>
-              ) : (
-                <Combobox
-                  name="gameId"
-                  items={games}
-                  defaultValue={selected}
-                  itemToStringLabel={(game: BoardGame) => game.name}
-                  itemToStringValue={(game: BoardGame) => game.id}
-                >
-                  <ComboboxInput
-                    id="inventory-game"
-                    placeholder="게임 이름 검색"
-                    {...fieldA11y("inventory-game", form.invalid("gameId"))}
-                    className="w-full"
-                  />
-                  <ComboboxContent>
-                    <ComboboxEmpty>추가할 수 있는 게임이 없습니다.</ComboboxEmpty>
-                    <ComboboxList>
-                      {(game: BoardGame) => (
-                        <ComboboxItem key={game.id} value={game}>
-                          {game.name}
-                          {game.englishName && (
-                            <span className="truncate text-xs text-muted-foreground">
-                              {game.englishName}
-                            </span>
-                          )}
-                        </ComboboxItem>
-                      )}
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
-              )}
-              <FieldError id={errorIdOf("inventory-game")} errors={form.errors("gameId")} />
-            </Field>
-            <Field data-invalid={form.invalid("quantity")}>
-              <FieldLabel htmlFor="inventory-add-quantity">보유 수량</FieldLabel>
-              <Input
-                id="inventory-add-quantity"
-                name="quantity"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                defaultValue={form.text("quantity")}
-                {...fieldA11y("inventory-add-quantity", form.invalid("quantity"))}
-              />
-              <FieldError id={errorIdOf("inventory-add-quantity")} errors={form.errors("quantity")} />
-            </Field>
+            {/* 실패하면 입력 칸만 다시 그려 입력값을 되살린다. 폼 오류 영역과 버튼 줄은 그대로 두어 바뀐 오류가 읽히고 제출 버튼의 초점도 남는다. */}
+            <Fragment key={form.formKey}>
+              <Field data-invalid={form.invalid("gameId")}>
+                <FieldLabel htmlFor="inventory-game">게임</FieldLabel>
+                {games === null || loading ? (
+                  <div className="flex h-8 items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    게임 목록을 불러오는 중…
+                  </div>
+                ) : (
+                  <Combobox
+                    name="gameId"
+                    items={games}
+                    defaultValue={selected}
+                    itemToStringLabel={(game: BoardGame) => game.name}
+                    itemToStringValue={(game: BoardGame) => game.id}
+                  >
+                    <ComboboxInput
+                      id="inventory-game"
+                      placeholder="게임 이름 검색"
+                      {...fieldA11y("inventory-game", form.invalid("gameId"))}
+                      className="w-full"
+                    />
+                    <ComboboxContent>
+                      <ComboboxEmpty>추가할 수 있는 게임이 없습니다.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(game: BoardGame) => (
+                          <ComboboxItem key={game.id} value={game}>
+                            {game.name}
+                            {game.englishName && (
+                              <span className="truncate text-xs text-muted-foreground">
+                                {game.englishName}
+                              </span>
+                            )}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                )}
+                <FieldError id={errorIdOf("inventory-game")} errors={form.errors("gameId")} />
+              </Field>
+              <Field data-invalid={form.invalid("quantity")}>
+                <FieldLabel htmlFor="inventory-add-quantity">보유 수량</FieldLabel>
+                <Input
+                  id="inventory-add-quantity"
+                  name="quantity"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  defaultValue={form.text("quantity")}
+                  {...fieldA11y("inventory-add-quantity", form.invalid("quantity"))}
+                />
+                <FieldError id={errorIdOf("inventory-add-quantity")} errors={form.errors("quantity")} />
+              </Field>
+            </Fragment>
           </FieldGroup>
 
           <DialogFormFooter submitLabel="추가" pending={form.pending} disabled={loading} />

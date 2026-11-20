@@ -1,7 +1,7 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { Button } from "@avocado/ui/components/button";
 import {
@@ -38,18 +38,21 @@ export function AddWaitlistDialog({ cafeId }: { cafeId: string }) {
         대기 등록
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
-        <form key={form.formKey} action={form.formAction} noValidate>
+        <form action={form.formAction} noValidate>
           <DialogHeader>
             <DialogTitle>현장 대기 등록</DialogTitle>
             <DialogDescription>카운터에서 직접 받은 대기를 등록합니다. 번호는 오늘 순서대로 매겨집니다.</DialogDescription>
           </DialogHeader>
           <FieldGroup className="py-4">
             <FormErrorAlert message={form.formError} />
-            <div className="grid grid-cols-2 gap-4">
-              {field("name", "이름")}
-              {field("partySize", "인원", { type: "number", inputMode: "numeric", min: 1 })}
-            </div>
-            {field("phone", "휴대전화", { type: "tel", inputMode: "tel", placeholder: "010-1234-5678" })}
+            {/* 실패하면 입력 칸만 다시 그려 입력값을 되살린다. 폼 오류 영역과 버튼 줄은 그대로 두어 바뀐 오류가 읽히고 제출 버튼의 초점도 남는다. */}
+            <Fragment key={form.formKey}>
+              <div className="grid grid-cols-2 gap-4">
+                {field("name", "이름")}
+                {field("partySize", "인원", { type: "number", inputMode: "numeric", min: 1 })}
+              </div>
+              {field("phone", "휴대전화", { type: "tel", inputMode: "tel", placeholder: "010-1234-5678" })}
+            </Fragment>
           </FieldGroup>
           <DialogFormFooter submitLabel="등록" pending={form.pending} />
         </form>

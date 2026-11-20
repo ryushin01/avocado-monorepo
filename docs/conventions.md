@@ -112,7 +112,7 @@
   - 권한·없는 데이터처럼 필드와 무관한 오류는 `formError(values, "메시지")`로 만듭니다.
 - **대화상자 폼은 `useDialogForm`**(`shared/lib/use-dialog-form.ts`)으로 만듭니다.
   - 성공하면 창을 닫고 알림을 띄웁니다. 실패하면 입력값을 복원합니다.
-  - `<form key={form.formKey}>`를 꼭 붙이세요. 다시 마운트해야 `defaultValue`가 복원됩니다.
+  - 입력 칸 묶음을 `<Fragment key={form.formKey}>`로 감싸세요. 다시 마운트해야 `defaultValue`가 복원됩니다(React는 폼 액션이 끝나면 칸을 처음 값으로 되돌림). `<form>` 전체에는 key를 주지 않습니다. 폼 오류 영역(`FormErrorAlert`)과 버튼 줄은 제출해도 남아야, 바뀐 오류가 화면 낭독기에 읽히고 제출 버튼의 초점도 남습니다.
   - 대화상자는 껍데기(`XxxFormDialog`: `Dialog`·`DialogContent`)와 폼(`XxxForm`)으로 나눕니다. `DialogContent`는 닫히면 내용을 지우므로, `useDialogForm`을 안쪽 폼에서 부르면 창을 열 때마다 새 상태로 시작합니다(지난번 오류가 남지 않음).
 - **수정 폼은 낙관적 잠금을 씁니다.** 직원이 고치는 테이블에는 `version` 열이 있습니다(`db/schema.ts`).
   - 안쪽 폼이 창을 연 시점의 항목을 `const [item] = useState(latest)`로 잡고, `<input type="hidden" name="version" value={item.version} />`를 `<form>` 안에 둡니다. 숨은 칸에 props의 값을 바로 쓰면 자동 갱신으로 props가 바뀔 때 보내는 값도 바뀌어 잠금이 무력해집니다.

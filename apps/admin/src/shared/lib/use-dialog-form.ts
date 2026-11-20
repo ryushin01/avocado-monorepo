@@ -5,9 +5,9 @@ import { toast } from "sonner";
 
 import type { FormState } from "./form";
 
-// attempt: 제출할 때마다 폼을 다시 마운트해 실패 시 입력값(defaultValue)을
-// 복원한다. 별도 useState로 두면 await 이후 setState가 액션 결과와 따로
-// 커밋되므로, 반드시 액션 상태 안에 함께 둔다.
+// attempt: 제출할 때마다 입력 칸을 다시 마운트해 실패 시 입력값(defaultValue)을
+// 복원한다(React는 폼 액션이 끝나면 칸을 처음 값으로 되돌린다). 별도 useState로 두면
+// await 이후 setState가 액션 결과와 따로 커밋되므로, 반드시 액션 상태 안에 함께 둔다.
 type DialogFormState = FormState & { attempt: number };
 
 const INITIAL: DialogFormState = { status: "idle", attempt: 0 };
@@ -45,7 +45,10 @@ export function useDialogForm(
   return {
     formAction,
     pending,
-    /** form의 key로 쓴다 */
+    /**
+     * 입력 칸 묶음(`<Fragment key>`)의 key로 쓴다. form 전체에 주지 않는다: 폼 오류 영역(FormErrorAlert)과
+     * 버튼 줄이 제출해도 남아야 바뀐 오류가 화면 낭독기에 읽히고 제출 버튼의 초점도 남는다.
+     */
     formKey: state.attempt,
     formError: state.status === "error" ? state.formError : undefined,
     text(name: string) {

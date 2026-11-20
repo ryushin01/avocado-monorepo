@@ -36,6 +36,17 @@ export function SiteFooter() {
       <p className="mt-10 text-xs text-muted-foreground">
         게임 정보와 순위는 BoardGameGeek 자료를 바탕으로 합니다. 포트폴리오용 예시 사이트이며, 매장과 연락처는 가상의 정보입니다.
       </p>
+      {/* 파비콘·앱 아이콘(Flaticon 아이콘)의 출처 표기 */}
+      <p className="mt-1 text-xs text-muted-foreground">
+        로고 아이콘:{" "}
+        <a
+          href="https://www.flaticon.com/authors/amonrat-rungreangfangsai"
+          lang="en"
+          className="inline-flex min-h-6 items-center underline underline-offset-4"
+        >
+          Avocado icons created by amonrat rungreangfangsai - Flaticon
+        </a>
+      </p>
       <p className="mt-1 text-xs text-muted-foreground">© {BRAND.shortName}. All rights reserved.</p>
     </footer>
   );

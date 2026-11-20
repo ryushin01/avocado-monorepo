@@ -10,6 +10,9 @@ import { ConnectionError } from "@/shared/ui/connection-error";
 import { IdleReturn } from "@/shared/ui/idle-return";
 import { fetchCafeGames } from "@/shared/api/index.server";
 
+const LOGO_CREDIT = "Avocado icons created by amonrat rungreangfangsai - Flaticon";
+const LOGO_CREDIT_URL = "https://www.flaticon.com/authors/amonrat-rungreangfangsai";
+
 /**
  * 시작 화면: 매장 이름과 큰 메뉴 버튼.
  * 키오스크는 이 화면에 오래 머물러서 "지금 바로 이용 가능" 수가 낡지 않게 1분마다 다시 받는다.
@@ -30,9 +33,23 @@ export default function HomePage() {
         <MenuCard href="/waitlist" icon={ListOrdered} title="대기 등록" description="자리가 나면 순서대로 안내해드립니다. 내 순서도 확인할 수 있습니다." />
       </nav>
 
-      {/* 앱 아이콘(Flaticon 아이콘)의 출처 표기. 손님이 키오스크 밖으로 나가지 않게 링크는 걸지 않는다. */}
+      {/*
+        앱 아이콘(Flaticon 아이콘)의 출처 표기. 브라우저로 열면 작가 페이지 링크를 보이고,
+        매장 태블릿에 설치한 키오스크 앱(매니페스트 fullscreen, 지원하지 않으면 standalone)에서는
+        손님이 키오스크 밖으로 나가지 않게 같은 문구를 글자로만 보인다.
+      */}
       <p className="text-center text-sm text-muted-foreground">
-        로고 아이콘: <span lang="en">Avocado icons created by amonrat rungreangfangsai - Flaticon</span>
+        로고 아이콘:{" "}
+        <a
+          href={LOGO_CREDIT_URL}
+          lang="en"
+          className="inline-flex min-h-6 items-center underline underline-offset-4 [@media(display-mode:fullscreen)]:hidden [@media(display-mode:standalone)]:hidden"
+        >
+          {LOGO_CREDIT}
+        </a>
+        <span lang="en" className="hidden [@media(display-mode:fullscreen)]:inline [@media(display-mode:standalone)]:inline">
+          {LOGO_CREDIT}
+        </span>
       </p>
     </main>
   );

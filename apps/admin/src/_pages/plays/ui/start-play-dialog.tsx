@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, Play } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 
 import { listRentableGamesAction, startPlayAction } from "../api/actions";
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
@@ -70,7 +70,7 @@ export function StartPlayDialog({
         이용 시작
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <form key={form.formKey} action={form.formAction} noValidate>
+        <form action={form.formAction} noValidate>
           <DialogHeader>
             <DialogTitle>게임 이용 시작</DialogTitle>
             <DialogDescription>
@@ -81,74 +81,77 @@ export function StartPlayDialog({
 
           <FieldGroup className="py-4">
             <FormErrorAlert message={form.formError} />
-            <Field data-invalid={form.invalid("gameId")}>
-              <FieldLabel htmlFor="play-game">게임</FieldLabel>
-              {games === null || loading ? (
-                <div className="flex h-8 items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" />
-                  게임 목록을 불러오는 중…
-                </div>
-              ) : (
-                <Combobox
-                  name="gameId"
-                  items={games}
-                  defaultValue={selected}
-                  itemToStringLabel={(item: RentableGame) => item.game.name}
-                  itemToStringValue={(item: RentableGame) => item.game.id}
-                >
-                  <ComboboxInput
-                    id="play-game"
-                    placeholder="게임 이름 검색"
-                    {...fieldA11y("play-game", form.invalid("gameId"))}
-                    className="w-full"
+            {/* 실패하면 입력 칸만 다시 그려 입력값을 되살린다. 폼 오류 영역과 버튼 줄은 그대로 두어 바뀐 오류가 읽히고 제출 버튼의 초점도 남는다. */}
+            <Fragment key={form.formKey}>
+              <Field data-invalid={form.invalid("gameId")}>
+                <FieldLabel htmlFor="play-game">게임</FieldLabel>
+                {games === null || loading ? (
+                  <div className="flex h-8 items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    게임 목록을 불러오는 중…
+                  </div>
+                ) : (
+                  <Combobox
+                    name="gameId"
+                    items={games}
+                    defaultValue={selected}
+                    itemToStringLabel={(item: RentableGame) => item.game.name}
+                    itemToStringValue={(item: RentableGame) => item.game.id}
+                  >
+                    <ComboboxInput
+                      id="play-game"
+                      placeholder="게임 이름 검색"
+                      {...fieldA11y("play-game", form.invalid("gameId"))}
+                      className="w-full"
+                    />
+                    <ComboboxContent>
+                      <ComboboxEmpty>빌려줄 수 있는 게임이 없습니다.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item: RentableGame) => (
+                          <ComboboxItem key={item.game.id} value={item}>
+                            {item.game.name}
+                            <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                              {formatPlayers(item.game)} · 남은 {item.available}개
+                            </span>
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                )}
+                <FieldError id={errorIdOf("play-game")} errors={form.errors("gameId")} />
+              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field data-invalid={form.invalid("playerCount")}>
+                  <FieldLabel htmlFor="play-player-count">인원</FieldLabel>
+                  <Input
+                    id="play-player-count"
+                    name="playerCount"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    defaultValue={form.text("playerCount")}
+                    {...fieldA11y("play-player-count", form.invalid("playerCount"))}
                   />
-                  <ComboboxContent>
-                    <ComboboxEmpty>빌려줄 수 있는 게임이 없습니다.</ComboboxEmpty>
-                    <ComboboxList>
-                      {(item: RentableGame) => (
-                        <ComboboxItem key={item.game.id} value={item}>
-                          {item.game.name}
-                          <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                            {formatPlayers(item.game)} · 남은 {item.available}개
-                          </span>
-                        </ComboboxItem>
-                      )}
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
-              )}
-              <FieldError id={errorIdOf("play-game")} errors={form.errors("gameId")} />
-            </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field data-invalid={form.invalid("playerCount")}>
-                <FieldLabel htmlFor="play-player-count">인원</FieldLabel>
-                <Input
-                  id="play-player-count"
-                  name="playerCount"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  defaultValue={form.text("playerCount")}
-                  {...fieldA11y("play-player-count", form.invalid("playerCount"))}
-                />
-                <FieldError id={errorIdOf("play-player-count")} errors={form.errors("playerCount")} />
-              </Field>
-              <Field data-invalid={form.invalid("table")}>
-                <FieldLabel htmlFor="play-table">테이블 (선택)</FieldLabel>
-                <Input
-                  id="play-table"
-                  name="table"
-                  autoComplete="off"
-                  placeholder="예: 3번"
-                  defaultValue={form.text("table")}
-                  {...fieldA11y("play-table", form.invalid("table"))}
-                />
-                <FieldError id={errorIdOf("play-table")} errors={form.errors("table")} />
-              </Field>
-            </div>
-            <FieldDescription>
-              반납하면 이용 시간이 기록되고, 이용 시작 횟수가 인기 순위에 반영됩니다.
-            </FieldDescription>
+                  <FieldError id={errorIdOf("play-player-count")} errors={form.errors("playerCount")} />
+                </Field>
+                <Field data-invalid={form.invalid("table")}>
+                  <FieldLabel htmlFor="play-table">테이블 (선택)</FieldLabel>
+                  <Input
+                    id="play-table"
+                    name="table"
+                    autoComplete="off"
+                    placeholder="예: 3번"
+                    defaultValue={form.text("table")}
+                    {...fieldA11y("play-table", form.invalid("table"))}
+                  />
+                  <FieldError id={errorIdOf("play-table")} errors={form.errors("table")} />
+                </Field>
+              </div>
+              <FieldDescription>
+                반납하면 이용 시간이 기록되고, 이용 시작 횟수가 인기 순위에 반영됩니다.
+              </FieldDescription>
+            </Fragment>
           </FieldGroup>
 
           <DialogFormFooter submitLabel="이용 시작" pending={form.pending} disabled={loading} />

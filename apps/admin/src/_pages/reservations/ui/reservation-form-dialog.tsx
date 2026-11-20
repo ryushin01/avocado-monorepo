@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactElement } from "react";
+import { Fragment, type ReactElement, useState } from "react";
 
 import {
   Dialog,
@@ -135,7 +135,7 @@ function ReservationForm({
   );
 
   return (
-    <form key={form.formKey} action={form.formAction} noValidate>
+    <form action={form.formAction} noValidate>
       {reservation && <input type="hidden" name="version" value={reservation.version} />}
       <DialogHeader>
         <DialogTitle>{reservation ? "예약 수정" : "예약 등록"}</DialogTitle>
@@ -146,71 +146,74 @@ function ReservationForm({
       </DialogHeader>
       <FieldGroup className="py-4">
         <FormErrorAlert message={form.formError} />
-        <div className="grid grid-cols-2 gap-4">
-          {field("name", "이름")}
-          {field("partySize", "인원", { type: "number", inputMode: "numeric", min: 1 })}
-        </div>
-        {field("phone", "휴대전화", { type: "tel", inputMode: "tel", placeholder: "010-1234-5678" })}
-        <div className="grid grid-cols-2 gap-4">
-          {field("date", "날짜", { type: "date" })}
-          {field("time", "시각", { type: "time", step: 1800 })}
-        </div>
-        {!(reservation && reservation.status === "confirmed") && (
-          <Field data-invalid={form.invalid("status")}>
-            <FieldLabel htmlFor="reservation-status">상태</FieldLabel>
-            <Select name="status" items={STATUS_ITEMS} defaultValue={form.text("status")}>
+        {/* 실패하면 입력 칸만 다시 그려 입력값을 되살린다. 폼 오류 영역과 버튼 줄은 그대로 두어 바뀐 오류가 읽히고 제출 버튼의 초점도 남는다. */}
+        <Fragment key={form.formKey}>
+          <div className="grid grid-cols-2 gap-4">
+            {field("name", "이름")}
+            {field("partySize", "인원", { type: "number", inputMode: "numeric", min: 1 })}
+          </div>
+          {field("phone", "휴대전화", { type: "tel", inputMode: "tel", placeholder: "010-1234-5678" })}
+          <div className="grid grid-cols-2 gap-4">
+            {field("date", "날짜", { type: "date" })}
+            {field("time", "시각", { type: "time", step: 1800 })}
+          </div>
+          {!(reservation && reservation.status === "confirmed") && (
+            <Field data-invalid={form.invalid("status")}>
+              <FieldLabel htmlFor="reservation-status">상태</FieldLabel>
+              <Select name="status" items={STATUS_ITEMS} defaultValue={form.text("status")}>
+                <SelectTrigger
+                  id="reservation-status"
+                  className="w-full"
+                  {...fieldA11y("reservation-status", form.invalid("status"))}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_ITEMS.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError id={errorIdOf("reservation-status")} errors={form.errors("status")} />
+            </Field>
+          )}
+          <Field data-invalid={form.invalid("table")}>
+            <FieldLabel htmlFor="reservation-table">테이블</FieldLabel>
+            <Select name="table" items={tableChoices} defaultValue={form.text("table")}>
               <SelectTrigger
-                id="reservation-status"
+                id="reservation-table"
                 className="w-full"
-                {...fieldA11y("reservation-status", form.invalid("status"))}
+                {...fieldA11y("reservation-table", form.invalid("table"), { described: true })}
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_ITEMS.map((item) => (
+                {tableChoices.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
                     {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <FieldError id={errorIdOf("reservation-status")} errors={form.errors("status")} />
+            <FieldDescription id={descriptionIdOf("reservation-table")}>
+              자동 배정은 인원이 앉을 수 있는 가장 작은 빈 테이블을 고릅니다.
+            </FieldDescription>
+            <FieldError id={errorIdOf("reservation-table")} errors={form.errors("table")} />
           </Field>
-        )}
-        <Field data-invalid={form.invalid("table")}>
-          <FieldLabel htmlFor="reservation-table">테이블</FieldLabel>
-          <Select name="table" items={tableChoices} defaultValue={form.text("table")}>
-            <SelectTrigger
-              id="reservation-table"
-              className="w-full"
-              {...fieldA11y("reservation-table", form.invalid("table"), { described: true })}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {tableChoices.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldDescription id={descriptionIdOf("reservation-table")}>
-            자동 배정은 인원이 앉을 수 있는 가장 작은 빈 테이블을 고릅니다.
-          </FieldDescription>
-          <FieldError id={errorIdOf("reservation-table")} errors={form.errors("table")} />
-        </Field>
-        <Field data-invalid={form.invalid("memo")}>
-          <FieldLabel htmlFor="reservation-memo">메모 (선택)</FieldLabel>
-          <Textarea
-            id="reservation-memo"
-            name="memo"
-            rows={2}
-            defaultValue={form.text("memo")}
-            {...fieldA11y("reservation-memo", form.invalid("memo"))}
-          />
-          <FieldError id={errorIdOf("reservation-memo")} errors={form.errors("memo")} />
-        </Field>
+          <Field data-invalid={form.invalid("memo")}>
+            <FieldLabel htmlFor="reservation-memo">메모 (선택)</FieldLabel>
+            <Textarea
+              id="reservation-memo"
+              name="memo"
+              rows={2}
+              defaultValue={form.text("memo")}
+              {...fieldA11y("reservation-memo", form.invalid("memo"))}
+            />
+            <FieldError id={errorIdOf("reservation-memo")} errors={form.errors("memo")} />
+          </Field>
+        </Fragment>
       </FieldGroup>
       <DialogFormFooter submitLabel={reservation ? "저장" : "등록"} pending={form.pending} />
     </form>

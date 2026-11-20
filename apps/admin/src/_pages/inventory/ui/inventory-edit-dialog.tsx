@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { editInventoryAction } from "../api/actions";
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
@@ -72,7 +72,7 @@ function InventoryEditForm({
   );
 
   return (
-    <form key={form.formKey} action={form.formAction} noValidate>
+    <form action={form.formAction} noValidate>
       <input type="hidden" name="version" value={entry.version} />
       <DialogHeader>
         <DialogTitle>재고 수정</DialogTitle>
@@ -83,43 +83,46 @@ function InventoryEditForm({
 
       <FieldGroup className="py-4">
         <FormErrorAlert message={form.formError} />
-        <Field data-invalid={form.invalid("quantity")}>
-          <FieldLabel htmlFor="inventory-quantity">보유 수량</FieldLabel>
-          <Input
-            id="inventory-quantity"
-            name="quantity"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            defaultValue={form.text("quantity")}
-            {...fieldA11y("inventory-quantity", form.invalid("quantity"))}
-          />
-          <FieldError id={errorIdOf("inventory-quantity")} errors={form.errors("quantity")} />
-        </Field>
-        <Field data-invalid={form.invalid("status")}>
-          <FieldLabel htmlFor="inventory-status">상태</FieldLabel>
-          <Select
-            name="status"
-            items={STATUS_ITEMS}
-            defaultValue={form.text("status")}
-          >
-            <SelectTrigger
-              id="inventory-status"
-              className="w-full"
-              {...fieldA11y("inventory-status", form.invalid("status"))}
+        {/* 실패하면 입력 칸만 다시 그려 입력값을 되살린다. 폼 오류 영역과 버튼 줄은 그대로 두어 바뀐 오류가 읽히고 제출 버튼의 초점도 남는다. */}
+        <Fragment key={form.formKey}>
+          <Field data-invalid={form.invalid("quantity")}>
+            <FieldLabel htmlFor="inventory-quantity">보유 수량</FieldLabel>
+            <Input
+              id="inventory-quantity"
+              name="quantity"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              defaultValue={form.text("quantity")}
+              {...fieldA11y("inventory-quantity", form.invalid("quantity"))}
+            />
+            <FieldError id={errorIdOf("inventory-quantity")} errors={form.errors("quantity")} />
+          </Field>
+          <Field data-invalid={form.invalid("status")}>
+            <FieldLabel htmlFor="inventory-status">상태</FieldLabel>
+            <Select
+              name="status"
+              items={STATUS_ITEMS}
+              defaultValue={form.text("status")}
             >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_ITEMS.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError id={errorIdOf("inventory-status")} errors={form.errors("status")} />
-        </Field>
+              <SelectTrigger
+                id="inventory-status"
+                className="w-full"
+                {...fieldA11y("inventory-status", form.invalid("status"))}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_ITEMS.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError id={errorIdOf("inventory-status")} errors={form.errors("status")} />
+          </Field>
+        </Fragment>
       </FieldGroup>
 
       <DialogFormFooter submitLabel="저장" pending={form.pending} />

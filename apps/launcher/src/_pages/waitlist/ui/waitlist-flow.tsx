@@ -157,7 +157,15 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
             전화번호는 순서 확인과 호출에만 쓰고, 화면에는 보여주지 않습니다.
           </p>
           <div className="flex gap-3">
-            <Button type="button" variant="outline" size="lg" className="h-12 px-6 text-base" onClick={reset}>
+            {/* 보내는 동안(끊긴 동안 미뤄 둔 때 포함)은 막는다. 누른 등록은 연결되면 이어서 보내고 번호표를 보여 준다. */}
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="h-12 px-6 text-base"
+              onClick={reset}
+              disabled={joining}
+            >
               뒤로
             </Button>
             <Button id={SUBMIT_ID} type="submit" size="lg" className="h-12 flex-1 text-base" disabled={joining}>

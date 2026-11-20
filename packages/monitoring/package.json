@@ -1,0 +1,29 @@
+{
+  "name": "@avocado/monitoring",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./options": "./src/options.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc7 --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@avocado/logger": "workspace:*"
+  },
+  "peerDependencies": {
+    "@sentry/nextjs": "^11.11.0"
+  },
+  "devDependencies": {
+    "@avocado/config": "workspace:*",
+    "@sentry/nextjs": "^11.11.0",
+    "@vitest/coverage-v8": "5.1.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.0"
+  }
+}

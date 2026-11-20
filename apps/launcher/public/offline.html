@@ -1,0 +1,171 @@
+<!doctype html>
+<!--
+  키오스크 태블릿의 인터넷이 끊긴 채 페이지를 새로 열 때(자동 복귀, 기기 재시작 등) 서비스 워커(sw.js)가 대신 보여 주는 화면.
+  네트워크 없이 떠야 하므로 CSS·아이콘·스크립트를 모두 이 파일 안에 둔다. 색은 공통 테마(packages/ui)의 값과 같다.
+  다시 연결되면 처음 화면으로 돌아간다.
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>인터넷 연결이 끊겼습니다 · 보드게임 카페 키오스크</title>
+    <style>
+      :root {
+        --background: oklch(1 0 0);
+        --foreground: oklch(0.145 0 0);
+        --muted: oklch(0.97 0 0);
+        --muted-foreground: oklch(0.556 0 0);
+        --primary: oklch(0.205 0 0);
+        --primary-foreground: oklch(0.985 0 0);
+        --border: oklch(0.922 0 0);
+        --ring: oklch(0.708 0 0);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        /* 키오스크 화면의 bg-muted/40 */
+        background: color-mix(in oklch, var(--muted) 40%, var(--background));
+        color: var(--foreground);
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        word-break: keep-all;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+      main {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .panel {
+        display: flex;
+        width: 100%;
+        max-width: 32rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        background: var(--background);
+        padding: 3rem 1.5rem;
+        text-align: center;
+      }
+      .icon {
+        display: flex;
+        width: 2.5rem;
+        height: 2.5rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        background: var(--muted);
+      }
+      .icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      p {
+        margin: 0.5rem 0 0;
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+        line-height: 1.6;
+      }
+      button {
+        display: inline-flex;
+        height: 4rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: var(--primary);
+        padding: 0 1.5rem;
+        color: var(--primary-foreground);
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 3px solid var(--ring);
+        outline-offset: 2px;
+      }
+      #status {
+        min-height: 1.5em;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="main" tabindex="-1">
+      <div class="panel">
+        <div class="icon" aria-hidden="true">
+          <!-- lucide wifi-off (ISC) -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h.01" />
+            <path d="M8.5 16.429a5 5 0 0 1 7 0" />
+            <path d="M5 12.859a10 10 0 0 1 5.17-2.69" />
+            <path d="M19 12.859a10 10 0 0 0-2.007-1.523" />
+            <path d="M2 8.82a15 15 0 0 1 4.177-2.643" />
+            <path d="M22 8.82a15 15 0 0 0-11.288-3.764" />
+            <path d="m2 2 20 20" />
+          </svg>
+        </div>
+        <div>
+          <h1>인터넷 연결이 끊겼습니다</h1>
+          <p>다시 연결되면 처음 화면으로 돌아갑니다. 계속되면 직원에게 알려주세요.</p>
+        </div>
+        <button type="button" id="retry">다시 연결해 보기</button>
+        <p id="status" role="status"></p>
+      </div>
+    </main>
+    <script>
+      (function () {
+        var status = document.getElementById("status");
+        var retry = document.getElementById("retry");
+        var checking = false;
+
+        // 처음 화면이 실제로 열리는지 확인한다. navigator.onLine은 공유기에만 붙어 있어도 true라 믿지 않는다.
+        function check(byUser) {
+          if (checking) return;
+          checking = true;
+          if (byUser) status.textContent = "연결을 확인하는 중입니다.";
+          fetch("/", { method: "HEAD", cache: "no-store" })
+            .then(function (response) {
+              if (!response.ok) throw new Error("응답 " + response.status);
+              location.replace("/");
+            })
+            .catch(function () {
+              checking = false;
+              if (byUser) status.textContent = "아직 연결되지 않았습니다. 잠시 후 다시 확인합니다.";
+            });
+        }
+
+        retry.addEventListener("click", function () {
+          check(true);
+        });
+        window.addEventListener("online", function () {
+          check(false);
+        });
+        setInterval(function () {
+          check(false);
+        }, 10000);
+      })();
+    </script>
+  </body>
+</html>

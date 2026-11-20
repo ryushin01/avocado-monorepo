@@ -15,14 +15,19 @@
     "screenshots": "SCREENSHOTS=1 playwright test --project=screenshots",
     "db:generate": "drizzle-kit generate",
     "create-admin": "tsx scripts/create-admin.ts",
+    "db:prune": "tsx scripts/prune.ts",
+    "db:backup": "tsx scripts/backup.ts",
+    "db:restore": "tsx scripts/restore.ts",
     "db:reset": "node -e \"require('fs').rmSync('.data/pglite',{recursive:true,force:true})\" && echo \"개발 DB를 지웠습니다. 다음 실행 때 시드로 다시 만듭니다.\""
   },
   "dependencies": {
     "@avocado/config": "workspace:*",
     "@avocado/domain": "workspace:*",
     "@avocado/logger": "workspace:*",
+    "@avocado/monitoring": "workspace:*",
     "@avocado/ui": "workspace:*",
     "@electric-sql/pglite": "0.5.16",
+    "@sentry/nextjs": "^11.11.0",
     "@tanstack/react-table": "^9.3.1",
     "@tanstack/react-virtual": "^3.14.26",
     "bcryptjs": "3.0.3",
@@ -41,6 +46,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@electric-sql/pglite-tools": "0.4.16",
     "@feature-sliced/steiger-plugin": "^0.8.2",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "^4.3.5",

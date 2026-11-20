@@ -1,9 +1,16 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { captureException } from "@/shared/lib/monitoring";
 import { ErrorNotice } from "@/shared/ui/error-notice";
 import { IdleReturn } from "@/shared/ui/idle-return";
 
 export function RouteError({ error, retry }: { error: unknown; retry: () => void }) {
+  useEffect(() => {
+    captureException(error);
+  }, [error]);
+
   return (
     <>
       {/* 손님이 그대로 두고 떠나도 키오스크가 오류 화면에 머물지 않게 한다. */}

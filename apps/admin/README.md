@@ -92,6 +92,8 @@ left@example.com(정퇴사)은 퇴사 처리된 직원이라 로그인할 수 �
 | `pnpm e2e` | E2E 테스트 (Playwright). 백오피스(3100, 메모리 DB)와 키오스크 테스트용 런처(3101)를 프로덕션 빌드로 직접 띄우고, 실제 로그인 화면으로 로그인 |
 | `pnpm db:generate` | `src/db/schema.ts`를 바꾼 뒤 마이그레이션 SQL 만들기 (`src/db/migrations`, git에 넣음) |
 | `pnpm create-admin --email <이메일> --name <이름>` | 운영 DB에 첫 관리자 만들기 (관리자가 없을 때만). 임시 비밀번호를 한 번 보여 줌 (`docs/deployment.md`) |
+| `pnpm db:prune` | 보관 기간이 지난 기록 지우기(손님 예약·대기 90일, 변경 이력 2년). 운영에서는 하루 한 번 (`docs/deployment.md`) |
+| `pnpm db:backup [파일]` / `pnpm db:restore <파일> [폴더]` | 백업 SQL(pg_dump 형식) 만들기 / 개발용 PGlite DB로 복원해 확인하기 |
 | `pnpm db:reset` | 개발 DB(`.data/pglite`) 지우기. 다음 실행 때 시드로 다시 만듦 |
 
 게임 카탈로그와 썸네일은 공통 패키지 `packages/domain`에 있습니다. avocado 데이터에서 다시 만드는 방법은 루트 README를 보세요.

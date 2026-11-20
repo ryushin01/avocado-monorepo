@@ -41,8 +41,9 @@ function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
     <ComboboxPrimitive.Clear
       data-slot="combobox-clear"
       render={<InputGroupButton variant="ghost" size="icon-xs" />}
-      // 아이콘만 있는 버튼이라 이름을 준다(KWCAG 5.1.1).
+      // 아이콘만 있는 버튼이라 이름을 준다(KWCAG 5.1.1). 키보드는 입력란에서 지우므로 탭 순서에는 넣지 않는다.
       aria-label="지우기"
+      tabIndex={-1}
       className={cn(className)}
       {...props}
     >
@@ -75,6 +76,9 @@ function ComboboxInput({
             variant="ghost"
             render={<ComboboxTrigger />}
             aria-label="목록 열기"
+            // WAI-ARIA APG 콤보박스처럼 버튼은 탭 순서에 넣지 않는다(키보드는 입력란에서 ↓·Alt+↓로 연다).
+            // 목록이 열린 동안 Base UI가 바깥을 화면 낭독기에서 숨길 때 이 버튼에 초점이 남지 않게 한다.
+            tabIndex={-1}
             data-slot="input-group-button"
             className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
             disabled={disabled}

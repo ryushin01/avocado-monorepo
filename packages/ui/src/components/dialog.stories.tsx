@@ -19,10 +19,9 @@ const meta = { title: "부품/Dialog", component: Dialog } satisfies Meta<typeof
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 열면 첫 칸으로 초점이 가고, Esc로 닫으면 연 버튼으로 돌아온다. */
-export const Default: Story = {
-  render: () => (
-    <Dialog>
+function ReservationDialog({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  return (
+    <Dialog defaultOpen={defaultOpen}>
       <DialogTrigger render={<Button />}>예약 등록</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -41,5 +40,11 @@ export const Default: Story = {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  ),
-};
+  );
+}
+
+/** 열면 첫 칸으로 초점이 가고, Esc로 닫으면 연 버튼으로 돌아온다. */
+export const Default: Story = { render: () => <ReservationDialog /> };
+
+/** 연 상태(접근성 검사용, 문서 페이지에서는 뺌) */
+export const Open: Story = { tags: ["!autodocs"], render: () => <ReservationDialog defaultOpen /> };

@@ -87,7 +87,7 @@ Node.js 24 이상과 pnpm 12가 필요합니다. 명령은 모두 저장소 루�
 
 ```bash
 pnpm install
-pnpm exec playwright install chromium   # E2E 테스트를 돌릴 때만
+pnpm exec playwright install chromium   # E2E나 스토리 접근성 검사(test:stories)를 돌릴 때만
 pnpm dev                                # 세 앱을 모두 띄움 (DB 설치 불필요)
 ```
 

@@ -11,12 +11,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** 대여 시작처럼 긴 목록에서 이름으로 골라야 할 때 쓴다. */
-export const Default: Story = {
-  render: () => (
+function GameCombobox({ id, defaultOpen = false }: { id: string; defaultOpen?: boolean }) {
+  return (
     <Field className="w-72">
-      <FieldLabel htmlFor="combobox-game">게임</FieldLabel>
-      <Combobox items={GAMES}>
-        <ComboboxInput id="combobox-game" placeholder="게임 이름 검색" className="w-full" />
+      <FieldLabel htmlFor={id}>게임</FieldLabel>
+      <Combobox items={GAMES} defaultOpen={defaultOpen}>
+        <ComboboxInput id={id} placeholder="게임 이름 검색" className="w-full" />
         <ComboboxContent>
           <ComboboxEmpty>찾는 게임이 없습니다.</ComboboxEmpty>
           <ComboboxList>
@@ -29,5 +29,10 @@ export const Default: Story = {
         </ComboboxContent>
       </Combobox>
     </Field>
-  ),
-};
+  );
+}
+
+export const Default: Story = { render: () => <GameCombobox id="combobox-game" /> };
+
+/** 연 상태(접근성 검사용, 문서 페이지에서는 뺌) */
+export const Open: Story = { tags: ["!autodocs"], render: () => <GameCombobox id="combobox-game-open" defaultOpen /> };

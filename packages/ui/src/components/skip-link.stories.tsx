@@ -24,7 +24,9 @@ export const Default: Story = {
         <Link href="/reservations">예약·대기</Link>
       </nav>
       <main id="main" tabIndex={-1} className="mt-4">
-        <p className="text-sm">이 칸을 누른 뒤 Shift+Tab을 눌러 보면 &lsquo;본문 바로가기&rsquo;가 나타납니다.</p>
+        <p className="text-sm">
+          이 칸을 누른 뒤 Shift+Tab을 반복해서 눌러 세 메뉴 링크를 지나면 &lsquo;본문 바로가기&rsquo;가 나타납니다.
+        </p>
       </main>
     </div>
   ),

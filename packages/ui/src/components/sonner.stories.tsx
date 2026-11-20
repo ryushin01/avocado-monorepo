@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { Button } from "./button";
@@ -23,3 +24,14 @@ export const Default: Story = {
     </>
   ),
 };
+
+function ShownToasts() {
+  useEffect(() => {
+    toast.success("'김철수' 예약을 등록했습니다.");
+    toast.error("다른 직원이 먼저 이 예약을 바꿨습니다.");
+  }, []);
+  return <Toaster />;
+}
+
+/** 알림이 떠 있는 상태(접근성 검사용, 문서 페이지에서는 뺌) */
+export const Shown: Story = { tags: ["!autodocs"], render: () => <ShownToasts /> };

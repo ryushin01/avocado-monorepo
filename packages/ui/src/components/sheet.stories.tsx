@@ -16,9 +16,9 @@ const meta = { title: "부품/Sheet", component: Sheet } satisfies Meta<typeof S
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: () => (
-    <Sheet>
+function SiteMenu({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  return (
+    <Sheet defaultOpen={defaultOpen}>
       <SheetTrigger render={<Button variant="outline" />}>메뉴 열기</SheetTrigger>
       <SheetContent side="right">
         <SheetHeader>
@@ -38,5 +38,10 @@ export const Default: Story = {
         </nav>
       </SheetContent>
     </Sheet>
-  ),
-};
+  );
+}
+
+export const Default: Story = { render: () => <SiteMenu /> };
+
+/** 연 상태(접근성 검사용, 문서 페이지에서는 뺌) */
+export const Open: Story = { tags: ["!autodocs"], render: () => <SiteMenu defaultOpen /> };

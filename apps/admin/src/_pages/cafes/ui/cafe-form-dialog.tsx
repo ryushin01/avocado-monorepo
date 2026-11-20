@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactElement } from "react";
+import { Fragment, type ReactElement, useState } from "react";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
@@ -95,7 +95,7 @@ function CafeForm({
   );
 
   return (
-    <form key={form.formKey} action={form.formAction} noValidate>
+    <form action={form.formAction} noValidate>
       {cafe && <input type="hidden" name="version" value={cafe.version} />}
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
@@ -104,17 +104,20 @@ function CafeForm({
 
       <FieldGroup className="py-4">
         <FormErrorAlert message={form.formError} />
-        {textField("name", "매장 이름", { placeholder: "예: 강남점" })}
-        <div className="grid grid-cols-2 gap-4">
-          {textField("region", "지역", { placeholder: "예: 서울" })}
-          {textField("openedAt", "개점일", { type: "date" })}
-        </div>
-        {textField("address", "주소 (선택)")}
-        {textField("phone", "전화번호 (선택)", {
-          type: "tel",
-          inputMode: "tel",
-          placeholder: "02-1234-5678",
-        })}
+        {/* 실패하면 입력 칸만 다시 그려 입력값을 되살린다. 폼 오류 영역과 버튼 줄은 그대로 두어 바뀐 오류가 읽히고 제출 버튼의 초점도 남는다. */}
+        <Fragment key={form.formKey}>
+          {textField("name", "매장 이름", { placeholder: "예: 강남점" })}
+          <div className="grid grid-cols-2 gap-4">
+            {textField("region", "지역", { placeholder: "예: 서울" })}
+            {textField("openedAt", "개점일", { type: "date" })}
+          </div>
+          {textField("address", "주소 (선택)")}
+          {textField("phone", "전화번호 (선택)", {
+            type: "tel",
+            inputMode: "tel",
+            placeholder: "02-1234-5678",
+          })}
+        </Fragment>
       </FieldGroup>
 
       <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />

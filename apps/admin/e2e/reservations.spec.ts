@@ -98,8 +98,13 @@ test.describe("동시 수정 (낙관적 잠금)", () => {
     });
     await expect(row).toContainText("6명");
     await mine.getByLabel("메모 (선택)").fill("창가 자리");
+    // 폼 오류 영역은 제출 전부터 있고(비어 있음), 제출해도 같은 요소에 내용만 바뀌어 화면 낭독기가 읽는다.
+    const formAlert = await mine.locator('[data-slot="alert"]').elementHandle();
     await mine.getByRole("button", { name: "저장" }).click();
     await expect(mine.getByText("이 창을 연 뒤 다른 직원이 예약을 먼저 바꿨습니다.", { exact: false })).toBeVisible();
+    expect(await formAlert?.evaluate((el) => el.isConnected && el.textContent?.includes("먼저 바꿨습니다"))).toBe(true);
+    // 버튼 줄도 다시 그리지 않아 누른 저장 버튼에 초점이 남는다.
+    await expect(mine.getByRole("button", { name: "저장" })).toBeFocused();
     // 다시 눌러도 덮어쓰지 않는다.
     await mine.getByRole("button", { name: "저장" }).click();
     await expect(mine.getByText("이 창을 연 뒤 다른 직원이 예약을 먼저 바꿨습니다.", { exact: false })).toBeVisible();

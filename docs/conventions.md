@@ -44,7 +44,13 @@
   - CLI가 만든 파일 안에서 같은 패키지의 컴포넌트를 `@avocado/ui/components/...`로 가져오면 상대 경로(`./button`)로 바꿉니다.
   - 테마(색·반경 토큰)는 `packages/ui/src/styles/globals.css`입니다. 앱의 `globals.css`는 이것을 가져오고 `@source`로 `packages/ui/src`를 알려줘야 공통 컴포넌트의 클래스가 빠지지 않습니다. 앱만의 색은 앱의 `globals.css`에서 덮어씁니다(홍보 사이트의 주황 강조색 등).
   - 아이콘은 lucide(`lucide-react`)를 씁니다.
+  - 밝은 테마의 `--destructive`는 red-700입니다. destructive 버튼·배지는 옅은 붉은 배경(`destructive/10`) 위에 붉은 글자를 쓰는데, red-600이면 대비가 4.0:1이라 4.5:1에 못 미칩니다.
   - 두 앱이 함께 쓰는 훅·도우미도 이 패키지에 둡니다: `@avocado/ui/hooks/use-auto-refresh`(화면이 보이는 동안 주기적으로 `router.refresh()`), `@avocado/ui/lib/field-a11y`(입력 칸 접근성 속성).
+  - **스토리(Storybook):** 공통 부품마다 옆에 `<이름>.stories.tsx`를 둡니다(`pnpm storybook` → http://localhost:6006).
+    - 예시는 앱 문맥의 한국어로 쓰고, 스토리도 접근 가능하게(칸 라벨, 아이콘 버튼 이름) 씁니다. 한 문서 페이지에 여러 스토리가 함께 그려지므로 `id`는 스토리마다 다르게 짓습니다.
+    - CI가 모든 스토리를 axe로 검사합니다(`pnpm build-storybook && pnpm test:stories`, `packages/ui/scripts/check-stories-a11y.mjs`). portal로 그리는 팝업까지 보도록 문서 전체를 검사하고, 부품 하나만 놓인 화면이라 페이지 단위 규칙(랜드마크·h1·본문 바로가기)은 끕니다. 앱 E2E가 덜 보는 상태(대화상자, 오류 칸, 변형별 색)를 여기서 잡습니다.
+    - 팝업·알림은 열린 상태 스토리(`Open`, `Shown`)를 따로 두고 `tags: ["!autodocs"]`로 문서 페이지에서는 뺍니다. 부품을 더하거나 고치면 스토리도 함께 고칩니다.
+    - `next/link`·라우터를 쓰는 부품은 `@storybook/nextjs-vite`가 대신합니다. Tailwind는 Vite 플러그인으로 앱과 같은 `globals.css`를 씁니다.
   - **목록 묶음(`ItemGroup`)은 `role="list"`입니다.** 안의 `Item`에 `role="listitem"`을 주고, 항목이 링크라면 `<div role="listitem">`으로 감쌉니다. 불러오는 중·없음 안내는 목록 밖에 둡니다.
 - **shadcn 스타일은 `base-nova`이고 Radix가 아니라 Base UI 기반입니다.**
   - 다른 요소로 렌더링할 때는 `asChild` 대신 `render` prop을 씁니다. 예: `<DialogTrigger render={<Button />}>`
@@ -57,9 +63,10 @@
     - 선택지는 `DropdownMenuGroup` + `DropdownMenuLabel`로 메인 메뉴에 바로 둡니다.
   - **Base UI Checkbox**는 보이는 `role="checkbox"` 요소와 숨은 `<input>`이 따로 있습니다. 테스트에서는 `getByRole("checkbox", { name, exact: true })`로 찾습니다.
 - **shadcn 컴포넌트를 고친 곳**(다시 `add --overwrite`하면 사라지므로 주의, 모두 `packages/ui/src` 아래)
-  - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구
+  - `components/pagination.tsx`: Next.js Link, 한글 화면 낭독기 문구. 이전·다음의 보이는 기본 글자도 `이전`·`다음`이라 접근 이름(`이전 페이지`)에 들어갑니다(KWCAG 6.5.3)
+  - `components/combobox.tsx`: 아이콘만 있는 열기·지우기 버튼에 이름(`목록 열기`, `지우기`). 두 버튼은 탭 순서에서 뺍니다(WAI-ARIA APG 콤보박스처럼 키보드는 입력란에서 ↓·Alt+↓로 열고, 목록이 열린 동안 Base UI가 바깥을 숨길 때 초점이 남지 않게)
   - `components/table.tsx`: `label`(표 이름)을 받고, 표가 가로로 넘칠 때만 바깥 영역이 이름 있는 영역(`role="region"`, `tabIndex=0`)이 되어 키보드로 스크롤할 수 있습니다. 같은 화면에 표가 여럿이면 `label`을 서로 다르게 줍니다
-  - `components/sonner.tsx`: 테마 기능이 없어 `next-themes` 대신 밝은 테마로 고정
+  - `components/sonner.tsx`: 테마 기능이 없어 `next-themes` 대신 밝은 테마로 고정. 알림 영역 이름은 `알림`(기본값은 영어 `Notifications`)
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석. 끝에 닿은 버튼은 초점이 사라지지 않게 `disabled` 대신 `aria-disabled`를 쓰고, 화면 밖 슬라이드는 탭 순서에서 빠지도록 `inert`를 겁니다
   - `dialog`, `sheet`, `breadcrumb`, `spinner`, `carousel`, `pagination`, `sidebar`: 화면 낭독기가 읽는 영어 기본 문구를 한국어로 바꿈

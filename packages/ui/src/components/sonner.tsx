@@ -9,6 +9,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme="light"
+      // 알림 영역의 이름. 기본값(Notifications)은 영어로 읽힌다.
+      containerAriaLabel="알림"
       className="toaster group"
       icons={{
         success: (

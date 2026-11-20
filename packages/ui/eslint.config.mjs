@@ -4,6 +4,8 @@ import { nextAppConfig } from "@avocado/config/eslint-next";
 
 export default defineConfig([
   ...nextAppConfig,
+  // Storybook 빌드 결과
+  { ignores: ["storybook-static/**"] },
   // shadcn/ui CLI가 만든 원본 부품이라 고치면 다시 받을 때 덮어써진다. 규칙 쪽에서 예외로 둔다.
   {
     // Label은 쓰는 곳에서 htmlFor를 넘기는 감싸개다.

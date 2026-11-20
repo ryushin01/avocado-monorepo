@@ -14,6 +14,9 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "e2e": "turbo run e2e",
+    "storybook": "pnpm --filter @avocado/ui storybook",
+    "build-storybook": "pnpm --filter @avocado/ui build-storybook",
+    "test:stories": "pnpm --filter @avocado/ui test:stories",
     "import:avocado": "pnpm --filter @avocado/domain import:avocado",
     "import:avocado-images": "pnpm --filter @avocado/domain import:avocado-images",
     "import:avocado-media": "pnpm --filter @avocado/web import:avocado-media"

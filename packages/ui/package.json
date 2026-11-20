@@ -11,7 +11,10 @@
   },
   "scripts": {
     "typecheck": "tsc7 --noEmit",
-    "lint": "eslint"
+    "lint": "eslint",
+    "storybook": "storybook dev --port 6006 --no-open",
+    "build-storybook": "storybook build --output-dir storybook-static --quiet",
+    "test:stories": "node scripts/check-stories-a11y.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -32,13 +35,21 @@
   },
   "devDependencies": {
     "@avocado/config": "workspace:*",
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0",
+    "@storybook/addon-a11y": "10.6.7",
+    "@storybook/addon-docs": "10.6.7",
+    "@storybook/nextjs-vite": "10.6.7",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "next": "16.4.6",
     "shadcn": "^4.23.0",
+    "storybook": "10.6.7",
     "tailwindcss": "^4.3.5",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vite": "^8.3.8"
   }
 }

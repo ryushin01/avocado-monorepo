@@ -13,9 +13,9 @@ const admin = { role: "admin" as const };
 const staff = { role: "staff" as const, cafeId: "c_hongdae" };
 
 const SEED_CAFES: Cafe[] = [
-  { id: "c_gangnam", name: "강남점", region: "서울", address: "서울 강남구", phone: "02-0000-0001", openedAt: "2023-03-02", status: "open" },
-  { id: "c_hongdae", name: "홍대점", region: "서울", address: "서울 마포구", phone: "02-0000-0002", openedAt: "2023-07-15", status: "open" },
-  { id: "c_pangyo", name: "판교점", region: "경기", address: "경기 성남시 분당구", phone: "031-000-0003", openedAt: "2024-02-01", status: "open" },
+  { id: "c_gangnam", name: "강남점", region: "서울", address: "서울 강남구", phone: "02-0000-0001", openedAt: "2023-03-02", status: "open", version: 1 },
+  { id: "c_hongdae", name: "홍대점", region: "서울", address: "서울 마포구", phone: "02-0000-0002", openedAt: "2023-07-15", status: "open", version: 1 },
+  { id: "c_pangyo", name: "판교점", region: "경기", address: "경기 성남시 분당구", phone: "031-000-0003", openedAt: "2024-02-01", status: "open", version: 1 },
 ];
 
 describe("permissions", () => {

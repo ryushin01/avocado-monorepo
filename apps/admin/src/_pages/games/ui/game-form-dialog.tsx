@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
@@ -95,9 +95,45 @@ export function GameFormDialog({
   onOpenChange: (open: boolean) => void;
   trigger?: ReactElement;
 }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger render={trigger} />}
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+        {/* 창을 열 때마다 새로 마운트되어 그때의 값·버전으로 시작한다. */}
+        <GameForm
+          title={title}
+          description={description}
+          submitLabel={submitLabel}
+          game={game}
+          action={action}
+          onSaved={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function GameForm({
+  title,
+  description,
+  submitLabel,
+  game: latest,
+  action,
+  onSaved,
+}: {
+  title: string;
+  description: string;
+  submitLabel: string;
+  game?: BoardGame;
+  action: (prev: FormState, formData: FormData) => Promise<FormState>;
+  onSaved: () => void;
+}) {
+  // 창을 연 시점의 값. 열려 있는 동안 화면이 다시 받아져도 이 값과 버전을 쓰고,
+  // 그사이 다른 직원이 고쳤다면 저장할 때 서버가 버전으로 알아채 덮어쓰지 않는다.
+  const [game] = useState(latest);
   const form = useDialogForm(action, {
     defaults: toFormValues(game),
-    onSuccess: () => onOpenChange(false),
+    onSuccess: onSaved,
   });
   const { text, list, invalid } = form;
   const fieldError = form.errors;
@@ -110,84 +146,80 @@ export function GameFormDialog({
     textField(name, label, { type: "number", inputMode: "numeric", min: 1 });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger && <DialogTrigger render={trigger} />}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-        <form key={form.formKey} action={form.formAction} noValidate>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
+    <form key={form.formKey} action={form.formAction} noValidate>
+      {game && <input type="hidden" name="version" value={game.version} />}
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
 
-          <FieldGroup className="py-4">
-            <FormErrorAlert message={form.formError} />
+      <FieldGroup className="py-4">
+        <FormErrorAlert message={form.formError} />
 
-            {textField("name", "게임 이름")}
-            {textField("englishName", "영문 이름 (선택)")}
-            {textField("imageUrl", "이미지 주소 (선택)", {
-              type: "url",
-              placeholder: "https://",
-            })}
+        {textField("name", "게임 이름")}
+        {textField("englishName", "영문 이름 (선택)")}
+        {textField("imageUrl", "이미지 주소 (선택)", {
+          type: "url",
+          placeholder: "https://",
+        })}
 
-            <FieldSet data-invalid={invalid("categories")}>
-              <FieldLegend variant="label">카테고리</FieldLegend>
-              <div className="grid grid-cols-2 gap-3">
-                {GAME_CATEGORIES.map((category) => (
-                  <Field key={category} orientation="horizontal">
-                    <Checkbox
-                      id={`game-category-${category}`}
-                      name="categories"
-                      value={category}
-                      defaultChecked={list("categories").includes(category)}
-                      {...fieldA11y("game-categories", invalid("categories"))}
-                    />
-                    <FieldLabel
-                      htmlFor={`game-category-${category}`}
-                      className="font-normal"
-                    >
-                      {GAME_CATEGORY_LABELS[category]}
-                    </FieldLabel>
-                  </Field>
-                ))}
-              </div>
-              <FieldError id={errorIdOf("game-categories")} errors={fieldError("categories")} />
-            </FieldSet>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Field data-invalid={invalid("difficulty")} className="col-span-2">
-                <FieldLabel htmlFor="game-difficulty">난이도</FieldLabel>
-                <Select
-                  name="difficulty"
-                  items={DIFFICULTY_ITEMS}
-                  defaultValue={text("difficulty") || "normal"}
+        <FieldSet data-invalid={invalid("categories")}>
+          <FieldLegend variant="label">카테고리</FieldLegend>
+          <div className="grid grid-cols-2 gap-3">
+            {GAME_CATEGORIES.map((category) => (
+              <Field key={category} orientation="horizontal">
+                <Checkbox
+                  id={`game-category-${category}`}
+                  name="categories"
+                  value={category}
+                  defaultChecked={list("categories").includes(category)}
+                  {...fieldA11y("game-categories", invalid("categories"))}
+                />
+                <FieldLabel
+                  htmlFor={`game-category-${category}`}
+                  className="font-normal"
                 >
-                  <SelectTrigger
-                    id="game-difficulty"
-                    className="w-full"
-                    {...fieldA11y("game-difficulty", invalid("difficulty"))}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DIFFICULTY_ITEMS.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldError id={errorIdOf("game-difficulty")} errors={fieldError("difficulty")} />
+                  {GAME_CATEGORY_LABELS[category]}
+                </FieldLabel>
               </Field>
-              {numberField("minPlayers", "최소 인원")}
-              {numberField("maxPlayers", "최대 인원")}
-              {numberField("playTimeMin", "최소 플레이 시간(분)")}
-              {numberField("playTimeMax", "최대 플레이 시간(분)")}
-            </div>
-          </FieldGroup>
+            ))}
+          </div>
+          <FieldError id={errorIdOf("game-categories")} errors={fieldError("categories")} />
+        </FieldSet>
 
-          <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
-        </form>
-      </DialogContent>
-    </Dialog>
+        <div className="grid grid-cols-2 gap-4">
+          <Field data-invalid={invalid("difficulty")} className="col-span-2">
+            <FieldLabel htmlFor="game-difficulty">난이도</FieldLabel>
+            <Select
+              name="difficulty"
+              items={DIFFICULTY_ITEMS}
+              defaultValue={text("difficulty") || "normal"}
+            >
+              <SelectTrigger
+                id="game-difficulty"
+                className="w-full"
+                {...fieldA11y("game-difficulty", invalid("difficulty"))}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DIFFICULTY_ITEMS.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError id={errorIdOf("game-difficulty")} errors={fieldError("difficulty")} />
+          </Field>
+          {numberField("minPlayers", "최소 인원")}
+          {numberField("maxPlayers", "최대 인원")}
+          {numberField("playTimeMin", "최소 플레이 시간(분)")}
+          {numberField("playTimeMax", "최대 플레이 시간(분)")}
+        </div>
+      </FieldGroup>
+
+      <DialogFormFooter submitLabel={submitLabel} pending={form.pending} />
+    </form>
   );
 }

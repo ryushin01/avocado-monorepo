@@ -1,8 +1,9 @@
+import type { New } from "@/db/mappers";
 import { CATALOG_GAMES, type CatalogGame } from "@avocado/domain/catalog";
 
 import type { BoardGame } from "@/entities/game";
 
-type Seed = Omit<BoardGame, "id" | "createdAt">;
+type Seed = Omit<BoardGame, "id" | "createdAt" | "version">;
 
 /** 공통 카탈로그(avocado 변환 결과)에서 백오피스가 쓰는 항목만 고른다. */
 const toSeed = (g: CatalogGame): Seed => ({
@@ -19,7 +20,7 @@ const toSeed = (g: CatalogGame): Seed => ({
   difficulty: g.difficulty,
 });
 
-export function createSeedGames(seeds: Seed[] = CATALOG_GAMES.map(toSeed)): BoardGame[] {
+export function createSeedGames(seeds: Seed[] = CATALOG_GAMES.map(toSeed)): New<BoardGame>[] {
   const base = Date.UTC(2026, 9, 1);
   return seeds.map((seed, i) => ({
     ...seed,

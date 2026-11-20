@@ -4,10 +4,12 @@ import type { Database } from "@/db/index";
 import { newId } from "@/db/ids";
 import { toCafe } from "@/db/mappers";
 import { cafes, inventoryItems, playSessions, users } from "@/db/schema";
+import { nextVersion } from "@/db/version";
 
 import type { CafeInput, Cafe, CafeOverview, CafeStatus } from "@/entities/cafe";
 
-export type CafeSaveError = "not-found" | "duplicate-name";
+/** changed: 수정 폼을 연 뒤 다른 관리자가 먼저 고치거나 폐점·운영 재개함 */
+export type CafeSaveError = "not-found" | "duplicate-name" | "changed";
 export type CafeStatusError = "not-found" | "in-use";
 
 /** 백엔드를 바꾸면 이 인터페이스의 구현만 교체한다. */
@@ -18,7 +20,8 @@ export interface CafeRepository {
   /** 매장 관리 화면용: 운영 중인 매장 먼저, 보유 게임·직원·이용 중 수와 함께 */
   overview(): Promise<CafeOverview[]>;
   create(input: CafeInput): Promise<Cafe | "duplicate-name">;
-  update(id: string, input: CafeInput): Promise<Cafe | CafeSaveError>;
+  /** version: 수정 폼을 연 시점의 버전. 그사이 바뀌었으면 덮어쓰지 않고 "changed" */
+  update(id: string, input: CafeInput, version: number): Promise<Cafe | CafeSaveError>;
   /** 이용 중인 게임이 있으면 폐점할 수 없다. */
   setStatus(id: string, status: CafeStatus): Promise<Cafe | CafeStatusError>;
 }
@@ -96,16 +99,23 @@ export function createCafeRepository(db: Database): CafeRepository {
       return toCafe(row);
     },
 
-    async update(id, input) {
-      if (!(await this.get(id))) return "not-found";
+    async update(id, input, version) {
+      const current = await this.get(id);
+      if (!current) return "not-found";
+      if (current.version !== version) return "changed";
       if (await nameTaken(input.name, id)) return "duplicate-name";
       // 폼에서 비운 선택 항목(주소·전화번호)은 지운다.
       const [row] = await db
         .update(cafes)
-        .set({ ...input, address: input.address ?? null, phone: input.phone ?? null })
-        .where(eq(cafes.id, id))
+        .set({
+          ...input,
+          address: input.address ?? null,
+          phone: input.phone ?? null,
+          version: nextVersion(),
+        })
+        .where(and(eq(cafes.id, id), eq(cafes.version, version)))
         .returning();
-      return toCafe(row);
+      return row ? toCafe(row) : "changed";
     },
 
     async setStatus(id, status) {
@@ -119,7 +129,7 @@ export function createCafeRepository(db: Database): CafeRepository {
       }
       const [row] = await db
         .update(cafes)
-        .set({ status, closedAt: status === "closed" ? new Date() : null })
+        .set({ status, closedAt: status === "closed" ? new Date() : null, version: nextVersion() })
         .where(eq(cafes.id, id))
         .returning();
       return toCafe(row);

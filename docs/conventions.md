@@ -105,6 +105,12 @@
 - **대화상자 폼은 `useDialogForm`**(`shared/lib/use-dialog-form.ts`)으로 만듭니다.
   - 성공하면 창을 닫고 알림을 띄웁니다. 실패하면 입력값을 복원합니다.
   - `<form key={form.formKey}>`를 꼭 붙이세요. 다시 마운트해야 `defaultValue`가 복원됩니다.
+  - 대화상자는 껍데기(`XxxFormDialog`: `Dialog`·`DialogContent`)와 폼(`XxxForm`)으로 나눕니다. `DialogContent`는 닫히면 내용을 지우므로, `useDialogForm`을 안쪽 폼에서 부르면 창을 열 때마다 새 상태로 시작합니다(지난번 오류가 남지 않음).
+- **수정 폼은 낙관적 잠금을 씁니다.** 직원이 고치는 테이블에는 `version` 열이 있습니다(`db/schema.ts`).
+  - 안쪽 폼이 창을 연 시점의 항목을 `const [item] = useState(latest)`로 잡고, `<input type="hidden" name="version" value={item.version} />`를 `<form>` 안에 둡니다. 숨은 칸에 props의 값을 바로 쓰면 자동 갱신으로 props가 바뀔 때 보내는 값도 바뀌어 잠금이 무력해집니다.
+  - 서버 액션은 `parseVersion(values)`로 읽어 저장소에 넘기고, 저장소는 쓸 때 `nextVersion()`(`db/version.ts`)으로 새 버전을 받습니다. 버전은 모든 표가 함께 쓰는 시퀀스(`row_version`)에서 받아 다시 나오지 않으므로, 행을 지우고 다시 만들어도 예전 폼의 버전과 겹치지 않습니다. 테스트에서도 버전 숫자를 짐작하지 말고 DB에서 읽어 씁니다.
+  - 충돌은 저장소에 따라 두 방식으로 찾습니다. 게임·매장·예약은 `WHERE version = 그 값`인 조건부 UPDATE가 0행이면 `changed`입니다. 재고·직원은 쓰기 전에 다른 값도 함께 확인해야 해서(재고는 이용 중 수, 직원은 남는 관리자 수) 트랜잭션에서 행을 잠근(`FOR UPDATE`) 뒤 버전을 비교하고, 다르면 UPDATE 전에 `changed`를 돌려줍니다. 잠금이 그사이의 변경을 막으므로 이때 UPDATE의 WHERE 절에는 버전이 없습니다.
+  - `changed`면 액션은 목록을 다시 받게 한 뒤 `editConflictMessage("예약을")`로 알립니다.
 - **`onSubmit`만 있는 폼은 하이드레이션 전에 브라우저가 GET으로 제출합니다.** 입력값이 주소에 실리므로, 비밀번호·개인정보를 받는 폼은 Server Action(`action`)을 쓰거나 로그인 폼처럼 준비될 때까지 제출 버튼을 막고 `method="post"`를 둡니다.
 - **검증은 zod 스키마 하나로 서버에서 합니다.** 폼에는 `noValidate`를 붙여 브라우저 기본 검증을 끄고, 서버 오류 메시지를 일관되게 보여줍니다.
 - **글자 칸은 `FormTextField`, 대화상자 아래 버튼은 `DialogFormFooter`**(`shared/ui`)를 씁니다. 라벨·값 복원·오류 문구 연결과 처리 중 막기를 한곳에서 맞춥니다.

@@ -53,6 +53,67 @@ test.describe("예약 (관리자)", () => {
   });
 });
 
+test.describe("동시 수정 (낙관적 잠금)", () => {
+  test("수정 창을 연 뒤 다른 직원이 고치면, 자동 갱신이 지나도 덮어쓰지 않고 알린다", async ({ page, browser }) => {
+    const name = `동시${Date.now() % 100000}`;
+    const tomorrow = kstDate(1);
+    await page.goto(`${PAGE}&date=${tomorrow}`);
+    await page.getByRole("button", { name: "예약 등록" }).click();
+    const create = page.getByRole("dialog", { name: "예약 등록" });
+    await create.getByLabel("이름").fill(name);
+    await create.getByLabel("휴대전화").fill(uniquePhone().phone);
+    await create.getByLabel("날짜").fill(tomorrow);
+    await create.getByLabel("시각").fill("20:00");
+    await create.getByRole("button", { name: "등록" }).click();
+    await expect(page.getByText(`'${name}' 예약을 등록했습니다.`)).toBeVisible();
+    const row = page.getByTestId("reservation-row").filter({ hasText: name });
+
+    // 직원 A가 수정 창을 열어 둔다.
+    await page.getByRole("button", { name: `${name} 예약 메뉴` }).click();
+    await page.getByRole("menuitem", { name: "수정" }).click();
+    const mine = page.getByRole("dialog", { name: "예약 수정" });
+    await expect(mine.getByLabel("인원")).toHaveValue("2");
+
+    // 그사이 직원 B가 같은 예약의 인원을 고친다.
+    const other = await browser.newContext({ storageState: "e2e/.auth/admin.json" });
+    const otherPage = await other.newPage();
+    await otherPage.goto(`${PAGE}&date=${tomorrow}`);
+    await otherPage.getByRole("button", { name: `${name} 예약 메뉴` }).click();
+    await otherPage.getByRole("menuitem", { name: "수정" }).click();
+    const theirs = otherPage.getByRole("dialog", { name: "예약 수정" });
+    await theirs.getByLabel("인원").fill("6");
+    await theirs.getByRole("button", { name: "저장" }).click();
+    await expect(otherPage.getByText(`'${name}' 예약을 수정했습니다.`)).toBeVisible();
+    await other.close();
+
+    // A의 화면이 자동 갱신으로 새 값을 받아도(탭이 다시 보이면 바로 갱신), 열린 창은 연 시점의 버전을 보낸다.
+    await page.evaluate(() => {
+      for (const state of ["hidden", "visible"]) {
+        Object.defineProperty(document, "visibilityState", { value: state, configurable: true });
+        document.dispatchEvent(new Event("visibilitychange"));
+      }
+    });
+    await expect(row).toContainText("6명");
+    await mine.getByLabel("메모 (선택)").fill("창가 자리");
+    await mine.getByRole("button", { name: "저장" }).click();
+    await expect(mine.getByText("이 창을 연 뒤 다른 직원이 예약을 먼저 바꿨습니다.", { exact: false })).toBeVisible();
+    // 다시 눌러도 덮어쓰지 않는다.
+    await mine.getByRole("button", { name: "저장" }).click();
+    await expect(mine.getByText("이 창을 연 뒤 다른 직원이 예약을 먼저 바꿨습니다.", { exact: false })).toBeVisible();
+    await expect(row).toContainText("6명");
+
+    // 창을 닫았다가 다시 열면 바뀐 내용으로 시작하고, 이제 저장된다.
+    await mine.getByRole("button", { name: "취소" }).click();
+    await page.getByRole("button", { name: `${name} 예약 메뉴` }).click();
+    await page.getByRole("menuitem", { name: "수정" }).click();
+    await expect(mine.getByLabel("인원")).toHaveValue("6");
+    await expect(mine.getByLabel("메모 (선택)")).toHaveValue("");
+    await mine.getByLabel("메모 (선택)").fill("창가 자리");
+    await mine.getByRole("button", { name: "저장" }).click();
+    await expect(page.getByText(`'${name}' 예약을 수정했습니다.`)).toBeVisible();
+  });
+});
+
 test.describe("현장 대기 (관리자)", () => {
   test("카운터에서 등록하면 번호가 매겨지고, 호출·입장하면 줄에서 빠진다", async ({ page }) => {
     const name = `대기${Date.now() % 100000}`;

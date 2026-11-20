@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 
 import { editInventoryAction } from "../api/actions";
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
@@ -42,69 +43,86 @@ export function InventoryEditDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        {/* 창을 열 때마다 새로 마운트되어 그때의 값·버전으로 시작한다. */}
+        <InventoryEditForm entry={entry} onSaved={() => onOpenChange(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InventoryEditForm({
+  entry: latest,
+  onSaved,
+}: {
+  entry: InventoryEntry;
+  onSaved: () => void;
+}) {
+  // 창을 연 시점의 값. 열려 있는 동안 화면이 다시 받아져도 이 값과 버전을 쓰고,
+  // 그사이 다른 직원이 고쳤다면 저장할 때 서버가 버전으로 알아채 덮어쓰지 않는다.
+  const [entry] = useState(latest);
   const form = useDialogForm(
     editInventoryAction.bind(null, entry.cafeId, entry.gameId),
     {
       defaults: { quantity: String(entry.quantity), status: entry.status },
-      onSuccess: () => onOpenChange(false),
+      onSuccess: onSaved,
     },
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <form key={form.formKey} action={form.formAction} noValidate>
-          <DialogHeader>
-            <DialogTitle>재고 수정</DialogTitle>
-            <DialogDescription>
-              &lsquo;{entry.game.name}&rsquo;의 보유 수량과 상태를 수정합니다.
-            </DialogDescription>
-          </DialogHeader>
+    <form key={form.formKey} action={form.formAction} noValidate>
+      <input type="hidden" name="version" value={entry.version} />
+      <DialogHeader>
+        <DialogTitle>재고 수정</DialogTitle>
+        <DialogDescription>
+          &lsquo;{entry.game.name}&rsquo;의 보유 수량과 상태를 수정합니다.
+        </DialogDescription>
+      </DialogHeader>
 
-          <FieldGroup className="py-4">
-            <FormErrorAlert message={form.formError} />
-            <Field data-invalid={form.invalid("quantity")}>
-              <FieldLabel htmlFor="inventory-quantity">보유 수량</FieldLabel>
-              <Input
-                id="inventory-quantity"
-                name="quantity"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                defaultValue={form.text("quantity")}
-                {...fieldA11y("inventory-quantity", form.invalid("quantity"))}
-              />
-              <FieldError id={errorIdOf("inventory-quantity")} errors={form.errors("quantity")} />
-            </Field>
-            <Field data-invalid={form.invalid("status")}>
-              <FieldLabel htmlFor="inventory-status">상태</FieldLabel>
-              <Select
-                name="status"
-                items={STATUS_ITEMS}
-                defaultValue={form.text("status")}
-              >
-                <SelectTrigger
-                  id="inventory-status"
-                  className="w-full"
-                  {...fieldA11y("inventory-status", form.invalid("status"))}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_ITEMS.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldError id={errorIdOf("inventory-status")} errors={form.errors("status")} />
-            </Field>
-          </FieldGroup>
+      <FieldGroup className="py-4">
+        <FormErrorAlert message={form.formError} />
+        <Field data-invalid={form.invalid("quantity")}>
+          <FieldLabel htmlFor="inventory-quantity">보유 수량</FieldLabel>
+          <Input
+            id="inventory-quantity"
+            name="quantity"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            defaultValue={form.text("quantity")}
+            {...fieldA11y("inventory-quantity", form.invalid("quantity"))}
+          />
+          <FieldError id={errorIdOf("inventory-quantity")} errors={form.errors("quantity")} />
+        </Field>
+        <Field data-invalid={form.invalid("status")}>
+          <FieldLabel htmlFor="inventory-status">상태</FieldLabel>
+          <Select
+            name="status"
+            items={STATUS_ITEMS}
+            defaultValue={form.text("status")}
+          >
+            <SelectTrigger
+              id="inventory-status"
+              className="w-full"
+              {...fieldA11y("inventory-status", form.invalid("status"))}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_ITEMS.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldError id={errorIdOf("inventory-status")} errors={form.errors("status")} />
+        </Field>
+      </FieldGroup>
 
-          <DialogFormFooter submitLabel="저장" pending={form.pending} />
-        </form>
-      </DialogContent>
-    </Dialog>
+      <DialogFormFooter submitLabel="저장" pending={form.pending} />
+    </form>
   );
 }

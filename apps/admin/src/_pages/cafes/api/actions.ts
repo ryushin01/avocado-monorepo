@@ -14,8 +14,11 @@ import type { Cafe } from "@/entities/cafe";
 import { createKioskDeviceRepository } from "@/server/kiosk/devices";
 import { type KioskDevice } from "@/entities/cafe";
 import {
+  editConflictMessage,
   formDataToObject,
   formError,
+  parseVersion,
+  STALE_FORM_MESSAGE,
   type ActionResult,
   type FormState,
 } from "@/shared/lib/form";
@@ -29,7 +32,7 @@ const revalidate = () => revalidatePath("/", "layout");
 async function submitCafeForm(
   formData: FormData,
   action: AuditAction,
-  save: (input: ReturnType<typeof cafeInputSchema.parse>) => Promise<Cafe | string>,
+  save: (input: ReturnType<typeof cafeInputSchema.parse>, values: Record<string, string | string[]>) => Promise<Cafe | string>,
   done: (name: string) => string,
 ): Promise<FormState> {
   const values = formDataToObject(formData);
@@ -39,7 +42,12 @@ async function submitCafeForm(
   const parsed = cafeInputSchema.safeParse(values);
   if (!parsed.success) return formError(values, parsed.error);
 
-  const result = await save(parsed.data);
+  const result = await save(parsed.data, values);
+  if (result === "stale") return formError(values, STALE_FORM_MESSAGE);
+  if (result === "changed") {
+    revalidate();
+    return formError(values, editConflictMessage("이 매장을"));
+  }
   if (result === "duplicate-name") {
     return {
       status: "error",
@@ -69,7 +77,11 @@ export async function updateCafeAction(
   return submitCafeForm(
     formData,
     "cafe.update",
-    (input) => updateCafe(id, input),
+    // 폼을 연 시점의 버전과 같을 때만 저장한다(낙관적 잠금).
+    async (input, values) => {
+      const version = parseVersion(values);
+      return version === null ? "stale" : updateCafe(id, input, version);
+    },
     (name) => `'${name}' 정보를 수정했습니다.`,
   );
 }

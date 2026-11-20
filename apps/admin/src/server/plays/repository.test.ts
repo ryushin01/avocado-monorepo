@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import type { New } from "@/db/mappers";
 import { describe, expect, it } from "vitest";
 
 import type { BoardGame } from "@/entities/game";
@@ -11,7 +12,7 @@ import { createPlayRepository } from "./repository";
 import { createSeedPlays } from "./seed";
 import type { PlaySession } from "@/entities/play";
 
-const game = (id: string, name: string): BoardGame => ({
+const game = (id: string, name: string): New<BoardGame> => ({
   id,
   name,
   categories: ["family"],

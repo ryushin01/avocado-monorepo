@@ -12,6 +12,8 @@ import type { schema } from "./index";
 // DB 행 ↔ 도메인 타입. 도메인은 시각을 ISO 문자열, 빈 값을 undefined로 다룬다.
 
 type Row<T extends { $inferSelect: unknown }> = T["$inferSelect"];
+/** 새로 넣는 행(시드·테스트). 버전은 DB 기본값 1로 시작한다. */
+export type New<T extends { version: number }> = Omit<T, "version"> & { version?: number };
 type Insert<T extends { $inferInsert: unknown }> = T["$inferInsert"];
 
 const iso = (d: Date | null) => (d ? d.toISOString() : undefined);
@@ -27,8 +29,9 @@ export const toCafe = (r: Row<typeof schema.cafes>): Cafe => ({
   openedAt: r.openedAt,
   status: r.status,
   closedAt: iso(r.closedAt),
+  version: r.version,
 });
-export const fromCafe = (c: Cafe): Insert<typeof schema.cafes> => ({
+export const fromCafe = (c: New<Cafe>): Insert<typeof schema.cafes> => ({
   ...c,
   address: c.address ?? null,
   phone: c.phone ?? null,
@@ -49,8 +52,9 @@ export const toGame = (r: Row<typeof schema.games>): BoardGame => ({
   playTimeMax: r.playTimeMax,
   difficulty: r.difficulty,
   createdAt: r.createdAt.toISOString(),
+  version: r.version,
 });
-export const fromGame = (g: BoardGame): Insert<typeof schema.games> => ({
+export const fromGame = (g: New<BoardGame>): Insert<typeof schema.games> => ({
   ...g,
   bggId: g.bggId ?? null,
   englishName: g.englishName ?? null,
@@ -65,8 +69,9 @@ export const toInventoryItem = (r: Row<typeof schema.inventoryItems>): Inventory
   quantity: r.quantity,
   status: r.status,
   updatedAt: r.updatedAt.toISOString(),
+  version: r.version,
 });
-export const fromInventoryItem = (i: InventoryItem): Insert<typeof schema.inventoryItems> => ({
+export const fromInventoryItem = (i: New<InventoryItem>): Insert<typeof schema.inventoryItems> => ({
   ...i,
   updatedAt: new Date(i.updatedAt),
 });
@@ -95,6 +100,7 @@ export const toUser = (r: Row<typeof schema.users>): User => ({
   cafeId: opt(r.cafeId),
   active: r.active,
   mustChangePassword: r.mustChangePassword,
+  version: r.version,
 });
 
 export const toReservation = (r: Row<typeof schema.reservations>): Reservation => ({
@@ -109,8 +115,9 @@ export const toReservation = (r: Row<typeof schema.reservations>): Reservation =
   createdAt: r.createdAt.toISOString(),
   arrivedAt: iso(r.arrivedAt),
   closedAt: iso(r.closedAt),
+  version: r.version,
 });
-export const fromReservation = (r: Reservation): Insert<typeof schema.reservations> => ({
+export const fromReservation = (r: New<Reservation>): Insert<typeof schema.reservations> => ({
   ...r,
   startsAt: new Date(r.startsAt),
   memo: r.memo ?? null,

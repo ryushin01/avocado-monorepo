@@ -3,12 +3,14 @@ import {
   date,
   index,
   integer,
+  pgSequence,
   pgTable,
   primaryKey,
   text,
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import type { AuditAction } from "@/entities/audit";
 import type { Role } from "@/entities/user";
@@ -21,6 +23,15 @@ import type { WaitlistStatus } from "@/entities/waitlist";
 // 시각은 모두 timestamptz로 저장하고, 도메인 타입(ISO 문자열)으로는 repository에서 바꾼다.
 const at = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
 
+/**
+ * 편집 폼의 낙관적 잠금. 직원이 폼으로 고치는 행은 바꿀 때마다 새 버전을 받고, 저장할 때 폼을 연 시점의 값과 같아야 쓴다.
+ * 그사이 다른 직원이 바꿨으면 덮어쓰지 않고 다시 보게 한다(repository의 "changed").
+ * 버전은 모든 표가 함께 쓰는 시퀀스에서 받아 같은 값이 다시 나오지 않는다. 그래서 재고를 제외했다가 같은 게임을
+ * 다시 등록한 새 행도 예전 행의 버전과 겹치지 않아, 예전에 연 폼이 새 행을 덮어쓰지 못한다.
+ */
+export const rowVersion = pgSequence("row_version", { maxValue: 2147483647 });
+const version = () => integer("version").notNull().default(sql`nextval('row_version')`);
+
 export const cafes = pgTable("cafes", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -30,6 +41,7 @@ export const cafes = pgTable("cafes", {
   openedAt: date("opened_at", { mode: "string" }).notNull(),
   status: text("status").$type<CafeStatus>().notNull(),
   closedAt: at("closed_at"),
+  version: version(),
 });
 
 export const games = pgTable("games", {
@@ -46,6 +58,7 @@ export const games = pgTable("games", {
   playTimeMax: integer("play_time_max").notNull(),
   difficulty: text("difficulty").$type<GameDifficulty>().notNull(),
   createdAt: at("created_at").notNull(),
+  version: version(),
 });
 
 export const inventoryItems = pgTable(
@@ -60,6 +73,7 @@ export const inventoryItems = pgTable(
     quantity: integer("quantity").notNull(),
     status: text("status").$type<InventoryStatus>().notNull(),
     updatedAt: at("updated_at").notNull(),
+    version: version(),
   },
   (t) => [primaryKey({ columns: [t.cafeId, t.gameId] })],
 );
@@ -95,6 +109,7 @@ export const users = pgTable(
     passwordHash: text("password_hash"),
     /** 관리자가 정한 임시 비밀번호라면 true. 다음 로그인 때 본인 비밀번호로 바꿔야 한다. */
     mustChangePassword: boolean("must_change_password").notNull().default(false),
+    version: version(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email)],
 );
@@ -115,6 +130,7 @@ export const reservations = pgTable(
     createdAt: at("created_at").notNull(),
     arrivedAt: at("arrived_at"),
     closedAt: at("closed_at"),
+    version: version(),
   },
   (t) => [index("reservations_cafe_starts_idx").on(t.cafeId, t.startsAt)],
 );

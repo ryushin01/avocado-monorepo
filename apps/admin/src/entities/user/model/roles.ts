@@ -18,6 +18,8 @@ export type User = {
   active: boolean;
   /** 관리자가 정한 임시 비밀번호라 다음 로그인 때 본인 비밀번호로 바꿔야 하면 true */
   mustChangePassword?: boolean;
+  /** 편집 폼의 낙관적 잠금용 행 버전. 바꿀 때마다 새 값을 받는다(db/schema.ts의 version). */
+  version: number;
 };
 
 export function hasRole(user: Pick<User, "role">, allowed: readonly Role[]) {

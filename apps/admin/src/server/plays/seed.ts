@@ -1,3 +1,4 @@
+import type { New } from "@/db/mappers";
 import type { Cafe } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
 import { hash01 } from "@/shared/lib/hash";
@@ -20,9 +21,9 @@ const MINUTE = 60_000;
  * - 매장마다 지금 이용 중인 기록이 몇 개 있다(이용 가능 상태인 게임, 게임당 한 박스).
  */
 export function createSeedPlays(
-  cafes: Cafe[],
-  games: BoardGame[],
-  inventory: InventoryItem[],
+  cafes: New<Cafe>[],
+  games: New<BoardGame>[],
+  inventory: New<InventoryItem>[],
   now = new Date(),
   days = 60,
 ): PlaySession[] {
@@ -33,7 +34,7 @@ export function createSeedPlays(
   const plays: PlaySession[] = [];
   const nextId = () => `p_${plays.length + 1}`;
 
-  const playerCount = (game: BoardGame, key: string) => {
+  const playerCount = (game: New<BoardGame>, key: string) => {
     const max = Math.min(game.maxPlayers, Math.max(game.minPlayers, 6));
     return game.minPlayers + Math.floor(hash01(key) * (max - game.minPlayers + 1));
   };

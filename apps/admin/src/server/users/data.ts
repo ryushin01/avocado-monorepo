@@ -18,8 +18,14 @@ export async function createUser(input: UserInput, passwordHash: string) {
   return (await repository()).create(input, passwordHash);
 }
 
-export async function updateUser(id: string, input: UserInput, actorId: string, passwordHash?: string) {
-  return (await repository()).update(id, input, actorId, passwordHash);
+export async function updateUser(
+  id: string,
+  input: UserInput,
+  actorId: string,
+  version: number,
+  passwordHash?: string,
+) {
+  return (await repository()).update(id, input, actorId, version, passwordHash);
 }
 
 export async function setUserActive(id: string, active: boolean, actorId: string) {

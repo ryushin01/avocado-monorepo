@@ -1,3 +1,4 @@
+import type { New } from "@/db/mappers";
 import { SEED_USERS } from "@/server/auth/mock-users";
 import type { User } from "@/entities/user";
 import { SEED_CAFES } from "@/server/cafes/seed";
@@ -13,12 +14,12 @@ import type { Reservation } from "@/entities/reservation";
 import type { WaitlistEntry } from "@/entities/waitlist";
 
 export type SeedData = {
-  cafes: Cafe[];
-  games: BoardGame[];
-  inventory: InventoryItem[];
+  cafes: New<Cafe>[];
+  games: New<BoardGame>[];
+  inventory: New<InventoryItem>[];
   plays: PlaySession[];
-  users: User[];
-  reservations: Reservation[];
+  users: New<User>[];
+  reservations: New<Reservation>[];
   waitlist: WaitlistEntry[];
 };
 

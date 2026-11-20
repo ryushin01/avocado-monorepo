@@ -21,7 +21,7 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
   - 1단계(매장·날짜·인원)는 GET 폼이라 JS 없이도 동작하고 주소에 남습니다. 2단계(시각·연락처·동의)는 서버 액션 폼입니다. 오류는 칸에 잇고 첫 오류 칸으로 초점을 옮깁니다.
 - 메뉴는 전체 화면 Sheet이고, 표지는 도착할 때까지 스켈레톤을 보여 줍니다(`entities/game/ui/game-image.tsx`).
 - 유형마다 키보드용 카드 건너뛰기 링크가 있습니다. 평소에는 숨어 있다가 초점을 받으면 나타납니다.
-- 검색·공유 설정은 `src/_app/seo/robots.ts`, `sitemap.ts`, `public/images/og.jpg`와 `src/shared/lib/page-metadata.ts`에 있습니다. 사이트 주소는 `SITE_URL`, 없으면 Vercel의 운영 주소를 읽습니다(`src/shared/config/site-url.ts`).
+- 검색·공유 설정은 `src/_app/seo/robots.ts`, `sitemap.ts`, `public/images/og.png`와 `src/shared/lib/page-metadata.ts`에 있습니다. 사이트 주소는 `SITE_URL`, 없으면 Vercel의 운영 주소를 읽습니다(`src/shared/config/site-url.ts`).
 - 글꼴은 한글 고운돋움(Gowun Dodum, 제목·본문), 영문·숫자 Comfortaa입니다. `next/font/google`이 빌드할 때 받아 함께 배포하므로 보안 헤더(`font-src 'self'`)를 바꾸지 않아도 됩니다. 한글 글꼴은 글자 묶음별 조각이라 미리 받지 않고(`preload: false`) 화면에 쓰인 조각만 받습니다.
 
 ```bash

@@ -284,5 +284,5 @@ test("검색과 공유에 필요한 정보를 내보낸다", async ({ page, requ
   await page.goto(`${WEB_URL}/games/strategy?sort=rating`);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/games\/strategy$/);
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /전략 게임/);
-  await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute("content", /\/images\/og\.jpg$/);
+  await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute("content", /\/images\/og\.png$/);
 });

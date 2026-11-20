@@ -8,6 +8,7 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 | 유형별 목록 | `/games/[유형]` | 목록: 랭킹·최신·평점·난이도 순 정렬 (`?sort=`) |
 | 게임 상세 | `/game/[BGG ID]` | 상세: 순위·평점·난이도, 게임 정보. 구매처 목록 대신 매장 안내 |
 | 브랜드 소개 | `/about` | 새로 추가: 브랜드 소개, 매장 둘러보기, 매장 안내(`#stores`), 가맹 문의(`#franchise`). 매장과 연락처는 가상 정보 |
+| 온라인 예약 | `/reservation` | 새로 추가: 매장·날짜·인원(`?cafe=&date=&people=`)을 고르면 빈 시간을 보여 주고, 예약하면 백오피스가 빈 테이블을 배정해 확정 |
 
 - avocado의 로그인·회원가입·게이트웨이 화면은 홍보 사이트에 필요 없어 옮기지 않았습니다.
 - 브랜드 이름·문구는 `src/shared/config/site.ts` 한 곳에 있습니다.
@@ -16,6 +17,8 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 - avocado의 색(어두운 바탕, 흰 패널, 주황 강조색 `#ff5100`)을 `src/_app/styles/globals.css`에서 공통 테마 위에 덮어씁니다.
 - 레이아웃도 avocado를 따릅니다. 데스크톱에서는 왼쪽 패널이 화면 높이로 고정되고 오른쪽만 스크롤됩니다(홈 6칸 중 2칸, 목록·상세 8칸 중 2칸). 모바일 목록·상세는 `grid` 대신 `flex`입니다. 격자 칸 안의 `sticky`는 그 칸을 벗어나지 못해 머리글이 고정되지 않기 때문입니다.
 - 공간 연출은 더 현대 서울 사이트를 참고했습니다. 홈 유형 사진은 들어올 때 안쪽에서 화면 폭 가득 펼쳐지고 사진이 천천히 물러나며(`.space-reveal`), 소개 화면의 매장 둘러보기는 화면을 고정해 두고 세로 스크롤만큼 옆으로 넘어갑니다(`_pages/about/ui/store-tour.tsx`). 라이브러리 없이 CSS 스크롤 타임라인(`animation-timeline: view()`)으로 만들고 `src/_app/styles/globals.css`에 모았습니다. 지원하지 않는 브라우저와 동작 줄이기에서는 사진을 차례로 쌓은 정지 화면입니다.
+- 온라인 예약은 이 사이트의 서버가 백오피스 예약 API(`/api/booking/*`)를 부릅니다(`src/shared/api/booking.ts`, 요청·응답 형태는 `@avocado/domain/booking`). 브라우저는 서버 액션만 부르므로 백오피스 주소와 토큰을 모릅니다. 운영에서는 `BACKOFFICE_URL`과 `BOOKING_API_TOKEN`(백오피스와 같은 값)이 있어야 열리고, 없으면 매장 전화번호를 안내합니다. 개발 중에는 `http://localhost:3000`을 토큰 없이 부릅니다.
+  - 1단계(매장·날짜·인원)는 GET 폼이라 JS 없이도 동작하고 주소에 남습니다. 2단계(시각·연락처·동의)는 서버 액션 폼입니다. 오류는 칸에 잇고 첫 오류 칸으로 초점을 옮깁니다.
 - 메뉴는 전체 화면 Sheet이고, 표지는 도착할 때까지 스켈레톤을 보여 줍니다(`entities/game/ui/game-image.tsx`).
 - 유형마다 키보드용 카드 건너뛰기 링크가 있습니다. 평소에는 숨어 있다가 초점을 받으면 나타납니다.
 - 검색·공유 설정은 `src/_app/seo/robots.ts`, `sitemap.ts`, `public/images/og.jpg`와 `src/shared/lib/page-metadata.ts`에 있습니다. 사이트 주소는 `SITE_URL`, 없으면 Vercel의 운영 주소를 읽습니다(`src/shared/config/site-url.ts`).
@@ -25,4 +28,4 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 pnpm dev:web   # 루트에서. http://localhost:3002
 ```
 
-코드는 Feature-Sliced Design을 따릅니다([docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)): `_app`(레이아웃·오류 화면·검색 설정), `_pages`(화면과 홈의 캐러셀·유형 소개), `widgets`(머리글·메뉴·바닥글), `entities/game`, `shared/config`, `shared/lib`.
+코드는 Feature-Sliced Design을 따릅니다([docs/conventions.md](../../docs/conventions.md#프론트엔드-구조-feature-sliced-design)): `_app`(레이아웃·오류 화면·검색 설정), `_pages`(화면과 홈의 캐러셀·유형 소개), `widgets`(머리글·메뉴·바닥글), `entities/game`, `shared/api`(백오피스 예약 API, 서버 전용), `shared/config`, `shared/lib`.

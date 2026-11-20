@@ -26,6 +26,7 @@ import {
 } from "@avocado/ui/components/table";
 
 import { formatPhone } from "@/entities/guest";
+import type { CafeTable } from "@/entities/cafe";
 import { formatTime } from "@/shared/lib/format";
 import type { Reservation } from "@/entities/reservation";
 
@@ -42,8 +43,22 @@ function Arrived({ reservation }: { reservation: Reservation }) {
   );
 }
 
-/** 하루치 예약. 데스크톱은 표, 모바일은 카드 */
-export function ReservationList({ reservations, date }: { reservations: Reservation[]; date: string }) {
+/** 손님이 홍보 사이트에서 한 예약 */
+function Online({ reservation }: { reservation: Reservation }) {
+  if (reservation.source !== "online") return null;
+  return <Badge variant="outline">온라인</Badge>;
+}
+
+/** 하루치 예약. 데스크톱은 표, 모바일은 카드. tables: 수정 창의 테이블 선택 */
+export function ReservationList({
+  reservations,
+  date,
+  tables,
+}: {
+  reservations: Reservation[];
+  date: string;
+  tables: CafeTable[];
+}) {
   if (reservations.length === 0) {
     return (
       <Empty className="border">
@@ -52,7 +67,7 @@ export function ReservationList({ reservations, date }: { reservations: Reservat
             <CalendarX />
           </EmptyMedia>
           <EmptyTitle>예약이 없습니다</EmptyTitle>
-          <EmptyDescription>&lsquo;예약 등록&rsquo;으로 전화 예약을 기록하세요.</EmptyDescription>
+          <EmptyDescription>&lsquo;예약 등록&rsquo;으로 전화 예약을 기록하세요. 손님의 온라인 예약도 여기에 들어옵니다.</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -67,6 +82,7 @@ export function ReservationList({ reservations, date }: { reservations: Reservat
               <TableHead>이름</TableHead>
               <TableHead>연락처</TableHead>
               <TableHead className="text-right">인원</TableHead>
+              <TableHead>테이블</TableHead>
               <TableHead>상태</TableHead>
               <TableHead>메모</TableHead>
               <TableHead className="w-36">
@@ -81,15 +97,17 @@ export function ReservationList({ reservations, date }: { reservations: Reservat
                 <TableCell>{r.name}</TableCell>
                 <TableCell className="tabular-nums text-muted-foreground">{formatPhone(r.phone)}</TableCell>
                 <TableCell className="text-right tabular-nums">{r.partySize}명</TableCell>
+                <TableCell>{r.tableLabel ?? <span className="text-muted-foreground">미배정</span>}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     <ReservationStatusBadge status={r.status} />
+                    <Online reservation={r} />
                     <Arrived reservation={r} />
                   </div>
                 </TableCell>
                 <TableCell className="max-w-48 truncate text-muted-foreground">{r.memo ?? ""}</TableCell>
                 <TableCell>
-                  <ReservationRowActions reservation={r} date={date} />
+                  <ReservationRowActions reservation={r} date={date} tables={tables} />
                 </TableCell>
               </TableRow>
             ))}
@@ -103,15 +121,16 @@ export function ReservationList({ reservations, date }: { reservations: Reservat
               <ItemTitle className="flex-wrap">
                 <span className="tabular-nums">{formatTime(r.startsAt)}</span> {r.name}
                 <ReservationStatusBadge status={r.status} />
+                <Online reservation={r} />
                 <Arrived reservation={r} />
               </ItemTitle>
               <ItemDescription>
-                {r.partySize}명 · {formatPhone(r.phone)}
+                {r.partySize}명 · {r.tableLabel ? `${r.tableLabel} 테이블` : "테이블 미배정"} · {formatPhone(r.phone)}
                 {r.memo && ` · ${r.memo}`}
               </ItemDescription>
             </ItemContent>
             <ItemActions className="self-start">
-              <ReservationRowActions reservation={r} date={date} />
+              <ReservationRowActions reservation={r} date={date} tables={tables} />
             </ItemActions>
           </Item>
         ))}

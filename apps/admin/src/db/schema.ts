@@ -17,7 +17,7 @@ import type { Role } from "@/entities/user";
 import type { CafeStatus } from "@/entities/cafe";
 import type { GameCategory, GameDifficulty } from "@/entities/game";
 import type { InventoryStatus } from "@/entities/inventory";
-import type { ReservationStatus } from "@/entities/reservation";
+import type { ReservationSource, ReservationStatus } from "@/entities/reservation";
 import type { WaitlistStatus } from "@/entities/waitlist";
 
 // 시각은 모두 timestamptz로 저장하고, 도메인 타입(ISO 문자열)으로는 repository에서 바꾼다.
@@ -43,6 +43,24 @@ export const cafes = pgTable("cafes", {
   closedAt: at("closed_at"),
   version: version(),
 });
+
+/** 매장의 테이블. 예약은 테이블 하나를 2시간 쓴다(정원·배정 규칙: entities/reservation/model/seating.ts). */
+export const cafeTables = pgTable(
+  "cafe_tables",
+  {
+    id: text("id").primaryKey(),
+    cafeId: text("cafe_id")
+      .notNull()
+      .references(() => cafes.id),
+    /** 매장 안에서 부르는 이름 (예: A1, 창가 2) */
+    label: text("label").notNull(),
+    seats: integer("seats").notNull(),
+    /** 쓰지 않는 테이블은 지우지 않고 끈다(지난 예약이 가리킬 수 있음). */
+    active: boolean("active").notNull().default(true),
+    createdAt: at("created_at").notNull(),
+  },
+  (t) => [uniqueIndex("cafe_tables_cafe_label_idx").on(t.cafeId, t.label)],
+);
 
 export const games = pgTable("games", {
   id: text("id").primaryKey(),
@@ -131,6 +149,10 @@ export const reservations = pgTable(
     arrivedAt: at("arrived_at"),
     closedAt: at("closed_at"),
     version: version(),
+    /** 배정한 테이블. 없으면 직원이 '배정 안 함'으로 받은 예약 */
+    tableId: text("table_id").references(() => cafeTables.id),
+    /** 받은 곳: staff(직원이 등록), online(손님이 홍보 사이트에서) */
+    source: text("source").$type<ReservationSource>().notNull().default("staff"),
   },
   (t) => [index("reservations_cafe_starts_idx").on(t.cafeId, t.startsAt)],
 );

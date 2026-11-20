@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/avocado-monorepo/actions/workflows/ci.yml)
 
-**[홍보 사이트 데모 보기](https://avocado-web-ryushin01.vercel.app/)** · 백오피스와 키오스크는 서버와 DB가 필요해 [로컬에서 실행](#시작하기)합니다.
+**공개 데모:** [홍보 사이트](https://avocado-web-ryushin01.vercel.app/) · [백오피스](https://avocado-admin-ryushin01.vercel.app/) · [키오스크](https://avocado-kiosk-ryushin01.vercel.app/) ([둘러보는 법](docs/demo.md))
 
-> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 데모는 홍보 사이트만 공개합니다. 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
+> **프로젝트 상태:** 포트폴리오 프로젝트입니다. 백오피스·키오스크 공개 데모는 30분마다 처음 상태로 돌아가는 메모리 DB를 씁니다([docs/demo.md](docs/demo.md)). 실제로 운영하는 프랜차이즈가 아니며, 매장·직원·손님 데이터는 모두 가상입니다.
 
 본사와 매장 직원이 쓰는 백오피스, 매장 손님이 쓰는 태블릿 키오스크, 일반 방문자가 보는 홍보 사이트를 한 저장소에서 관리합니다. 재고, 대여·반납, 예약, 현장 대기가 백오피스와 키오스크 사이에서 이어지고, 손님은 홍보 사이트에서 온라인으로 예약합니다.
 
@@ -76,7 +76,7 @@
 | 테스트 | Vitest 5, Testing Library, Playwright, axe-core | 규칙은 단위 테스트로, 화면 흐름과 접근성은 프로덕션 빌드 대상 E2E로 확인합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙, jsx-a11y), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
 | 성능 예산 | size-limit, Lighthouse CI(홍보 사이트) | 번들 크기와 Lighthouse 점수가 기준 아래로 떨어지면 PR을 막습니다 |
-| 배포 | Vercel(홍보 사이트) | `main`에 머지하면 자동 배포됩니다(PR 미리보기 배포는 껐음) |
+| 배포 | Vercel(홍보 사이트, 백오피스·키오스크 공개 데모) | `main`에 머지하면 세 앱이 자동 배포됩니다(PR 미리보기 배포는 껐음). 공개 데모 설정은 [docs/demo.md](docs/demo.md) |
 | 모니터링 | Sentry(세 앱) | 브라우저와 서버 오류, 키오스크의 백오피스 연결 실패 같은 운영 오류를 모읍니다. 개인정보는 모으지 않고, DSN이 없으면 동작하지 않습니다 |
 | 분석 | PostHog, Web Vitals(홍보 사이트) | 실제 방문자의 LCP·INP·CLS와 페이지 이동을 모읍니다. 쿠키 없이 사람을 식별하지 않고, 키가 없으면 동작하지 않습니다 |
 

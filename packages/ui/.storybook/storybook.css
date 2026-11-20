@@ -1,0 +1,6 @@
+/* Storybook 미리보기의 공통 CSS. 공통 UI 테마에, 앱 스토리의 클래스도 Tailwind가 찾도록 앱 src를 더한다. */
+@import "../src/styles/globals.css";
+
+@source "../../../apps/admin/src";
+@source "../../../apps/launcher/src";
+@source "../../../apps/web/src";

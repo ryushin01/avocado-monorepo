@@ -19,9 +19,24 @@ export async function BookingSteps({ searchParams }: { searchParams: Promise<Rec
   const { cafe, date, partySize } = query;
   const availability = cafe && date && partySize ? await fetchBookingAvailability(cafe.id, date, partySize) : null;
 
+  // 검색 결과는 늘 같은 자리의 상태 영역으로 알린다. 주소만 바뀌는 이동(빈 시간 보기)에서 React가 이 영역의
+  // 내용만 바꾸므로 화면 낭독기가 읽는다. 결과 영역(2단계)은 새로 생기므로 거기에 role을 두지 않는다.
+  const result =
+    cafe && date && partySize && availability?.ok
+      ? (() => {
+          const open = availability.data.slots.filter((slot) => slot.available).length;
+          return open > 0
+            ? `${cafe.name} ${formatBookingDate(date, today)} ${partySize}명: 빈 시간 ${open}개를 찾았습니다.`
+            : `이날은 ${partySize}명이 앉을 빈 시간이 없습니다. 다른 날짜나 매장을 골라 주세요.`;
+        })()
+      : "";
+
   return (
     <>
       <BookingSearch options={options.data} query={query} today={today} />
+      <p role="status" className="sr-only">
+        {result}
+      </p>
       {cafe && date && partySize && availability && (
         <section aria-labelledby="booking-step-2" className="flex flex-col gap-4">
           <h2 id="booking-step-2" className="text-xl font-bold">
@@ -42,9 +57,7 @@ export async function BookingSteps({ searchParams }: { searchParams: Promise<Rec
               slots={availability.data.slots}
             />
           ) : (
-            <p role="status">
-              이날은 {partySize}명이 앉을 빈 시간이 없습니다. 다른 날짜나 매장을 골라 주세요.
-            </p>
+            <p>이날은 {partySize}명이 앉을 빈 시간이 없습니다. 다른 날짜나 매장을 골라 주세요.</p>
           )}
         </section>
       )}

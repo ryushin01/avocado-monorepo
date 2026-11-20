@@ -67,6 +67,7 @@
   - `components/combobox.tsx`: 아이콘만 있는 열기·지우기 버튼에 이름(`목록 열기`, `지우기`). 두 버튼은 탭 순서에서 뺍니다(WAI-ARIA APG 콤보박스처럼 키보드는 입력란에서 ↓·Alt+↓로 열고, 목록이 열린 동안 Base UI가 바깥을 숨길 때 초점이 남지 않게)
   - `components/table.tsx`: `label`(표 이름)을 받고, 표가 가로로 넘칠 때만 바깥 영역이 이름 있는 영역(`role="region"`, `tabIndex=0`)이 되어 키보드로 스크롤할 수 있습니다. 같은 화면에 표가 여럿이면 `label`을 서로 다르게 줍니다
   - `components/sonner.tsx`: 테마 기능이 없어 `next-themes` 대신 밝은 테마로 고정. 알림 영역 이름은 `알림`(기본값은 영어 `Notifications`)
+  - `components/field.tsx`: `FieldError`가 오류가 없을 때도 빈 알림 영역을 그림(`sr-only`, 원본은 `null`을 돌려줌)
   - `hooks/use-mobile.ts`: `useSyncExternalStore`로 다시 작성 (React lint 규칙)
   - `components/carousel.tsx`: 첫 버튼 상태를 맞추는 effect 한 줄에 lint 예외 주석. 끝에 닿은 버튼은 초점이 사라지지 않게 `disabled` 대신 `aria-disabled`를 쓰고, 화면 밖 슬라이드는 탭 순서에서 빠지도록 `inert`를 겁니다
   - `dialog`, `sheet`, `breadcrumb`, `spinner`, `carousel`, `pagination`, `sidebar`: 화면 낭독기가 읽는 영어 기본 문구를 한국어로 바꿈
@@ -123,6 +124,7 @@
 - **글자 칸은 `FormTextField`, 대화상자 아래 버튼은 `DialogFormFooter`**(`shared/ui`)를 씁니다. 라벨·값 복원·오류 문구 연결과 처리 중 막기를 한곳에서 맞춥니다.
 - **중복 제출:** 폼 액션(`useActionState`)은 처리 중 상태가 다음 클릭 전에 반영돼 제출 버튼이 막힙니다. 새로 만드는 등록 폼도 `pending`으로 버튼을 막고, 더블 클릭 E2E로 한 건만 생기는지 확인합니다(`e2e/reservations.spec.ts`, `e2e/kiosk.spec.ts`).
 - **오류 문구와 도움말은 칸에 잇습니다.** 선택 상자·여러 줄 칸·체크박스처럼 직접 만드는 칸은 `fieldA11y(칸 id, 잘못됐는지, { described })`(`shared/lib/field-a11y.ts`)를 펼쳐 넣고, 짝이 되는 `FieldError`·`FieldDescription`에 `errorIdOf(칸 id)`·`descriptionIdOf(칸 id)`를 id로 줍니다. 잘못된 값일 때만 `aria-invalid`를 붙이고, 오류 문구는 `aria-errormessage`와 `aria-describedby`로 함께 잇습니다(KWCAG 7.3.1).
+  - `FieldError`와 폼 전체 오류(`FormErrorAlert`)는 오류가 없을 때도 빈 알림 영역(`role="alert"`, 비어 있으면 `sr-only`라 자리를 차지하지 않음)을 그려 두고, 오류가 나면 같은 영역의 내용만 바뀝니다. 화면 낭독기는 처음부터 있는 영역의 바뀐 내용을 읽기 때문입니다.
 
 ## 테스트
 

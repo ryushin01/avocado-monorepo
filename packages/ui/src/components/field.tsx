@@ -208,15 +208,13 @@ function FieldError({
     )
   }, [children, errors])
 
-  if (!content) {
-    return null
-  }
-
+  // 화면 낭독기는 처음부터 있는 알림 영역의 내용이 바뀔 때 읽으므로, 오류가 없을 때도 영역을 두고
+  // 자리는 차지하지 않게(sr-only) 숨긴다. 칸의 aria-describedby·aria-errormessage는 오류가 있을 때만 이 id를 잇는다.
   return (
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-sm font-normal text-destructive", className)}
+      className={cn(content ? "text-sm font-normal text-destructive" : "sr-only", className)}
       {...props}
     >
       {content}

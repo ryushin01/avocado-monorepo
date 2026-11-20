@@ -14,7 +14,7 @@ import { WaitlistBoard } from "./waitlist-board";
 import { formatShortDate, formatTime } from "@/shared/lib/format";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { resolveCafe, visibleCafes } from "@/entities/user";
-import { listCafes } from "@/server/cafes/data";
+import { listCafes, listCafeTables } from "@/server/cafes/data";
 import { firstParam } from "@/shared/lib/search-params";
 import { buildListHref } from "@/shared/lib/list";
 import { DAY, kstDayRange, toKstDate } from "@/shared/lib/kst-time";
@@ -54,7 +54,7 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
     );
   }
 
-  const waitlist = await listWaitlistToday(cafe.id);
+  const [waitlist, tables] = await Promise.all([listWaitlistToday(cafe.id), listCafeTables(cafe.id)]);
   const today = toKstDate(waitlist.now);
   const date = parseReservationDate(params) ?? today;
   const reservations = await listReservations(cafe.id, date);
@@ -77,12 +77,12 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
       <PageHeading
         icon="reservations"
         title={`예약·대기 · ${cafe.name}`}
-        description="키오스크에서 등록한 현장 대기와 전화 예약을 함께 관리합니다."
+        description="키오스크에서 등록한 현장 대기와 전화·온라인 예약을 함께 관리합니다."
         actions={
           // 15초마다 다시 받는 사이 보이는 매장이 바뀌면(폐점 등) 열린 등록 창과 입력을 새 매장으로 넘기지 않고 닫는다.
           <div key={cafe.id} className="flex flex-wrap gap-2">
             <AddWaitlistDialog cafeId={cafe.id} />
-            <CreateReservationButton cafeId={cafe.id} date={date < today ? today : date} />
+            <CreateReservationButton cafeId={cafe.id} date={date < today ? today : date} tables={tables} />
           </div>
         }
       />
@@ -139,7 +139,7 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
           예약 {reservations.length}건 · 남은 예약 {openReservations.length}건(
           {openReservations.reduce((sum, r) => sum + r.partySize, 0)}명)
         </p>
-        <ReservationList reservations={reservations} date={date} />
+        <ReservationList reservations={reservations} date={date} tables={tables} />
       </section>
     </>
   );

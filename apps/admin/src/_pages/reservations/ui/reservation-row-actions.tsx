@@ -26,6 +26,7 @@ import {
 import { changeReservationStatusAction } from "../api/actions";
 import { canChangeReservation } from "@/entities/reservation";
 import type { Reservation, ReservationStatus } from "@/entities/reservation";
+import type { CafeTable } from "@/entities/cafe";
 
 import { ReservationFormDialog } from "./reservation-form-dialog";
 
@@ -35,7 +36,15 @@ const CONFIRM: Partial<Record<ReservationStatus, { title: string; body: string; 
 };
 
 /** 입장은 가장 자주 쓰므로 버튼으로, 나머지는 메뉴에 둔다. 끝난 예약에는 아무 작업도 없다. */
-export function ReservationRowActions({ reservation, date }: { reservation: Reservation; date: string }) {
+export function ReservationRowActions({
+  reservation,
+  date,
+  tables,
+}: {
+  reservation: Reservation;
+  date: string;
+  tables: CafeTable[];
+}) {
   const [editOpen, setEditOpen] = useState(false);
   const [confirming, setConfirming] = useState<ReservationStatus | null>(null);
   const [pending, startTransition] = useTransition();
@@ -94,6 +103,7 @@ export function ReservationRowActions({ reservation, date }: { reservation: Rese
         cafeId={cafeId}
         reservation={reservation}
         date={date}
+        tables={tables}
         open={editOpen}
         onOpenChange={setEditOpen}
       />

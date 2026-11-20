@@ -7,7 +7,7 @@ import { createWaitlistRepository } from "@/server/waitlist/repository";
 import type { WaitlistInput, WaitlistStatus } from "@/entities/waitlist";
 
 import { createReservationRepository } from "./repository";
-import type { ReservationInput, ReservationStatus } from "@/entities/reservation";
+import type { OnlineBookingInput, ReservationInput, ReservationStatus } from "@/entities/reservation";
 
 const reservations = async () => createReservationRepository(await getDb());
 const waitlist = async () => createWaitlistRepository(await getDb());
@@ -27,6 +27,14 @@ export const findReservationsForKiosk = async (cafeId: string, last4: string) =>
   (await reservations()).findForKiosk(cafeId, last4, new Date());
 export const checkInReservation = async (cafeId: string, id: string, last4: string) =>
   (await reservations()).checkIn(cafeId, id, last4, new Date());
+
+// 손님 온라인 예약(홍보 사이트 → 예약 API)
+export const bookOnline = async (cafeId: string, input: OnlineBookingInput) =>
+  (await reservations()).book(cafeId, input, new Date());
+export async function bookingAvailability(cafeId: string, date: string, partySize: number) {
+  await connection();
+  return (await reservations()).availability(cafeId, date, partySize, new Date());
+}
 
 // 현장 대기
 /** 오늘의 현장 대기와 조회 시각(대기 시간 계산용) */

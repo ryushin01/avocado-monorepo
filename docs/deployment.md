@@ -42,6 +42,7 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 | `SEED_DEMO` | 설정하지 않음 | 시연용 서버에서만 `1` |
 | `CRON_SECRET` | 긴 임의 값 | 하루 한 번 보관 기간이 지난 기록을 지우는 `/api/cron/retention`의 비밀 값. Vercel Cron이 `Authorization: Bearer <값>`으로 보낸다. 없으면 이 경로는 401 |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry 프로젝트의 DSN (선택) | 없으면 Sentry로 보내지 않음. 아래 "오류 확인" 참고 |
+| `BOOKING_API_TOKEN` | 긴 임의 값 (`openssl rand -base64 32`, 선택) | 홈페이지의 온라인 예약이 부르는 `/api/booking/*`의 토큰. 홈페이지에도 같은 값을 넣는다. 없으면 온라인 예약을 받지 않음(503) |
 
 ### 런처 (`apps/launcher`, 키오스크마다 하나)
 
@@ -56,10 +57,12 @@ DATABASE_URL=postgres://… pnpm --filter @avocado/admin create-admin --email ow
 
 ### 홈페이지 (`apps/web`)
 
-게임 이미지는 `cf.geekdo-images.com`에서 불러옵니다. 아래 변수는 모두 선택이며, 없으면 Sentry와 PostHog로 아무것도 보내지 않습니다.
+게임 이미지는 `cf.geekdo-images.com`에서 불러옵니다. 아래 변수는 모두 선택입니다. Sentry·PostHog 값이 없으면 아무것도 보내지 않고, 예약 값이 없으면 온라인 예약 화면이 매장 전화번호를 안내합니다.
 
 | 변수 | 설명 |
 |---|---|
+| `BACKOFFICE_URL` | 온라인 예약을 받는 백오피스 주소입니다. 서버에서만 읽습니다(손님 브라우저는 백오피스 주소를 모름). 서버를 켤 때 읽으므로 빌드할 때 없어도 됩니다. |
+| `BOOKING_API_TOKEN` | 백오피스의 `BOOKING_API_TOKEN`과 같은 값입니다. 비밀 값이며 서버에만 있습니다. 방문자 키(접속 주소의 HMAC)를 만들 때도 씁니다. |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry 프로젝트의 DSN입니다. 브라우저에도 노출되는 값이며 비밀 값이 아닙니다. 빌드할 때 넣습니다. |
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | 빌드할 때 소스맵을 올립니다. `SENTRY_AUTH_TOKEN`은 비밀 값입니다. |
 | `NEXT_PUBLIC_POSTHOG_KEY` | PostHog 프로젝트 키입니다. 브라우저에도 노출되는 값이며 비밀 값이 아닙니다. 빌드할 때 넣습니다. |

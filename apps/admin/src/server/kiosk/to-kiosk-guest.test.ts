@@ -17,6 +17,7 @@ describe("키오스크로 보내는 손님 정보", () => {
       createdAt: "2026-10-01T00:00:00.000Z",
       arrivedAt: "2026-11-05T09:50:00.000Z",
       version: 1,
+      source: "staff",
     });
     expect(reservation).toEqual({
       id: "r1",

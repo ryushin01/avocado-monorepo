@@ -36,6 +36,7 @@ export const SHARE_IMAGE = {
 
 /** 메뉴와 바닥글의 사이트 안내 링크 */
 export const SITE_LINKS = [
+  { href: "/reservation", label: "온라인 예약" },
   { href: "/about", label: "브랜드 소개" },
   { href: "/about#stores", label: "매장 안내" },
   { href: "/about#franchise", label: "가맹 문의" },

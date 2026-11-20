@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     "./catalog": "./src/catalog/index.ts",
-    "./kiosk": "./src/kiosk.ts"
+    "./kiosk": "./src/kiosk.ts",
+    "./booking": "./src/booking.ts"
   },
   "bin": {
     "copy-catalog-assets": "./scripts/copy-assets.mjs"

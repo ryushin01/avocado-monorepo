@@ -16,6 +16,9 @@ export const AUDIT_ACTIONS = [
   "staff.reactivate",
   "kiosk.issue",
   "kiosk.revoke",
+  "table.add",
+  "table.deactivate",
+  "table.activate",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -36,6 +39,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "staff.reactivate": "직원 복직 처리",
   "kiosk.issue": "키오스크 토큰 발급",
   "kiosk.revoke": "키오스크 토큰 폐기",
+  "table.add": "테이블 추가",
+  "table.deactivate": "테이블 사용 중지",
+  "table.activate": "테이블 다시 사용",
 };
 
 /** 기록할 내용. detail에 비밀번호·토큰 원문·손님 정보를 넣지 않는다. */

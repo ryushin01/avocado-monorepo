@@ -1,19 +1,25 @@
 import type { AuditEntry } from "@/entities/audit";
 import type { User } from "@/entities/user";
-import type { Cafe } from "@/entities/cafe";
+import type { Cafe, CafeTable } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
 import type { InventoryItem } from "@/entities/inventory";
 import type { PlaySession } from "@/entities/play";
 import type { Reservation } from "@/entities/reservation";
 import type { WaitlistEntry } from "@/entities/waitlist";
 
+import { omit } from "@/shared/lib/omit";
+
 import type { schema } from "./index";
 
 // DB 행 ↔ 도메인 타입. 도메인은 시각을 ISO 문자열, 빈 값을 undefined로 다룬다.
 
 type Row<T extends { $inferSelect: unknown }> = T["$inferSelect"];
-/** 새로 넣는 행(시드·테스트). 버전은 DB 기본값 1로 시작한다. */
-export type New<T extends { version: number }> = Omit<T, "version"> & { version?: number };
+/** 새로 넣는 행(시드·테스트). 버전(시퀀스)과 예약의 받은 곳(staff)은 DB 기본값을 쓴다. */
+export type New<T extends { version: number }> = Omit<T, "version" | "source"> & { version?: number } & (T extends {
+  source: infer S;
+}
+  ? { source?: S }
+  : unknown);
 type Insert<T extends { $inferInsert: unknown }> = T["$inferInsert"];
 
 const iso = (d: Date | null) => (d ? d.toISOString() : undefined);
@@ -103,7 +109,8 @@ export const toUser = (r: Row<typeof schema.users>): User => ({
   version: r.version,
 });
 
-export const toReservation = (r: Row<typeof schema.reservations>): Reservation => ({
+/** tableLabel: 목록에서 함께 읽은 배정 테이블 이름 */
+export const toReservation = (r: Row<typeof schema.reservations>, tableLabel?: string | null): Reservation => ({
   id: r.id,
   cafeId: r.cafeId,
   name: r.name,
@@ -116,9 +123,14 @@ export const toReservation = (r: Row<typeof schema.reservations>): Reservation =
   arrivedAt: iso(r.arrivedAt),
   closedAt: iso(r.closedAt),
   version: r.version,
+  source: r.source,
+  tableId: opt(r.tableId),
+  tableLabel: opt(tableLabel ?? null),
 });
+/** 테이블 이름(tableLabel)은 목록에서 함께 읽는 값이라 저장하지 않는다. */
 export const fromReservation = (r: New<Reservation>): Insert<typeof schema.reservations> => ({
-  ...r,
+  ...omit(r, "tableLabel"),
+  tableId: r.tableId ?? null,
   startsAt: new Date(r.startsAt),
   memo: r.memo ?? null,
   createdAt: new Date(r.createdAt),
@@ -155,4 +167,12 @@ export const toAuditEntry = (r: Row<typeof schema.auditLogs>, cafeName: string |
   cafeId: opt(r.cafeId),
   cafeName: opt(cafeName),
   detail: opt(r.detail),
+});
+
+export const toCafeTable = (r: Row<typeof schema.cafeTables>): CafeTable => ({
+  id: r.id,
+  cafeId: r.cafeId,
+  label: r.label,
+  seats: r.seats,
+  active: r.active,
 });

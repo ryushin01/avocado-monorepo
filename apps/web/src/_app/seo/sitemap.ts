@@ -8,6 +8,7 @@ export function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "",
     "/about",
+    "/reservation",
     ...CATEGORY_INFO.map((c) => `/games/${c.key}`),
     ...CATALOG_GAMES.map((g) => `/game/${g.bggId}`),
   ];

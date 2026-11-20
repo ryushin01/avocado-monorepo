@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 import { LAUNCHER_PORT, WEB_PORT } from "./e2e/helpers";
 
 const PORT = 3100;
+const BOOKING_TOKEN = "e2e-booking-token";
 
 // CI는 앞 단계의 pnpm build 결과를 그대로 쓴다.
 const buildThen = (command: string, dir = ".") =>
@@ -54,6 +55,8 @@ export default defineConfig({
         SEED_DEMO: "1",
         NEXTAUTH_URL: `http://localhost:${PORT}`,
         NEXTAUTH_SECRET: "e2e-only-secret",
+        // 홈페이지의 온라인 예약이 부르는 예약 API의 토큰(e2e/booking.spec.ts)
+        BOOKING_API_TOKEN: BOOKING_TOKEN,
       },
     },
     {
@@ -69,11 +72,15 @@ export default defineConfig({
       },
     },
     {
-      // 홈페이지는 백오피스를 읽지 않고, 환경 변수도 없다(e2e/web.spec.ts).
+      // 홈페이지(e2e/web.spec.ts). 온라인 예약만 위 백오피스의 예약 API를 부른다(e2e/booking.spec.ts).
       command: buildThen(`start --port ${WEB_PORT}`, "../web"),
       url: `http://localhost:${WEB_PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
+      env: {
+        BACKOFFICE_URL: `http://localhost:${PORT}`,
+        BOOKING_API_TOKEN: BOOKING_TOKEN,
+      },
     },
   ],
 });

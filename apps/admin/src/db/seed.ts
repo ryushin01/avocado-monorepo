@@ -35,6 +35,7 @@ export async function insertSeedData(db: Database, data: SeedData, passwordHash?
     );
     await insertAll(data.inventory, (c) => tx.insert(schema.inventoryItems).values(c.map(fromInventoryItem)));
     await insertAll(data.plays, (c) => tx.insert(schema.playSessions).values(c.map(fromPlay)));
+    await insertAll(data.tables, (c) => tx.insert(schema.cafeTables).values(c.map((t) => ({ ...t, createdAt: new Date() }))));
     await insertAll(data.reservations, (c) => tx.insert(schema.reservations).values(c.map(fromReservation)));
     await insertAll(data.waitlist, (c) =>
       tx.insert(schema.waitlistEntries).values(c.map(fromWaitlistEntry)),

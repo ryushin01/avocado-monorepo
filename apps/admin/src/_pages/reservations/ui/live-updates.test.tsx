@@ -60,4 +60,29 @@ describe("LiveUpdates", () => {
     });
     expect(status).toHaveTextContent("2번 이영희");
   });
+
+  it("보고 있는 날짜에 새로 들어온 온라인 예약을 알리고, 날짜를 바꿨을 때는 그날의 예약을 새것으로 알리지 않는다", () => {
+    const old = { id: "r1", label: "13:00 김철수님 2명" };
+    const { rerender } = render(<LiveUpdates waiting={[]} arrived={[]} booked={[old]} bookedDate="2026-11-21" />);
+    const status = screen.getByRole("status");
+
+    act(() => {
+      rerender(
+        <LiveUpdates
+          waiting={[]}
+          arrived={[]}
+          booked={[old, { id: "r2", label: "18:30 이영희님 3명" }]}
+          bookedDate="2026-11-21"
+        />,
+      );
+    });
+    expect(status).toHaveTextContent("새 온라인 예약: 18:30 이영희님 3명.");
+
+    act(() => {
+      rerender(
+        <LiveUpdates waiting={[]} arrived={[]} booked={[{ id: "r9", label: "19:00 박민수님 4명" }]} bookedDate="2026-11-22" />,
+      );
+    });
+    expect(status).not.toHaveTextContent("박민수");
+  });
 });

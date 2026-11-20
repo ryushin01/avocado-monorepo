@@ -103,6 +103,10 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
         key={cafe.id}
         waiting={activeWaits.map((e) => ({ id: e.id, label: `${e.number}번 ${e.name}` }))}
         arrived={arrivals.map((r) => ({ id: r.id, label: `${formatTime(r.startsAt)} 예약 ${r.name}` }))}
+        booked={openReservations
+          .filter((r) => r.source === "online")
+          .map((r) => ({ id: r.id, label: `${formatTime(r.startsAt)} ${r.name}님 ${r.partySize}명` }))}
+        bookedDate={date}
       />
 
       <section aria-labelledby="waitlist-heading" className="flex flex-col gap-3">

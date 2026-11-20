@@ -61,7 +61,7 @@ flowchart LR
 
 ## 지금 범위에 넣지 않은 것
 
-- 실제 운영 배포: 세 앱이 Vercel에 공개 데모로 떠 있지만([docs/demo.md](demo.md), 메모리 DB 30분마다 초기화), 관리형 PostgreSQL·비밀 값·도메인을 갖춘 운영 배포는 하지 않았습니다. 확인할 것은 `docs/deployment.md`에 있습니다
+- 실제 운영 배포: 세 앱이 Vercel에 공개 데모로 떠 있지만([docs/demo.md](demo.md), 데모 전용 DB를 30분마다 초기화), 관리형 PostgreSQL·비밀 값·도메인을 갖춘 운영 배포는 하지 않았습니다. 확인할 것은 `docs/deployment.md`에 있습니다
 - 예약: 문자 알림(대기 호출, 예약 확인), 온라인 예약의 변경·취소, 예약금
 - ESLint 10: eslint-config-next가 쓰는 React·import·접근성 플러그인이 아직 9까지만 지원해서 9에 머물러 있습니다
 

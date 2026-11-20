@@ -82,6 +82,9 @@ test.describe("동시 수정 (낙관적 잠금)", () => {
     await otherPage.getByRole("menuitem", { name: "수정" }).click();
     const theirs = otherPage.getByRole("dialog", { name: "예약 수정" });
     await theirs.getByLabel("인원").fill("6");
+    // 2인석에 배정된 예약이라 6명이면 자리를 다시 고른다(그대로 두면 테이블 칸에 좌석 부족 오류).
+    await theirs.getByRole("combobox", { name: "테이블" }).click();
+    await otherPage.getByRole("option", { name: "자동 배정 (빈 테이블)" }).click();
     await theirs.getByRole("button", { name: "저장" }).click();
     await expect(otherPage.getByText(`'${name}' 예약을 수정했습니다.`)).toBeVisible();
     await other.close();

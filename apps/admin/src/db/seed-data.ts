@@ -2,7 +2,8 @@ import type { New } from "@/db/mappers";
 import { SEED_USERS } from "@/server/auth/mock-users";
 import type { User } from "@/entities/user";
 import { SEED_CAFES } from "@/server/cafes/seed";
-import type { Cafe } from "@/entities/cafe";
+import { createSeedTables } from "@/server/cafes/seed-tables";
+import type { Cafe, CafeTable } from "@/entities/cafe";
 import { createSeedGames } from "@/server/games/seed";
 import type { BoardGame } from "@/entities/game";
 import { createSeedInventory } from "@/server/inventory/seed";
@@ -21,6 +22,7 @@ export type SeedData = {
   users: New<User>[];
   reservations: New<Reservation>[];
   waitlist: WaitlistEntry[];
+  tables: CafeTable[];
 };
 
 /**
@@ -31,13 +33,15 @@ export function createSeedData(init: Partial<SeedData> = {}, now = new Date()): 
   const cafes = init.cafes ?? SEED_CAFES.map((c) => ({ ...c }));
   const games = init.games ?? createSeedGames();
   const inventory = init.inventory ?? createSeedInventory(cafes, games);
+  const tables = init.tables ?? createSeedTables(cafes);
   return {
     cafes,
     games,
     inventory,
     plays: init.plays ?? createSeedPlays(cafes, games, inventory, now),
     users: init.users ?? SEED_USERS.map((u) => ({ ...u })),
-    reservations: init.reservations ?? createSeedReservations(cafes, now),
+    reservations: init.reservations ?? createSeedReservations(cafes, now, tables),
     waitlist: init.waitlist ?? createSeedWaitlist(cafes, now),
+    tables,
   };
 }

@@ -1,10 +1,10 @@
 import type { New } from "@/db/mappers";
-import type { Cafe } from "@/entities/cafe";
+import type { Cafe, CafeTable } from "@/entities/cafe";
 import { hash01 } from "@/shared/lib/hash";
 import { DAY, startOfKstDay } from "@/shared/lib/kst-time";
 import type { WaitlistEntry } from "@/entities/waitlist";
 
-import type { Reservation, ReservationStatus } from "@/entities/reservation";
+import { pickTable, type Reservation, type ReservationStatus, type TakenSeat } from "@/entities/reservation";
 
 const HOUR = 3_600_000;
 const MINUTE = 60_000;
@@ -17,10 +17,16 @@ const pick = (key: string) => NAMES[Math.floor(hash01(key) * NAMES.length)];
 /**
  * 매장마다 오늘과 내일의 예약을 만든다(now 기준, 매번 같은 결과).
  * 오늘 이미 지난 시각의 예약은 입장 또는 노쇼, 앞으로의 예약은 확정 또는 가예약이다.
+ * 노쇼가 아닌 예약은 매장 테이블에 배정하고(배정 규칙은 온라인 예약과 같음), 몇 건은 온라인으로 받은 예약이다.
  */
-export function createSeedReservations(cafes: New<Cafe>[], now = new Date()): New<Reservation>[] {
+export function createSeedReservations(
+  cafes: New<Cafe>[],
+  now = new Date(),
+  tables: readonly CafeTable[] = [],
+): New<Reservation>[] {
   const today = startOfKstDay(now.getTime());
   const list: New<Reservation>[] = [];
+  const taken: TakenSeat[] = [];
   for (const cafe of cafes) {
     if (cafe.status !== "open") continue;
     // 오늘 13·15·17·19·20시, 내일 14·18시
@@ -35,16 +41,23 @@ export function createSeedReservations(cafes: New<Cafe>[], now = new Date()): Ne
         : hash01(`${key}:s`) < 0.75
           ? "confirmed"
           : "pending";
+      const startsAt = new Date(start + (hash01(`${key}:m`) < 0.5 ? 0 : 30 * MINUTE)).toISOString();
+      const partySize = 2 + Math.floor(hash01(`${key}:p`) * 5);
+      const cafeTables = tables.filter((t) => t.cafeId === cafe.id);
+      const table = status === "no_show" ? null : pickTable(cafeTables, taken, startsAt, partySize);
+      if (table) taken.push({ tableId: table.id, startsAt });
       list.push({
         id: `r_${list.length + 1}`,
         cafeId: cafe.id,
         name: pick(key),
         phone: fakePhone(key),
-        partySize: 2 + Math.floor(hash01(`${key}:p`) * 5),
-        startsAt: new Date(start + (hash01(`${key}:m`) < 0.5 ? 0 : 30 * MINUTE)).toISOString(),
+        partySize,
+        startsAt,
         status,
         createdAt: new Date(today - DAY).toISOString(),
         closedAt: past ? new Date(start + 15 * MINUTE).toISOString() : undefined,
+        tableId: table?.id,
+        source: !past && hash01(`${key}:o`) < 0.4 ? "online" : "staff",
       });
     });
   }

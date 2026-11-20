@@ -8,9 +8,16 @@ import { recordAudit } from "@/server/audit/data";
 import { getCurrentUser } from "@/server/auth/current-user";
 import type { AuditAction } from "@/entities/audit";
 import { canManageOrganization } from "@/entities/user";
-import { createCafe, setCafeStatus, updateCafe } from "@/server/cafes/data";
-import { cafeInputSchema } from "@/entities/cafe/index.server";
-import type { Cafe } from "@/entities/cafe";
+import {
+  addCafeTable,
+  createCafe,
+  listCafeTables,
+  setCafeStatus,
+  setCafeTableActive,
+  updateCafe,
+} from "@/server/cafes/data";
+import { cafeInputSchema, cafeTableInputSchema } from "@/entities/cafe/index.server";
+import type { Cafe, CafeTable } from "@/entities/cafe";
 import { createKioskDeviceRepository } from "@/server/kiosk/devices";
 import { type KioskDevice } from "@/entities/cafe";
 import {
@@ -160,4 +167,53 @@ export async function revokeKioskDeviceAction(cafeId: string, id: string): Promi
   });
   revalidate();
   return { ok: true, message: `'${result.name}' 토큰을 폐기했습니다. 그 기기는 더 이상 접속할 수 없습니다.` };
+}
+
+// ── 매장 테이블 (관리자) ───────────────────────────────
+// 예약 화면의 테이블 선택과 자동 배정이 이 목록을 쓴다.
+
+const TABLE_NOT_FOUND = "테이블을 찾을 수 없습니다. 창을 닫았다가 다시 열어주세요.";
+
+export async function listCafeTablesAction(cafeId: string): Promise<CafeTable[]> {
+  if (!canManageOrganization(await getCurrentUser())) return [];
+  return listCafeTables(cafeId);
+}
+
+export type AddCafeTableResult =
+  | { ok: true; table: CafeTable; message: string }
+  | { ok: false; message: string; field?: "label" | "seats" };
+
+export async function addCafeTableAction(
+  cafeId: string,
+  input: { label: string; seats: string },
+): Promise<AddCafeTableResult> {
+  const actor = await getCurrentUser();
+  if (!canManageOrganization(actor)) return { ok: false, message: FORBIDDEN };
+  const parsed = cafeTableInputSchema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return { ok: false, message: issue.message, field: issue.path[0] === "seats" ? "seats" : "label" };
+  }
+  const result = await addCafeTable(cafeId, parsed.data);
+  if (result === "not-found") return { ok: false, message: NOT_FOUND };
+  if (result === "duplicate-label") return { ok: false, message: "같은 이름의 테이블이 이미 있습니다.", field: "label" };
+  await recordAudit(actor, { action: "table.add", targetName: result.label, cafeId, detail: `${result.seats}석` });
+  revalidatePath("/reservations");
+  return { ok: true, table: result, message: `'${result.label}' 테이블(${result.seats}석)을 추가했습니다.` };
+}
+
+/** 쓰지 않게 된 테이블은 지우지 않고 끈다. 이미 배정한 예약은 그대로 두고 새 배정에서만 뺀다. */
+export async function setCafeTableActiveAction(cafeId: string, id: string, active: boolean): Promise<ActionResult> {
+  const actor = await getCurrentUser();
+  if (!canManageOrganization(actor)) return { ok: false, message: FORBIDDEN };
+  const result = await setCafeTableActive(cafeId, id, active);
+  if (typeof result === "string") return { ok: false, message: TABLE_NOT_FOUND };
+  await recordAudit(actor, { action: active ? "table.activate" : "table.deactivate", targetName: result.label, cafeId });
+  revalidatePath("/reservations");
+  return {
+    ok: true,
+    message: active
+      ? `'${result.label}' 테이블을 다시 씁니다.`
+      : `'${result.label}' 테이블을 새 예약에 배정하지 않습니다. 이미 배정한 예약은 그대로 둡니다.`,
+  };
 }

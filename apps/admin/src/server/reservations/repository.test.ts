@@ -11,7 +11,8 @@ import { createWaitlistRepository } from "@/server/waitlist/repository";
 import { waitlistInputSchema } from "@/entities/waitlist/index.server";
 
 import { createReservationRepository } from "./repository";
-import { reservationInputSchema } from "@/entities/reservation/index.server";
+import { onlineBookingSchema, reservationInputSchema } from "@/entities/reservation/index.server";
+import { createCafeTableRepository } from "@/server/cafes/tables";
 import type { New } from "@/db/mappers";
 import type { Reservation } from "@/entities/reservation";
 
@@ -158,30 +159,44 @@ describe("ReservationRepository", () => {
     const { db, repo } = await setup([
       { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T19:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
-    // 둘 다 '확정'을 읽은 뒤 입장 처리가 먼저 쓴다. 예전에는 수정이 읽어 둔 '확정'으로 다시 써서 입장이 사라졌다.
+    // 수정 창을 연 뒤 입장 처리가 먼저 끝났다. 예전에는 수정이 읽어 둔 '확정'으로 다시 써서 입장이 사라졌다.
     const opened = await versionOf(db, "r1");
-    const [seated, edited] = await Promise.all([
-      repo.setStatus("a", "r1", "seated", now),
-      repo.update("a", "r1", input({ partySize: "5" }), opened, now),
-    ]);
-    expect(seated).toMatchObject({ status: "seated" });
-    expect(edited).toBe("changed");
+    expect(await repo.setStatus("a", "r1", "seated", now)).toMatchObject({ status: "seated" });
+    expect(await repo.update("a", "r1", input({ partySize: "5" }), opened, now)).toBe("finished");
     expect(await db.select().from(reservationTable)).toMatchObject([{ status: "seated", partySize: 2 }]);
+
+    // 동시에 들어와도 어느 순서로 처리되든 입장은 남는다(수정이 먼저면 수정한 뒤 입장).
+    const { db: db2, repo: repo2 } = await setup([
+      { id: "r2", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T19:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
+    ]);
+    const opened2 = await versionOf(db2, "r2");
+    await Promise.all([
+      repo2.setStatus("a", "r2", "seated", now),
+      repo2.update("a", "r2", input({ partySize: "5" }), opened2, now),
+    ]);
+    expect(await db2.select().from(reservationTable)).toMatchObject([{ status: "seated" }]);
   });
 
   it("노쇼를 확인하는 사이 예약 시각이 미래로 바뀌면 노쇼로 처리하지 않는다", async () => {
     const { db, repo } = await setup([
       { id: "r1", cafeId: "a", name: "김철수", phone: "01012345678", partySize: 2, startsAt: at("2026-11-05T13:00"), status: "confirmed", createdAt: "2026-10-01T00:00:00.000Z" },
     ]);
-    // 둘 다 13시 예약을 읽은 뒤, 시각 수정(19시)이 먼저 쓴다. 노쇼는 읽어 둔 13시로 판단했으므로 막아야 한다.
+    // 13시 예약의 시각 수정(19시)과 노쇼 처리가 겹친다. 노쇼는 읽어 둔 13시로 판단하므로, 그사이 시각이 바뀌었으면
+    // 막아야 한다(setStatus는 읽은 상태·시각이 그대로일 때만 쓴다). 어느 쪽이 먼저든 '19시 노쇼'가 되면 안 된다.
     const opened = await versionOf(db, "r1");
     const [edited, noShow] = await Promise.all([
       repo.update("a", "r1", input({ time: "19:00" }), opened, now),
       repo.setStatus("a", "r1", "no_show", now),
     ]);
-    expect(edited).toMatchObject({ startsAt: at("2026-11-05T19:00") });
-    expect(noShow).toBe("changed");
-    expect(await db.select().from(reservationTable)).toMatchObject([{ status: "confirmed" }]);
+    const [row] = await db.select().from(reservationTable);
+    if (typeof edited === "string") {
+      // 노쇼가 먼저 끝났으면 수정은 끝난 예약이라 막힌다.
+      expect([edited, row.status, row.startsAt.toISOString()]).toEqual(["finished", "no_show", at("2026-11-05T13:00")]);
+    } else {
+      // 노쇼가 수정 전에 읽었으면 changed, 수정 뒤에 읽었으면 19시가 아직 안 돼 too-early
+      expect(["changed", "too-early"]).toContain(noShow);
+      expect([row.status, row.startsAt.toISOString()]).toEqual(["confirmed", at("2026-11-05T19:00")]);
+    }
   });
 });
 
@@ -258,5 +273,131 @@ describe("시드", () => {
       expect(done).toBe(Date.parse(r.startsAt) < now.getTime() - 30 * 60_000 ? true : done);
       expect(isMobilePhone(r.phone)).toBe(true);
     }
+  });
+});
+
+describe("테이블 배정", () => {
+  const phone = (n: number) => `010-5555-${String(n).padStart(4, "0")}`;
+
+  it("자동 배정은 일행이 앉을 가장 작은 빈 테이블, '배정 안 함'은 비워 둔다", async () => {
+    const { repo } = await setup();
+    expect(await repo.create("a", input({ partySize: "3" }), now)).toMatchObject({ tableId: "t_a_B1", tableLabel: "B1" });
+    expect(await repo.create("a", input({ partySize: "3", phone: phone(1) }), now)).toMatchObject({ tableLabel: "B2" });
+    const unassigned = await repo.create("a", input({ table: "none" }), now);
+    expect(typeof unassigned !== "string" && unassigned.tableId).toBeUndefined();
+    expect((await repo.listByDate("a", "2026-11-05")).map((r) => r.tableLabel)).toEqual(["B1", "B2", undefined]);
+  });
+
+  it("고른 테이블이 작거나, 앞뒤 2시간 안에 예약이 있거나, 다른 매장·쓰지 않는 테이블이면 막는다", async () => {
+    const { db, repo } = await setup();
+    expect(await repo.create("a", input({ table: "t_a_A1", partySize: "3" }), now)).toBe("table-too-small");
+    expect(await repo.create("a", input({ table: "t_a_B1" }), now)).toMatchObject({ tableLabel: "B1" });
+    expect(await repo.create("a", input({ table: "t_a_B1", time: "20:30" }), now)).toBe("table-taken");
+    expect(await repo.create("a", input({ table: "t_a_B1", time: "21:00" }), now)).toMatchObject({ tableLabel: "B1" });
+    expect(await repo.create("a", input({ table: "t_b_B1" }), now)).toBe("table-not-found");
+    await createCafeTableRepository(db).setActive("a", "t_a_C1", false);
+    expect(await repo.create("a", input({ table: "t_a_C1" }), now)).toBe("table-not-found");
+  });
+
+  it("빈 테이블이 없으면 자동 배정은 no-table", async () => {
+    const { repo } = await setup();
+    for (let n = 0; n < 10; n++) {
+      expect(await repo.create("a", input({ partySize: "2", phone: phone(n) }), now)).toMatchObject({ status: "confirmed" });
+    }
+    expect(await repo.create("a", input({ partySize: "2", phone: phone(10) }), now)).toBe("no-table");
+    // 2시간 뒤에는 다시 빈다.
+    expect(await repo.create("a", input({ partySize: "2", phone: phone(11), time: "21:00" }), now)).toMatchObject({ tableLabel: "A1" });
+  });
+
+  it("수정할 때 자기 자리는 겹침으로 보지 않고, 쓰지 않게 된 테이블도 원래 배정이면 유지한다", async () => {
+    const { db, repo } = await setup();
+    const created = await repo.create("a", input({ table: "t_a_A1", partySize: "2" }), now);
+    if (typeof created === "string") throw new Error(created);
+    const moved = await repo.update("a", created.id, input({ table: "t_a_A1", partySize: "2", time: "19:30" }), created.version, now);
+    if (typeof moved === "string") throw new Error(moved);
+    expect(moved).toMatchObject({ tableLabel: "A1", startsAt: at("2026-11-05T19:30") });
+
+    await createCafeTableRepository(db).setActive("a", "t_a_A1", false);
+    expect(await repo.update("a", created.id, input({ table: "t_a_A1", partySize: "2", memo: "창가" }), moved.version, now)).toMatchObject({
+      tableLabel: "A1",
+      memo: "창가",
+    });
+    // 다른 예약은 쓰지 않는 테이블을 새로 받을 수 없다.
+    expect(await repo.create("a", input({ table: "t_a_A1", partySize: "2", time: "13:00", date: "2026-11-06" }), now)).toBe("table-not-found");
+  });
+});
+
+describe("온라인 예약", () => {
+  // 지금은 2026-11-05 15:00. 받는 시각: 12:00~20:00(30분 단위), 1시간 뒤부터, 11월 19일까지
+  const online = (patch: Record<string, unknown> = {}) =>
+    onlineBookingSchema.parse({ name: "이영희", phone: "010-2222-3333", partySize: "4", date: "2026-11-06", time: "18:00", agreed: true, ...patch });
+  const oneTable = (seats = 4) => [{ id: "t1", cafeId: "a", label: "T1", seats, active: true }];
+
+  async function setupTables(tables: ReturnType<typeof oneTable>) {
+    const db = await createTestDb({ cafes: [cafe("a"), cafe("z", "closed")], games: [], inventory: [], plays: [], users: [], reservations: [], waitlist: [], tables });
+    return { db, repo: createReservationRepository(db) };
+  }
+
+  it("빈 테이블을 배정해 바로 확정하고, 받은 곳을 online으로 남긴다", async () => {
+    const { repo } = await setup();
+    expect(await repo.book("a", online(), now)).toMatchObject({
+      status: "confirmed",
+      source: "online",
+      tableLabel: "B1",
+      partySize: 4,
+      phone: "01022223333",
+      startsAt: at("2026-11-06T18:00"),
+    });
+  });
+
+  it("받는 시각·기간·인원이 아니거나 운영 중이 아닌 매장이면 받지 않는다", async () => {
+    const { repo } = await setup();
+    expect(await repo.book("a", online({ date: "2026-11-05", time: "15:30" }), now)).toBe("outside-hours");
+    expect(await repo.book("a", online({ time: "18:15" }), now)).toBe("outside-hours");
+    expect(await repo.book("a", online({ time: "21:00" }), now)).toBe("outside-hours");
+    expect(await repo.book("a", online({ date: "2026-11-20" }), now)).toBe("outside-hours");
+    expect(await repo.book("a", { ...online(), partySize: 9 }, now)).toBe("too-many");
+    expect(await repo.book("z", online(), now)).toBe("closed-cafe");
+    expect(await repo.book("a", online({ date: "2026-11-05", time: "16:00" }), now)).toMatchObject({ status: "confirmed" });
+  });
+
+  it("같은 번호로 그날 이 매장에 끝나지 않은 예약이 있으면 duplicate", async () => {
+    const { repo } = await setup();
+    expect(await repo.book("a", online(), now)).toMatchObject({ status: "confirmed" });
+    expect(await repo.book("a", online({ time: "13:00" }), now)).toBe("duplicate");
+    expect(await repo.book("a", online({ partySize: "2" }), now)).toBe("duplicate");
+    expect(await repo.book("b", online(), now)).toMatchObject({ status: "confirmed" });
+    expect(await repo.book("a", online({ date: "2026-11-07" }), now)).toMatchObject({ status: "confirmed" });
+  });
+
+  it("같은 내용(번호·매장·시각·인원)으로 다시 보내면 새로 만들지 않고 이미 된 예약을 돌려준다(응답을 못 받은 손님의 재전송)", async () => {
+    const { db, repo } = await setup();
+    const first = await repo.book("a", online(), now);
+    if (typeof first === "string") throw new Error(first);
+    expect(await repo.book("a", online({ name: "이영희", memo: "다시 보냄" }), now)).toMatchObject({ id: first.id, tableLabel: first.tableLabel });
+    expect(await db.select().from(reservationTable)).toHaveLength(1);
+  });
+
+  it("남은 테이블이 하나일 때 두 건이 동시에 와도 한 건만 받는다", async () => {
+    const { db, repo } = await setupTables(oneTable());
+    const results = await Promise.all([
+      repo.book("a", online({ phone: "010-1111-0001" }), now),
+      repo.book("a", online({ phone: "010-1111-0002", time: "19:00" }), now),
+    ]);
+    expect(results.filter((r) => r === "full")).toHaveLength(1);
+    expect(await db.select().from(reservationTable)).toHaveLength(1);
+  });
+
+  it("빈 시각: 일행이 앉을 테이블이 있는 받는 시각만 available", async () => {
+    const { repo } = await setupTables(oneTable());
+    expect(await repo.book("a", online(), now)).toMatchObject({ tableLabel: "T1" });
+    const day = await repo.availability("a", "2026-11-06", 4, now);
+    const open = day?.slots.filter((s) => s.available).map((s) => s.time);
+    // 18시 예약이 16:01~19:59 시작을 막는다.
+    expect(open).toEqual(["12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "20:00"]);
+    expect((await repo.availability("a", "2026-11-06", 5, now))?.slots.some((s) => s.available)).toBe(false);
+    // 오늘은 1시간 뒤(16시)부터
+    expect((await repo.availability("a", "2026-11-05", 2, now))?.slots.find((s) => s.available)?.time).toBe("16:00");
+    expect(await repo.availability("z", "2026-11-06", 2, now)).toBeNull();
   });
 });

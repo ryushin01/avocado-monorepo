@@ -37,6 +37,10 @@ const RESERVATION_ERRORS: Record<ReservationError, string> = {
   "invalid-transition": "지금 상태에서는 그렇게 바꿀 수 없습니다.",
   "too-early": "예약 시각이 지나야 노쇼로 처리할 수 있습니다.",
   changed: "다른 직원이 먼저 이 예약을 바꿨습니다. 목록을 새로고침해 확인해주세요.",
+  "no-table": "그 시각에 앉을 수 있는 빈 테이블이 없습니다. 테이블을 직접 고르거나 '배정 안 함'으로 받아주세요.",
+  "table-taken": "고른 테이블에는 그 시각 앞뒤 2시간 안에 다른 예약이 있습니다. 다른 테이블이나 '자동 배정'을 골라주세요.",
+  "table-too-small": "고른 테이블의 좌석이 인원보다 적습니다. 다른 테이블이나 '자동 배정'을 골라주세요.",
+  "table-not-found": "고른 테이블을 쓸 수 없습니다. 목록을 새로고침해주세요.",
 };
 
 const WAITLIST_ERRORS: Record<WaitlistError, string> = {
@@ -75,6 +79,9 @@ export async function saveReservationAction(
       : await createReservation(cafeId, parsed.data);
   if (result === "past") {
     return { status: "error", fieldErrors: { time: [RESERVATION_ERRORS.past] }, values };
+  }
+  if (result === "no-table" || result === "table-taken" || result === "table-too-small" || result === "table-not-found") {
+    return { status: "error", fieldErrors: { table: [RESERVATION_ERRORS[result]] }, values };
   }
   if (result === "changed") {
     // 목록은 바뀐 내용으로 다시 받고, 열린 폼은 입력을 그대로 둔 채 알린다.

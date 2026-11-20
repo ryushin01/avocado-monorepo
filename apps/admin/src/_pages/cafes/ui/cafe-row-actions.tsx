@@ -1,11 +1,12 @@
 "use client";
 
-import { DoorClosed, DoorOpen, KeyRound, MoreHorizontal, Pencil } from "lucide-react";
+import { Armchair, DoorClosed, DoorOpen, KeyRound, MoreHorizontal, Pencil } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { closeCafeAction, reopenCafeAction, updateCafeAction } from "../api/actions";
 import { CafeFormDialog } from "./cafe-form-dialog";
+import { CafeTablesDialog } from "./cafe-tables-dialog";
 import { KioskDevicesDialog } from "./kiosk-devices-dialog";
 import {
   AlertDialog,
@@ -32,6 +33,7 @@ export function CafeRowActions({ cafe }: { cafe: CafeOverview }) {
   const [editOpen, setEditOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
   const [kioskOpen, setKioskOpen] = useState(false);
+  const [tablesOpen, setTablesOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const run = (action: () => Promise<ActionResult>, onDone?: () => void) =>
@@ -69,6 +71,10 @@ export function CafeRowActions({ cafe }: { cafe: CafeOverview }) {
             <KeyRound />
             키오스크 토큰
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTablesOpen(true)}>
+            <Armchair />
+            테이블
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           {cafe.status === "open" ? (
             <DropdownMenuItem variant="destructive" onClick={() => setCloseOpen(true)}>
@@ -101,6 +107,14 @@ export function CafeRowActions({ cafe }: { cafe: CafeOverview }) {
         cafeName={cafe.name}
         open={kioskOpen}
         onOpenChange={setKioskOpen}
+      />
+
+      <CafeTablesDialog
+        key={tablesOpen ? "tables-open" : "tables-closed"}
+        cafeId={cafe.id}
+        cafeName={cafe.name}
+        open={tablesOpen}
+        onOpenChange={setTablesOpen}
       />
 
       <AlertDialog open={closeOpen} onOpenChange={setCloseOpen}>

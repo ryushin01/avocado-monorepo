@@ -22,7 +22,12 @@ export function BookingSearch({ options, query, today }: { options: BookingOptio
       <h2 id="booking-step-1" className="text-xl font-bold">
         1. 매장·날짜·인원
       </h2>
-      <Form action="/reservation" className="grid gap-4 md:grid-cols-[2fr_2fr_1fr] md:items-start">
+      <Form
+        // 선택 상자는 처음 값(defaultValue)만 받으므로, 주소의 값이 바뀌면(뒤로 가기 등) 새로 그려 그 값으로 맞춘다.
+        key={`${query.cafe?.id ?? ""}:${query.date ?? ""}:${query.partySize ?? ""}`}
+        action="/reservation"
+        className="grid gap-4 md:grid-cols-[2fr_2fr_1fr] md:items-start"
+      >
         <Field data-invalid={cafeMissing}>
           <FieldLabel htmlFor="booking-cafe">매장</FieldLabel>
           <NativeSelect

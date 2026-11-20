@@ -38,6 +38,9 @@ export async function POST(request: Request, ctx: RouteContext<"/api/booking/caf
   if (!parsed.success) {
     return bookingError(400, "invalid", "입력을 확인해주세요.", z.flattenError(parsed.error).fieldErrors);
   }
+  // 매장 이름은 저장 전에 읽는다. 저장한 뒤에 읽다 실패하면 예약은 됐는데 완료 응답을 잃는다.
+  const cafe = (await listCafes()).find((c) => c.id === cafeId && c.status === "open");
+  if (!cafe) return bookingError(...FAILURES["closed-cafe"]);
   const result = await bookOnline(cafeId, parsed.data);
   if (typeof result === "string") {
     const [status, code, message, fieldErrors] = FAILURES[result];
@@ -46,6 +49,5 @@ export async function POST(request: Request, ctx: RouteContext<"/api/booking/caf
 
   // 카운터에 열어 둔 예약 화면은 자동 갱신(15초)으로 새 예약을 받는다.
   revalidatePath("/reservations");
-  const cafeName = (await listCafes()).find((cafe) => cafe.id === cafeId)?.name ?? "";
-  return bookingJson<BookingResult>(toBookingResult(result, cafeName), 201);
+  return bookingJson<BookingResult>(toBookingResult(result, cafe.name), 201);
 }

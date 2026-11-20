@@ -162,7 +162,8 @@ export function CafeTablesDialog({
                       variant="ghost"
                       disabled={pending}
                       onClick={() => toggle(t)}
-                      aria-label={t.active ? `${t.label} 테이블 쓰지 않기` : `${t.label} 테이블 다시 쓰기`}
+                      // 접근 이름은 보이는 글자로 시작한다(음성 제어로 '쓰지 않기'라고 불러도 찾게).
+                      aria-label={t.active ? `쓰지 않기: ${t.label} 테이블` : `다시 쓰기: ${t.label} 테이블`}
                     >
                       {t.active ? "쓰지 않기" : "다시 쓰기"}
                     </Button>

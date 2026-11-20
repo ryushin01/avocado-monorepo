@@ -365,8 +365,17 @@ describe("온라인 예약", () => {
     const { repo } = await setup();
     expect(await repo.book("a", online(), now)).toMatchObject({ status: "confirmed" });
     expect(await repo.book("a", online({ time: "13:00" }), now)).toBe("duplicate");
+    expect(await repo.book("a", online({ partySize: "2" }), now)).toBe("duplicate");
     expect(await repo.book("b", online(), now)).toMatchObject({ status: "confirmed" });
     expect(await repo.book("a", online({ date: "2026-11-07" }), now)).toMatchObject({ status: "confirmed" });
+  });
+
+  it("같은 내용(번호·매장·시각·인원)으로 다시 보내면 새로 만들지 않고 이미 된 예약을 돌려준다(응답을 못 받은 손님의 재전송)", async () => {
+    const { db, repo } = await setup();
+    const first = await repo.book("a", online(), now);
+    if (typeof first === "string") throw new Error(first);
+    expect(await repo.book("a", online({ name: "이영희", memo: "다시 보냄" }), now)).toMatchObject({ id: first.id, tableLabel: first.tableLabel });
+    expect(await db.select().from(reservationTable)).toHaveLength(1);
   });
 
   it("남은 테이블이 하나일 때 두 건이 동시에 와도 한 건만 받는다", async () => {

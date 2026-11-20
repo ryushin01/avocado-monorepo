@@ -31,6 +31,16 @@ describe("CafeTableRepository", () => {
     expect(await tables.add("없는매장", { label: "D1", seats: 4 }, now)).toBe("not-found");
   });
 
+  it("공백·대소문자만 다른 이름을 동시에 더해도 하나만 남는다", async () => {
+    const tables = await setup();
+    const results = await Promise.all([
+      tables.add("a", { label: "D 9", seats: 4 }, now),
+      tables.add("a", { label: "d9", seats: 4 }, now),
+    ]);
+    expect(results.filter((r) => r === "duplicate-label")).toHaveLength(1);
+    expect((await tables.list("a")).filter((t) => t.label.replace(/\s/g, "").toLowerCase() === "d9")).toHaveLength(1);
+  });
+
   it("쓰지 않게 된 테이블은 끄고 다시 켤 수 있으며, 다른 매장의 테이블은 바꾸지 않는다", async () => {
     const tables = await setup();
     expect(await tables.setActive("a", "t_a_A1", false)).toMatchObject({ label: "A1", active: false });

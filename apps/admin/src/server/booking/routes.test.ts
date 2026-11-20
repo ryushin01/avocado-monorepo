@@ -166,6 +166,12 @@ describe("POST /api/booking/cafes/[cafeId]/reservations", () => {
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
+  it("받지 않는 매장이면 저장하지 않고 404(closed)", async () => {
+    const response = await post(booking, "c_z");
+    expect([response.status, BookingErrorSchema.parse(await response.json()).code]).toEqual([404, "closed"]);
+    expect(mocks.bookOnline).not.toHaveBeenCalled();
+  });
+
   it("받으면 201과 확정 내용(이름·전화 없이), 직원 화면을 갱신한다", async () => {
     mocks.bookOnline.mockResolvedValueOnce({
       id: "r_1",

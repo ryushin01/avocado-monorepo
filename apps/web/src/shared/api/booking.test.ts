@@ -96,4 +96,19 @@ describe("백오피스 예약 API 호출", () => {
     expect(await fetchBookingOptions()).toEqual({ ok: false, reason: "unreachable" });
     expect(logs().map((entry) => entry.event)).toEqual(["booking_invalid_response", "booking_unreachable"]);
   });
+
+  it("BACKOFFICE_URL이 주소 형식이 아니어도 예외 대신 연결 문제로 알리고 기록한다", async () => {
+    const { BOOKING_CONFIG } = await import("./booking");
+    const original = BOOKING_CONFIG.backofficeUrl;
+    BOOKING_CONFIG.backofficeUrl = "admin.example.com";
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      expect(await fetchBookingOptions()).toEqual({ ok: false, reason: "unreachable" });
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(logs()).toEqual([expect.objectContaining({ event: "booking_unreachable" })]);
+    } finally {
+      BOOKING_CONFIG.backofficeUrl = original;
+    }
+  });
 });

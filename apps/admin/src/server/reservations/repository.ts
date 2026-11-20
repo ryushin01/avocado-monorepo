@@ -139,6 +139,9 @@ export function createReservationRepository(db: Database): ReservationRepository
       .for("update");
     return cafe ?? null;
   };
+  /** 운영 여부와 관계없이 매장 줄을 잠근다(수정: 폐점한 매장의 지난 예약을 고칠 때도 테이블 배정이 겹치지 않게). */
+  const lockCafe = (q: Database, cafeId: string) =>
+    q.select({ id: cafes.id }).from(cafes).where(eq(cafes.id, cafeId)).for("update");
 
   /** from~to에 시작하는 예약 중 테이블을 차지한 것 (exceptId: 고치는 예약 자신은 뺀다) */
   const takenBetween = async (q: Database, cafeId: string, from: number, to: number, exceptId?: string): Promise<TakenSeat[]> =>
@@ -229,7 +232,7 @@ export function createReservationRepository(db: Database): ReservationRepository
 
     async update(cafeId, id, input, version, now) {
       return db.transaction(async (tx) => {
-        await lockOpenCafe(tx, cafeId);
+        await lockCafe(tx, cafeId);
         const [row] = await tx.select().from(reservations).where(byId(cafeId, id));
         const current = row ? toReservation(row) : null;
         if (!current) return "not-found" as const;
@@ -308,10 +311,11 @@ export function createReservationRepository(db: Database): ReservationRepository
       if (!isBookableTime(input.startsAt, now)) return "outside-hours";
       return db.transaction(async (tx) => {
         if (!(await lockOpenCafe(tx, cafeId))) return "closed-cafe" as const;
-        // 같은 번호로 같은 날 이 매장에 끝나지 않은 예약이 있으면 받지 않는다(실수로 두 번 보낸 요청 포함).
+        // 같은 번호로 같은 날 이 매장에 끝나지 않은 예약이 있으면 받지 않는다.
+        // 다만 시각·인원까지 같으면, 응답을 받지 못한(시간 초과 등) 손님이 같은 내용을 다시 보낸 것으로 보고 그 예약을 돌려준다.
         const { from, to } = kstDayRange(toKstDate(Date.parse(input.startsAt)));
         const [same] = await tx
-          .select({ id: reservations.id })
+          .select()
           .from(reservations)
           .where(
             and(
@@ -322,7 +326,10 @@ export function createReservationRepository(db: Database): ReservationRepository
               lt(reservations.startsAt, new Date(to)),
             ),
           );
-        if (same) return "duplicate" as const;
+        if (same) {
+          const resent = same.source === "online" && same.startsAt.toISOString() === input.startsAt && same.partySize === input.partySize;
+          return resent ? toReservation(same, await labelOf(tx, same.tableId)) : ("duplicate" as const);
+        }
         const seat = await chooseTable(tx, cafeId, "auto", input.startsAt, input.partySize);
         if (typeof seat === "string") return "full" as const;
         const [row] = await tx

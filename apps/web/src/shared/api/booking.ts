@@ -63,8 +63,10 @@ async function call<T>(
   await connection();
   if (missingBookingConfig().length > 0) return { ok: false, reason: "off" };
   const { backofficeUrl, apiToken } = BOOKING_CONFIG;
-  const url = new URL(path, backofficeUrl);
+  let url: URL | undefined;
   try {
+    // 주소 형식이 아닌 BACKOFFICE_URL(예: https:// 빠짐)도 연결 문제로 안내하고 기록한다.
+    url = new URL(path, backofficeUrl);
     const res = await fetch(url, {
       method: init?.method ?? "GET",
       cache: "no-store",
@@ -96,7 +98,7 @@ async function call<T>(
     return { ok: false, reason: "unreachable", error };
   } catch (cause) {
     const interrupted = cause instanceof Error && cause.message.startsWith("During prerendering");
-    if (!interrupted) logError("web", "booking_unreachable", { path: url.pathname, error: cause });
+    if (!interrupted) logError("web", "booking_unreachable", { path: url?.pathname ?? path, error: cause });
     return { ok: false, reason: "unreachable" };
   }
 }

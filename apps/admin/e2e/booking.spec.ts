@@ -117,7 +117,7 @@ test.describe("테이블 (관리자)", () => {
     await expect(nameField).toBeFocused();
     await expect(dialog.getByText("같은 이름의 테이블이 이미 있습니다.")).toBeVisible();
 
-    await dialog.getByRole("button", { name: `${label} 테이블 쓰지 않기` }).click();
+    await dialog.getByRole("button", { name: `쓰지 않기: ${label} 테이블` }).click();
     await expect(item).toContainText("쓰지 않음");
   });
 

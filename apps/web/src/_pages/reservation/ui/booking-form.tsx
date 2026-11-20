@@ -52,11 +52,13 @@ export function BookingForm({
     const first = FIELD_ORDER.find((field) => state.fieldErrors[field]?.length);
     if (!first) return;
     const form = formRef.current;
-    // 시각은 고른 것(없으면 고를 수 있는 첫 시각)으로, 나머지는 오류 문구를 이은 칸(aria-errormessage)으로 옮긴다.
+    // 시각은 고른 것(없으면 고를 수 있는 첫 시각, 그것도 없으면 '방문 시각' 제목)으로,
+    // 나머지는 오류 문구를 이은 칸(aria-errormessage)으로 옮긴다.
     const target =
       first === "time"
         ? (form?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]') ??
-          form?.querySelector<HTMLElement>('[role="radio"]:not([data-disabled])'))
+          form?.querySelector<HTMLElement>('[role="radio"]:not([data-disabled])') ??
+          document.getElementById(`${id("time")}-legend`))
         : form?.querySelector<HTMLElement>(`[aria-errormessage="${errorIdOf(id(first))}"]`);
     target?.focus();
   }, [state]);
@@ -85,7 +87,14 @@ export function BookingForm({
         <input type="hidden" name="partySize" value={partySize} />
 
         <FieldSet data-invalid={invalid("time")}>
-          <FieldLegend id={`${id("time")}-legend`}>방문 시각</FieldLegend>
+          {/* 고를 수 있는 시각이 하나도 남지 않으면 초점을 이 제목으로 옮긴다(아래 오류 문구와 함께 읽힘). */}
+          <FieldLegend
+            id={`${id("time")}-legend`}
+            tabIndex={-1}
+            aria-describedby={invalid("time") ? errorIdOf(id("time")) : undefined}
+          >
+            방문 시각
+          </FieldLegend>
           <FieldDescription id={descriptionIdOf(id("time"))}>
             예약하면 2시간 동안 테이블 하나를 맡아 둡니다. &lsquo;마감&rsquo;은 빈 테이블이 없는 시각입니다.
           </FieldDescription>

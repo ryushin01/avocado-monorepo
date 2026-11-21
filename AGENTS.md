@@ -44,21 +44,30 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 타입 검사는 TypeScript 7(`tsc7`), 도구는 TypeScript 6입니다. 각 패키지의 `typescript`는 `~6.0.3`으로 고정하고 7로 올리지 않습니다(lint가 실패). 편집기와 결과가 다르면 `pnpm typecheck`를 기준으로 삼습니다.
 - E2E(`apps/admin/e2e/`)는 세 앱을 프로덕션 빌드로 띄워 병렬로 돕니다. 데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다(배정은 `docs/conventions.md`).
 - 품질 예산(홍보 사이트): JS 450 kB·CSS 70 kB(gzip, `apps/web/.size-limit.json`), Lighthouse 데스크톱 성능 90·접근성 100·권장 95·SEO 90(`apps/web/lighthouserc.json`)
+- 테스트 원칙(Testing Library): 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 단위는 Vitest(백오피스 컴포넌트는 Vitest + Testing Library), 화면 흐름은 Playwright E2E(프로덕션 빌드), 접근성은 axe(`@axe-core/playwright`, Storybook 스토리 `test:stories`)로 검사합니다. 버그를 고치면 고치기 전에 실패하는 테스트를 함께 넣습니다.
 
 ## 5. 코드 스타일
 
-- ESLint 9(`packages/config`, FSD 경계 규칙, jsx-a11y recommended 전부). 별도 포매터 스크립트는 없으니 주변 코드 서식을 따릅니다.
+- ESLint 9(`packages/config`, FSD 경계 규칙, jsx-a11y recommended 전부).
 - React Compiler를 켜 두었으므로 성능만을 위한 `useMemo`·`useCallback`·`memo`를 새로 넣지 않고 Hooks 규칙을 지킵니다.
 - UI는 shadcn/ui만 씁니다. 없으면 `packages/ui`에서 `pnpm dlx shadcn@latest add <이름>`으로 추가하고, 다른 UI 라이브러리를 들이지 않습니다. Base UI의 `render` prop, 아이콘은 lucide-react. 폼 패턴·차트·오류 처리·변경 이력(`recordAudit`) 규칙과 알려진 함정은 `docs/conventions.md`를 따릅니다.
 - 컴포넌트마다 옆에 `<이름>.stories.tsx`를 둡니다. 앱의 표시용 컴포넌트 스토리 제목은 `백오피스/`, `키오스크/`, `홈페이지/`로 시작하고 같은 Storybook에 나옵니다.
 - 테스트: Vitest(`*.test.ts`, 백오피스 컴포넌트는 `*.test.tsx`), Playwright E2E. Jest는 쓰지 않습니다.
 - 접근성(KWCAG 2.2): 네이티브 요소 먼저, 텍스트 대비 4.5:1(destructive는 red-700), 모든 기능 키보드 가능·`:focus-visible` 유지, 조작 크기 24px 이상(권장 44), 입력칸 레이블과 오류의 `aria-invalid`·`aria-describedby` 연결(`@avocado/ui/lib/field-a11y`), 바뀌는 안내는 `role="status"`, 페이지별 `<title>`과 본문 바로가기.
+- TypeScript strict(`packages/config/tsconfig.base.json`의 `"strict": true`)를 유지하고 `any`·`as` 단언·`@ts-ignore`를 피합니다. 외부 입력(폼, URL, 키오스크 API 응답)은 zod로 검증합니다.
+- 서식: Prettier·Biome 설정이 없습니다(표준과 다른 점). ESLint와 주변 코드 서식을 따릅니다.
+- 접근성 기준은 WCAG 2.2와 KWCAG 2.2이며, 자동 검사는 `eslint-plugin-jsx-a11y`(recommended 전부)와 axe(Storybook·Playwright)로 합니다.
 
 ## 6. Git·PR
 
-- `main`에 직접 커밋·푸시하지 않습니다. 최신 `main`에서 `feat/...`, `fix/...`, `docs/...`, `chore/...`, `refactor/...` 브랜치를 만듭니다.
-- 커밋·PR 제목: `<type>: <한국어 요약> (#PR)` 예) `fix: 공개 데모 DB 잠금이 멈춘 인스턴스에 묶여 요청이 걸리던 문제 (#70)`. 본문은 `-` 목록으로 무엇을 왜 바꿨는지 적고, 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`를 붙입니다.
-- `CHANGELOG.md`는 Keep a Changelog 형식입니다. 변경은 `## [Unreleased]` 아래 `### 추가`·`### 바뀜`·`### 수정`에 적고, 릴리스할 때 버전 절로 옮기며 루트와 앱·패키지의 `package.json` 버전을 함께 올립니다.
+- 흐름: GitHub Flow. `main`에 직접 커밋·푸시하지 않고, 최신 `main`에서 브랜치를 만들어 PR로만 병합합니다. PR은 목적 하나로 작게 만들고 본문에 무엇·왜·검사 결과를 적습니다.
+- 브랜치 이름: `feat/…`, `fix/…`, `refactor/…`, `docs/…`, `test/…`, `chore/…`, `release/…`
+- 커밋 메시지: Conventional Commits `<타입>: <한국어 요약>`, 타입은 `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `style`, `chore`, `ci`, `build`. 호환이 깨지면 본문에 `BREAKING CHANGE:`를 적습니다.
+  - 실제 예) `fix: 공개 데모 DB 잠금이 멈춘 인스턴스에 묶여 요청이 걸리던 문제 (#70)`, `feat: v1.0.0 런칭 점검 — 로그인 잠금 우회·실시간 반영·통계 오류·동시 작업·접근성 (0.2.0) (#57)`
+  - 표준과 다른 점: 변경을 `[Unreleased]`에 모았다가 릴리스 PR(`release: v1.0.0 준비 … (#66)`, `release` 타입)에서 한 번에 버전을 올리므로, 평소 커밋·PR 제목에는 버전을 붙이지 않습니다. 버전을 올린 PR만 `(x.y.z)`를 붙입니다. squash 병합이 `(#PR)`을 덧붙입니다.
+  - 본문은 `-` 목록으로 무엇을 왜 바꿨는지 적고, 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`를 붙입니다.
+- 버전: Semantic Versioning(주.부.수). 릴리스할 때 루트와 모든 앱·패키지의 `package.json` `version`을 같은 값으로 맞춥니다(README에 버전 배지는 없음). 문서만 바뀐 PR은 버전을 올리지 않습니다.
+- 변경 기록: Keep a Changelog. `CHANGELOG.md`에 최신을 위에 두고, 릴리스 전 변경은 `## [Unreleased]` 아래 `### 추가`·`### 바뀜`·`### 수정`(필요하면 `### 제거`)에 적습니다. 릴리스할 때 `## [x.y.z] - YYYY-MM-DD`로 옮깁니다.
 - 병합은 squash. CI가 통과하면 바로 병합하고 CodeRabbit(`.coderabbit.yaml`, 한국어 리뷰) 리뷰는 기다리지 않습니다. 이미 달린 맞는 지적은 반영합니다. `docs/conventions.md` 규칙을 바꾸면 `.coderabbit.yaml`의 경로별 지침도 함께 고칩니다.
 
 ## 7. 배포·릴리스

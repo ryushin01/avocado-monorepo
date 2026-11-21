@@ -219,6 +219,9 @@ importers:
       drizzle-orm:
         specifier: 0.45.4
         version: 0.45.4(@electric-sql/pglite@0.5.16)(@opentelemetry/api@1.10.0)(postgres@3.4.9)
+      geist:
+        specifier: ^1.9.2
+        version: 1.9.2(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       lucide-react:
         specifier: ^1.70.0
         version: 1.70.0(@types/react@19.3.0)(react@19.3.1)
@@ -346,6 +349,9 @@ importers:
       '@sentry/nextjs':
         specifier: ^11.11.0
         version: 11.11.0(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      geist:
+        specifier: ^1.9.2
+        version: 1.9.2(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       lucide-react:
         specifier: ^1.70.0
         version: 1.70.0(@types/react@19.3.0)(react@19.3.1)
@@ -425,6 +431,12 @@ importers:
       '@avocado/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@fontsource-variable/comfortaa':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/gowun-dodum':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@sentry/nextjs':
         specifier: ^11.11.0
         version: 11.11.0(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -1291,6 +1303,12 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource-variable/comfortaa@5.3.0':
+    resolution: {integrity: sha512-al/XR/3rUwZRLPAgAN7VsHKudQ27++W2sEQPhRpkg7x9a8VISekS3eQr4c3lICNWDfflz+gVes8dfekL/yY+Ng==}
+
+  '@fontsource/gowun-dodum@5.3.0':
+    resolution: {integrity: sha512-1ToMkUzML1E0TIpvV81t1geh+1npARWbdTPwCDZZwqQxD1p/HnngbjOwiXe8Y+gkhlRThyl/HiNgY9fCMpm9OQ==}
 
   '@formatjs/ecma402-abstract@2.3.6':
     resolution: {integrity: sha512-HJnTFeRM2kVFVr5gr5kH1XP6K0JcJtE7Lzvtr3FS/so5f1kpsqqqxy5JF+FRaO6H2qmcMfAUIox7AJteieRtVw==}
@@ -4353,6 +4371,11 @@ packages:
   fuzzysort@3.1.0:
     resolution: {integrity: sha512-sR9BNCjBg6LNgwvxlBd0sBABvQitkLzoVY9MYYROQVX/FvfJ4Mai9LsGhDgd8qYdds0bY77VzYd5iuB+v5rwQQ==}
 
+  geist@1.9.2:
+    resolution: {integrity: sha512-UU1x2q5Khob0+i4csFvXk1Ki4DePdu7xISuXyEcj1tzQMg64oN7Kbuy4e5z5QhcUWbbvOMJNs3ZxYQqpsEMV3w==}
+    peerDependencies:
+      next: '>=13.2.0'
+
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
     engines: {node: '>= 0.4'}
@@ -7277,6 +7300,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
+  '@fontsource-variable/comfortaa@5.3.0': {}
+
+  '@fontsource/gowun-dodum@5.3.0': {}
+
   '@formatjs/ecma402-abstract@2.3.6':
     dependencies:
       '@formatjs/fast-memoize': 2.2.7
@@ -10159,6 +10186,10 @@ snapshots:
   functions-have-names@1.2.3: {}
 
   fuzzysort@3.1.0: {}
+
+  geist@1.9.2(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)):
+    dependencies:
+      next: 16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.10.0)(@playwright/test@1.65.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
 
   generator-function@2.0.1: {}
 

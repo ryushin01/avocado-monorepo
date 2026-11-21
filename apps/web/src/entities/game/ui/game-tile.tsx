@@ -17,6 +17,7 @@ export function GameTile({ game, sizes }: { game: CatalogGame; sizes: string }) 
     >
       <GameImage
         src={game.imageUrl}
+        fallbackSrc={game.thumbnailUrl}
         alt=""
         fill
         sizes={sizes}

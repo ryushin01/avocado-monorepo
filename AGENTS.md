@@ -66,6 +66,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - 실제 예) `fix: 공개 데모 DB 잠금이 멈춘 인스턴스에 묶여 요청이 걸리던 문제 (#70)`, `feat: v1.0.0 런칭 점검 — 로그인 잠금 우회·실시간 반영·통계 오류·동시 작업·접근성 (0.2.0) (#57)`
   - 표준과 다른 점: 변경을 `[Unreleased]`에 모았다가 릴리스 PR(`release: v1.0.0 준비 … (#66)`, `release` 타입)에서 한 번에 버전을 올리므로, 평소 커밋·PR 제목에는 버전을 붙이지 않습니다. 버전을 올린 PR만 `(x.y.z)`를 붙입니다. squash 병합이 `(#PR)`을 덧붙입니다.
   - 본문은 `-` 목록으로 무엇을 왜 바꿨는지 적고, 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`를 붙입니다.
+- 기여자는 ryushin01만 남깁니다(2026-11-21 사용자 결정). 커밋 작성자는 항상 `ryushin0 <141554987+ryushin01@users.noreply.github.com>`이고, 이 저장소는 백엔드 코드가 있어 공동 작성자 줄은 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` 하나만 넣습니다.
+  - GitHub Actions가 커밋하는 워크플로는 작성자를 ryushin01로 설정합니다(`github-actions[bot]` 금지).
+  - Dependabot PR은 그대로 병합하지 않습니다. 변경 내역을 확인하고 같은 변경을 ryushin01 커밋으로 다시 만들어 병합합니다(병합 커밋 작성자가 dependabot이 되지 않게).
 - 버전: Semantic Versioning(주.부.수). 릴리스할 때 루트와 모든 앱·패키지의 `package.json` `version`을 같은 값으로 맞춥니다(README에 버전 배지는 없음). 문서만 바뀐 PR은 버전을 올리지 않습니다.
 - 변경 기록: Keep a Changelog. `CHANGELOG.md`에 최신을 위에 두고, 릴리스 전 변경은 `## [Unreleased]` 아래 `### 추가`·`### 바뀜`·`### 수정`(필요하면 `### 제거`)에 적습니다. 릴리스할 때 `## [x.y.z] - YYYY-MM-DD`로 옮깁니다.
 - 병합은 squash. CI가 통과하면 바로 병합하고 CodeRabbit(`.coderabbit.yaml`, 한국어 리뷰) 리뷰는 기다리지 않습니다. 이미 달린 맞는 지적은 반영합니다. `docs/conventions.md` 규칙을 바꾸면 `.coderabbit.yaml`의 경로별 지침도 함께 고칩니다.

@@ -15,7 +15,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## 1. 프로젝트 개요
 
 - 보드게임 카페 프랜차이즈 모노레포입니다(화면은 한국어). 포트폴리오 프로젝트이며 매장·직원·손님 데이터는 모두 가상입니다.
-- 화면 축 3개: 홍보 사이트(손님 온라인 예약 포함) · 백오피스 · 매장 키오스크
+- 화면 축: 홍보 사이트(손님 온라인 예약 포함) · 백오피스 · 매장 키오스크
 - 공개 데모: 홍보 사이트 https://avocado-web-ryushin01.vercel.app/ · 백오피스 https://avocado-admin-ryushin01.vercel.app/ · 키오스크 https://avocado-kiosk-ryushin01.vercel.app/ (둘러보는 법은 `docs/demo.md`)
 
 ## 2. 기술 스택과 구조
@@ -75,7 +75,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 7. 배포·릴리스
 
-- Vercel 프로젝트 3개가 이 저장소에 연결되어 `main`에 병합하면 자동 배포됩니다: `avocado-web`(`apps/web`), `avocado-admin`(`apps/admin`), `avocado-kiosk`(`apps/launcher`). 앱마다 `vercel.json`으로 `main`만 배포하고 PR 미리보기는 끕니다. 바뀐 앱이 없으면 건너뜁니다(Affected Projects).
+- 이 저장소에 연결된 Vercel 프로젝트들은 `main`에 병합하면 자동 배포됩니다: `avocado-web`(`apps/web`), `avocado-admin`(`apps/admin`), `avocado-kiosk`(`apps/launcher`). 앱마다 `vercel.json`으로 `main`만 배포하고 PR 미리보기는 끕니다. 바뀐 앱이 없으면 건너뜁니다(Affected Projects).
 - 데모 모드: 데모 배포에만 `NEXT_PUBLIC_DEMO_MODE=1`. 백오피스 로그인 화면의 "본사 관리자로 둘러보기"·"강남점 스태프로 둘러보기"로 들어갑니다. 백오피스 데모는 데모 전용 Neon 무료 DB(`avocado-demo-db`, Vercel Neon 연동이 `DATABASE_URL` 관리)를 쓰고 30분마다 시드로 되돌립니다. `DATABASE_URL`이 없으면 메모리 PGlite를 씁니다. 데모 모드가 꺼지면 원래대로 동작해야 합니다.
 - 백오피스 Cron(`apps/admin/vercel.json`)이 매일 `/api/cron/retention`을 부릅니다(`CRON_SECRET`).
 - 릴리스: 태그·GitHub 릴리스 `vX.Y.Z`(제목도 같음), 대상은 병합 커밋 전체 SHA, 본문은 요약 한 단락과 CHANGELOG의 해당 절.

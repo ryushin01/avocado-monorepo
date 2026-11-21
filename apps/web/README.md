@@ -22,7 +22,8 @@ avocado(Vite + React)를 Next.js + TypeScript로 옮긴 홍보 사이트입니�
 - 메뉴는 전체 화면 Sheet이고, 표지는 도착할 때까지 스켈레톤을 보여 줍니다(`entities/game/ui/game-image.tsx`).
 - 유형마다 키보드용 카드 건너뛰기 링크가 있습니다. 평소에는 숨어 있다가 초점을 받으면 나타납니다.
 - 검색·공유 설정은 `src/_app/seo/robots.ts`, `sitemap.ts`, `public/images/og.png`와 `src/shared/lib/page-metadata.ts`에 있습니다. 사이트 주소는 `SITE_URL`, 없으면 Vercel의 운영 주소를 읽습니다(`src/shared/config/site-url.ts`).
-- 글꼴은 한글 고운돋움(Gowun Dodum, 제목·본문), 영문·숫자 Comfortaa입니다. `next/font/google`이 빌드할 때 받아 함께 배포하므로 보안 헤더(`font-src 'self'`)를 바꾸지 않아도 됩니다. 한글 글꼴은 글자 묶음별 조각이라 미리 받지 않고(`preload: false`) 화면에 쓰인 조각만 받습니다.
+- 글꼴은 한글 고운돋움(Gowun Dodum, 제목·본문), 영문·숫자 Comfortaa입니다. Fontsource 패키지(`@fontsource-variable/comfortaa`, `@fontsource/gowun-dodum`)의 CSS와 파일을 함께 배포하므로 빌드·실행 모두 글꼴 서버가 필요 없고 보안 헤더(`font-src 'self'`)를 바꾸지 않아도 됩니다. 한글 글꼴은 글자 묶음별 조각이라 미리 받지 않고 화면에 쓰인 조각만 받습니다.
+- 게임 표지 원본(BoardGameGeek `cf.geekdo-images.com`)을 받지 못하면(오프라인·원본 서버 장애) 함께 배포한 작은 썸네일(`/images/games/*.webp`)로 바꿔 보여 줍니다(`entities/game/ui/game-image.tsx`).
 
 ```bash
 pnpm dev:web   # 루트에서. http://localhost:3002

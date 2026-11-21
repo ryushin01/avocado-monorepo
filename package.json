@@ -8,6 +8,7 @@
     "dev:admin": "turbo run dev --filter=@avocado/admin",
     "dev:launcher": "turbo run dev --filter=@avocado/launcher --filter=@avocado/admin",
     "dev:web": "turbo run dev --filter=@avocado/web",
+    "preview": "turbo run preview",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

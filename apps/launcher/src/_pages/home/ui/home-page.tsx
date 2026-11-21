@@ -8,7 +8,8 @@ import { Skeleton } from "@avocado/ui/components/skeleton";
 import { AutoRefresh } from "@/shared/ui/auto-refresh";
 import { ConnectionError } from "@/shared/ui/connection-error";
 import { IdleReturn } from "@/shared/ui/idle-return";
-import { fetchCafeGames } from "@/shared/api/index.server";
+import { fetchCafeGamesOrSnapshot } from "@/shared/api/index.server";
+import { OfflineDataNotice } from "@/shared/ui/offline-data-notice";
 
 const LOGO_CREDIT = "Avocado icons created by amonrat rungreangfangsai - Flaticon";
 const LOGO_CREDIT_URL = "https://www.flaticon.com/authors/amonrat-rungreangfangsai";
@@ -56,7 +57,7 @@ export default function HomePage() {
 }
 
 async function Welcome() {
-  const result = await fetchCafeGames();
+  const result = await fetchCafeGamesOrSnapshot();
   if (!result.ok) return <ConnectionError reason={result.reason} />;
   const { cafe, games } = result.data;
   const available = games.filter((g) => g.availability === "available").length;
@@ -65,8 +66,9 @@ async function Welcome() {
       <p className="text-lg text-muted-foreground">{cafe.name}에 오신 것을 환영합니다</p>
       <h1 className="text-5xl font-bold tracking-tight">무엇을 도와드릴까요?</h1>
       <p className="text-lg text-muted-foreground tabular-nums">
-        보유 게임 {games.length}종 · 지금 바로 이용 가능 {available}종
+        보유 게임 {games.length}종{!result.offline && ` · 지금 바로 이용 가능 ${available}종`}
       </p>
+      {result.offline && <OfflineDataNotice />}
     </header>
   );
 }

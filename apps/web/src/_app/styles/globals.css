@@ -10,6 +10,9 @@
   --primary: #ff5100;
   --primary-foreground: #111111; /* 주황 바탕의 흰 글자는 대비가 3.4:1이라 기준(4.5:1)에 못 미친다. */
   --ring: #ff5100;
+  /* Fontsource 패키지(root-layout.tsx에서 가져옴)의 글꼴 이름 */
+  --font-comfortaa: "Comfortaa Variable";
+  --font-gowun-dodum: "Gowun Dodum";
 }
 
 @theme inline {

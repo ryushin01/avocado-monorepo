@@ -4,6 +4,7 @@ import { logError } from "@avocado/logger";
 import {
   type KioskApiError,
   KioskApiErrorSchema,
+  type KioskCafeGames,
   KioskCafeGamesSchema,
   KioskCheckInResultSchema,
   KioskReservationLookupSchema,
@@ -16,6 +17,9 @@ import type { ZodType } from "zod";
 import { isDemoMode } from "@/shared/config";
 
 import { LAUNCHER_CONFIG, missingLauncherConfig } from "./config";
+import { offlineCafeGames } from "./offline-games";
+
+const production = process.env.NODE_ENV === "production";
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -82,6 +86,22 @@ async function call<T>(
 
 /** 매장 보유 게임과 지금 이용 가능 여부 */
 export const fetchCafeGames = () => call("/games", KioskCafeGamesSchema);
+
+/** 스냅숏으로 대신 보여 줄 수 있는 환경: 공개 데모와 개발 중. 실제 매장 운영(데모 아닌 프로덕션)에서는 엉뚱한 목록 대신 연결 문제를 알린다. */
+const snapshotAllowed = () => isDemoMode() || !production;
+
+/**
+ * 화면용 보유 게임. 백오피스에 닿지 않으면(연결 실패·시간 초과·설정 없음) 공개 데모와 개발 중에는
+ * 함께 배포한 카탈로그 스냅숏으로 대신하고 offline으로 알린다. 매장 없음(404)은 그대로 알린다.
+ */
+export async function fetchCafeGamesOrSnapshot(): Promise<
+  { ok: true; data: KioskCafeGames; offline: boolean } | Extract<ApiResult<KioskCafeGames>, { ok: false }>
+> {
+  const result = await fetchCafeGames();
+  if (result.ok) return { ...result, offline: false };
+  if (result.reason !== "unreachable" || !snapshotAllowed()) return result;
+  return { ok: true, data: offlineCafeGames(LAUNCHER_CONFIG.cafeId), offline: true };
+}
 
 export const lookupReservations = (phone4: string) =>
   call(`/reservations?phone4=${encodeURIComponent(phone4)}`, KioskReservationLookupSchema);

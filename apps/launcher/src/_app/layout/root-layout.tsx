@@ -1,13 +1,11 @@
 import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 
 import { OfflineNotice } from "../pwa/offline-notice";
 import { RegisterServiceWorker } from "../pwa/register-service-worker";
 
 import "../styles/globals.css";
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "보드게임 카페 키오스크",
@@ -23,7 +21,7 @@ export const viewport: Viewport = {
 
 export function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="ko" className={`${GeistSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-muted/40">
         <SkipLink />
         <OfflineNotice />

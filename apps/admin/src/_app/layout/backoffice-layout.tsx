@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 import {
@@ -12,6 +13,8 @@ import { SidebarInset, SidebarProvider } from "@avocado/ui/components/sidebar";
 import { TooltipProvider } from "@avocado/ui/components/tooltip";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { listCafes } from "@/server/cafes/data";
+import { isDemoDbOffline } from "@/server/demo/status";
+import { isDemoMode } from "@/shared/config";
 import { DemoNotice } from "@/shared/ui/demo-notice";
 
 export function BackofficeLayout({ children }: LayoutProps<"/">) {
@@ -33,7 +36,9 @@ export function BackofficeLayout({ children }: LayoutProps<"/">) {
         />
         <SidebarInset>
           <PageHeader />
-          <DemoNotice />
+          <Suspense fallback={<DemoNotice />}>
+            <DemoNoticeWithDbStatus />
+          </Suspense>
           {/* 본문 바로가기는 반복되는 머리글 뒤로 이동한다. */}
           <div id="main" tabIndex={-1} className="flex flex-1 flex-col gap-4 p-4 md:p-6">
             {children}
@@ -53,4 +58,11 @@ async function UserFooter() {
   const [user, cafes] = await Promise.all([getCurrentUser(), listCafes()]);
   const cafeName = cafes.find((c) => c.id === user.cafeId)?.name;
   return <UserMenu user={user} cafeName={cafeName} />;
+}
+
+/** 공개 데모 안내. 공유 DB 대신 임시 데이터로 보여 주는 중이면 그것도 알린다(요청마다 확인). */
+async function DemoNoticeWithDbStatus() {
+  if (!isDemoMode()) return null;
+  await connection();
+  return <DemoNotice offline={await isDemoDbOffline()} />;
 }

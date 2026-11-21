@@ -1,7 +1,10 @@
 import { DEMO_RESET_MINUTES, demoKioskUrl, isDemoMode } from "@/shared/config";
 
-/** 공개 데모에서만 보이는 안내 띠. 데이터가 가상이고 곧 처음 상태로 돌아간다는 것을 알린다. */
-export function DemoNotice() {
+/**
+ * 공개 데모에서만 보이는 안내 띠. 데이터가 가상이고 곧 처음 상태로 돌아간다는 것을 알린다.
+ * offline: 공유 데모 DB에 닿지 않아 이 서버의 임시 데이터(개발용 시드)로 대신 보여 주는 중(role="status"로 알림)
+ */
+export function DemoNotice({ offline = false }: { offline?: boolean }) {
   if (!isDemoMode()) return null;
   const kioskUrl = demoKioskUrl();
   return (
@@ -24,6 +27,12 @@ export function DemoNotice() {
           </>
         )}
       </p>
+      {offline && (
+        <p role="status" className="mt-1 font-medium">
+          오프라인 데이터로 표시 중 · 공유 데모 DB에 연결할 수 없어 이 서버의 임시 데이터로 보여 드립니다. 바꾼 내용은 화면마다
+          다르게 보이거나 곧 사라질 수 있습니다.
+        </p>
+      )}
     </div>
   );
 }

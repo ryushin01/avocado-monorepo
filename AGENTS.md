@@ -94,9 +94,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 9. 공통 규칙
 
-공통 규칙은 `~/Documents/GitHub/CLAUDE.md`에 있으며, 이 파일과 충돌하면 이 파일이 우선합니다.
+규칙은 3계층입니다. 1층 전역(`~/.claude/CLAUDE.md`, OpenCode는 `~/.config/opencode/AGENTS.md`로 같은 파일) → 2층 ryushin01 공통(`~/Documents/GitHub/CLAUDE.md`, Claude Code만 읽음) → 3층 이 파일. 충돌하면 이 파일이 우선합니다. 2층을 읽지 못하는 도구를 위해 핵심을 아래에 요약합니다.
 
 - 답변·커밋·PR·문서는 한국어로 씁니다.
-- 허락을 묻지 않고 끝까지 진행한 뒤 결과를 한 번에 보고합니다(비용·비밀값·디자인 결정·되돌릴 수 없는 공개 행동은 보고만).
+- 허락을 묻지 않고 끝까지 진행한 뒤 결과를 한 번에 보고합니다(비용·새 비밀값·디자인 결정·되돌리기 어려운 일·다른 조직 저장소 공개 글은 진행 전에 보고하고 결정을 받음).
 - 사용자의 진행 중인 작업을 보호합니다. 로컬에 커밋하지 않은 변경이 있으면 `git worktree add`로 따로 작업하고 끝나면 지웁니다.
 - 다른 세션에 보내는 공지는 ryushin01 그룹 세션에만 보냅니다.

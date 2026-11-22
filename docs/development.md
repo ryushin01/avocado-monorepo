@@ -35,11 +35,12 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm dev:launcher` | 런처와 런처가 읽는 백오피스 |
 | `pnpm dev:web` | 홍보 사이트만 |
 | `pnpm build` | 모든 앱 프로덕션 빌드 |
+| `pnpm preview` | 세 앱을 빌드한 뒤 프로덕션 모드로 띄움. `.env` 없이 앱별 `preview` 스크립트가 로컬 전용 값(메모리 PGlite, `SEED_DEMO=1`, 개발용 키오스크 토큰)을 넣음. 운영·데모 배포에는 쓰지 않음 |
 | `pnpm typecheck` | 모든 앱·패키지 타입 검사 |
 | `pnpm lint` | ESLint, Steiger(FSD 폴더 구조·공개 API) |
 | `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
 | `pnpm test:coverage` | 단위 테스트 + 커버리지 (앱마다 `coverage/`) |
-| `pnpm e2e` | E2E 테스트 (백오피스, 키오스크용 런처, 홈페이지를 함께 띄움) |
+| `pnpm e2e` | E2E 테스트 (백오피스, 키오스크용 런처, 홈페이지를 함께 띄움). `offline.spec.ts`는 외부 요청을 모두 막고 세 화면 축을 axe와 함께 검사 |
 | `pnpm --filter @avocado/admin db:backup` / `db:restore` / `db:prune` | DB 백업(pg_dump 형식) / 개발용 DB로 복원 / 보관 기간이 지난 기록 지우기 (`docs/deployment.md`) |
 | `pnpm import:avocado-images` | avocado 데이터의 게임 이미지를 내려받아 128px webp 썸네일 생성 (`packages/domain/assets`). 있는 파일은 건너뜀 |
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |

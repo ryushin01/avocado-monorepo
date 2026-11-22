@@ -10,7 +10,8 @@ import { AvailabilityBadge } from "./availability-badge";
 const range = (min: number, max: number, unit: string) =>
   min === max ? `${min}${unit}` : `${min}–${max}${unit}`;
 
-export function GameCard({ game }: { game: KioskGame }) {
+/** showAvailability: 오프라인 스냅숏처럼 이용 현황을 모를 때는 끄고 상태 배지를 숨긴다. */
+export function GameCard({ game, showAvailability = true }: { game: KioskGame; showAvailability?: boolean }) {
   return (
     <Card data-testid="kiosk-game">
       <CardContent className="flex gap-4">
@@ -35,9 +36,11 @@ export function GameCard({ game }: { game: KioskGame }) {
             {range(game.minPlayers, game.maxPlayers, "명")} ·{" "}
             {range(game.playTimeMin, game.playTimeMax, "분")} · {GAME_DIFFICULTY_LABELS[game.difficulty]}
           </p>
-          <div>
-            <AvailabilityBadge game={game} />
-          </div>
+          {showAvailability && (
+            <div>
+              <AvailabilityBadge game={game} />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

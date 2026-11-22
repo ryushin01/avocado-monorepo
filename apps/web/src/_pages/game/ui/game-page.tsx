@@ -147,6 +147,7 @@ async function GameContent({ params }: Pick<PageProps<"/game/[bggId]">, "params"
             <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
               <GameImage
                 src={game.imageUrl}
+                fallbackSrc={game.thumbnailUrl}
                 alt={`${game.name} 표지`}
                 fill
                 priority

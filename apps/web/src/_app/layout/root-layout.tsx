@@ -1,6 +1,5 @@
 import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata } from "next";
-import { Comfortaa, Gowun_Dodum } from "next/font/google";
 
 import { CATEGORY_INFO } from "@avocado/domain/catalog";
 
@@ -9,23 +8,13 @@ import { SiteMenuProvider } from "@/widgets/site-header";
 import { BRAND, SHARE_IMAGE, siteUrl } from "@/shared/config";
 import { WebVitals } from "@/shared/lib/analytics";
 
+import "@fontsource-variable/comfortaa/wght.css";
+import "@fontsource/gowun-dodum/400.css";
 import "../styles/globals.css";
 
 // 보드게임 카페의 놀이 분위기: 한글은 제목·본문 모두 고운돋움, 영문·숫자는 둥근 Comfortaa.
-// 한글 글꼴은 글자 묶음별 조각 파일이라 미리 받지 않고(preload: false) 화면에 쓰인 조각만 받는다.
-const gowunDodum = Gowun_Dodum({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-gowun-dodum",
-  display: "swap",
-  preload: false,
-});
-const comfortaa = Comfortaa({
-  subsets: ["latin"],
-  variable: "--font-comfortaa",
-  display: "swap",
-});
-const fontVariables = [gowunDodum.variable, comfortaa.variable].join(" ");
+// 글꼴은 패키지(Fontsource, OFL)에 든 파일을 함께 배포해 빌드·실행 모두 외부 글꼴 서버 없이 동작한다.
+// 글자 묶음별 조각 파일(unicode-range)이라 미리 받지 않고 화면에 쓰인 조각만 받는다(글꼴 이름은 globals.css의 --font-*).
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -46,7 +35,7 @@ export const metadata: Metadata = {
 
 export function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${fontVariables} h-full antialiased`}>
+    <html lang="ko" className="h-full antialiased">
       <body className="flex min-h-full flex-col break-keep bg-page">
         <SkipLink />
         <SiteMenuProvider

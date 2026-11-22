@@ -89,7 +89,10 @@ Node.js 24 이상과 pnpm 12가 필요합니다. 명령은 모두 저장소 루�
 pnpm install
 pnpm exec playwright install chromium   # E2E나 스토리 접근성 검사(test:stories)를 돌릴 때만
 pnpm dev                                # 세 앱을 모두 띄움 (DB 설치 불필요)
+pnpm preview                            # 세 앱을 프로덕션 빌드한 뒤 띄움 (.env 없이 메모리 DB·개발용 시드)
 ```
+
+`.env` 파일이나 비밀값 없이 바로 동작합니다. 백오피스는 메모리 PGlite에 개발용 시드를 넣어 시작하고, 글꼴은 패키지(`geist`, Fontsource)에 든 파일을 함께 배포하며, 분석(PostHog)·오류 수집(Sentry)은 키가 없으면 내려받지도 보내지도 않습니다. 그래서 인터넷이 끊긴 상태에서도 설치 뒤에는 빌드·실행·화면이 모두 동작합니다(자세한 내용은 [오프라인 동작](docs/demo.md#오프라인-동작)).
 
 | 앱 | 주소 |
 |---|---|
@@ -103,7 +106,7 @@ pnpm dev                                # 세 앱을 모두 띄움 (DB 설치 �
 | `pnpm typecheck` | 타입 검사 |
 | `pnpm lint` | ESLint, Steiger(FSD 구조) |
 | `pnpm test` | 단위·컴포넌트 테스트 |
-| `pnpm e2e` | E2E 테스트 |
+| `pnpm e2e` | E2E 테스트 (외부 요청을 모두 막은 오프라인 검사 `apps/admin/e2e/offline.spec.ts` 포함) |
 | `pnpm storybook` | 공통 UI 부품과 세 앱의 표시용 컴포넌트 Storybook (http://localhost:6006, a11y 패널로 axe 결과 확인) |
 | `pnpm build-storybook && pnpm test:stories` | Storybook을 빌드하고 모든 스토리를 axe로 검사 |
 | `pnpm --dir apps/admin screenshots` | README 화면과 키오스크 흐름 GIF 다시 만들기 (개발용 시드) |
@@ -154,7 +157,7 @@ docs/
 | Geist | 백오피스·런처 | 가변 |
 | Geist Mono | 백오피스 고정폭 (차트 수치·오류 번호) | 가변 |
 
-저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 `next/font/google`이 빌드 때 받아 같은 사이트에서 제공합니다. 고운돋움은 글자 묶음별 조각이라 화면에 쓰인 조각만 받습니다.
+저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 npm 패키지(Geist는 `geist`, Comfortaa·고운돋움은 Fontsource `@fontsource-variable/comfortaa`·`@fontsource/gowun-dodum`)에 든 파일을 함께 배포해 같은 사이트에서 제공하므로, 빌드할 때도 글꼴 서버에 접속하지 않습니다. 고운돋움은 글자 묶음별 조각이라 화면에 쓰인 조각만 받습니다.
 
 ## 출처
 

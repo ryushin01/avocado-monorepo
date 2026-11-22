@@ -8,7 +8,7 @@ vi.hoisted(() => {
   process.env.LAUNCHER_CAFE_ID = "c_test";
 });
 
-import { fetchCafeGames, lookupReservations } from "./backoffice";
+import { fetchCafeGames, fetchCafeGamesOrSnapshot, lookupReservations } from "./backoffice";
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -150,5 +150,69 @@ describe("운영 설정", () => {
     await fetchInProduction();
     expect(order).toEqual(["connection", "log"]);
     vi.doUnmock("next/server");
+  });
+});
+
+describe("오프라인 대체(보유 게임)", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("백오피스가 응답하면 그대로 쓰고 오프라인이 아니라고 알린다", async () => {
+    const body = { cafe: { id: "c_test", name: "강남점" }, games: [], generatedAt: "2026-11-13T00:00:00.000Z" };
+    vi.stubGlobal("fetch", async () => json(200, body));
+
+    expect(await fetchCafeGamesOrSnapshot()).toEqual({ ok: true, data: body, offline: false });
+  });
+
+  it("개발 중 백오피스에 닿지 않으면 함께 배포한 카탈로그 스냅숏(로컬 썸네일)으로 대신한다", async () => {
+    vi.stubGlobal("fetch", async () => {
+      throw new TypeError("fetch failed");
+    });
+
+    const result = await fetchCafeGamesOrSnapshot();
+    expect(result).toMatchObject({ ok: true, offline: true, data: { cafe: { id: "c_test" } } });
+    if (!result.ok) throw new Error("스냅숏이 없습니다");
+    expect(result.data.games.length).toBeGreaterThan(50);
+    for (const game of result.data.games) expect(game.thumbnailUrl ?? "").toMatch(/^\/images\/games\//);
+  });
+
+  it("매장 없음(404)은 스냅숏으로 가리지 않는다", async () => {
+    vi.stubGlobal("fetch", async () => json(404, { message: "운영 중인 매장이 아닙니다." }));
+
+    expect(await fetchCafeGamesOrSnapshot()).toMatchObject({ ok: false, reason: "not-found" });
+  });
+
+  it("실제 매장 운영(데모 아닌 프로덕션)에서는 스냅숏 대신 연결 문제를 알린다", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BACKOFFICE_URL", "http://backoffice.test");
+    vi.stubGlobal("fetch", async () => {
+      throw new TypeError("fetch failed");
+    });
+    vi.doMock("next/server", () => ({ connection: async () => {} }));
+    vi.resetModules();
+    const { fetchCafeGamesOrSnapshot: inProduction } = await import("./backoffice");
+
+    expect(await inProduction()).toEqual({ ok: false, reason: "unreachable" });
+  });
+
+  it("공개 데모(프로덕션)에서는 백오피스 장애 때 스냅숏으로 대신한다", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_DEMO_MODE", "1");
+    vi.stubEnv("BACKOFFICE_URL", "http://backoffice.test");
+    vi.stubGlobal("fetch", async () => {
+      throw new TypeError("fetch failed");
+    });
+    vi.doMock("next/server", () => ({ connection: async () => {} }));
+    vi.resetModules();
+    const { fetchCafeGamesOrSnapshot: inDemo } = await import("./backoffice");
+
+    expect(await inDemo()).toMatchObject({ ok: true, offline: true });
   });
 });

@@ -8,7 +8,8 @@ import { Skeleton } from "@avocado/ui/components/skeleton";
 import { ConnectionError } from "@/shared/ui/connection-error";
 import { FilterChips } from "./filter-chips";
 import { IdleReturn } from "@/shared/ui/idle-return";
-import { fetchCafeGames } from "@/shared/api/index.server";
+import { fetchCafeGamesOrSnapshot } from "@/shared/api/index.server";
+import { OfflineDataNotice } from "@/shared/ui/offline-data-notice";
 import { filterKioskGames, parseKioskFilter } from "../model/filter-games";
 import { GameCard } from "./game-card";
 
@@ -28,7 +29,7 @@ export default function GamesPage({ searchParams }: PageProps<"/games">) {
 }
 
 async function GamesContent({ searchParams }: Pick<PageProps<"/games">, "searchParams">) {
-  const [params, result] = await Promise.all([searchParams, fetchCafeGames()]);
+  const [params, result] = await Promise.all([searchParams, fetchCafeGamesOrSnapshot()]);
   if (!result.ok) return <ConnectionError reason={result.reason} />;
 
   const filter = parseKioskFilter(params);
@@ -36,6 +37,7 @@ async function GamesContent({ searchParams }: Pick<PageProps<"/games">, "searchP
   return (
     <>
       <h1 className="text-3xl font-bold tracking-tight">{result.data.cafe.name} 보유 게임</h1>
+      {result.offline && <OfflineDataNotice />}
       <FilterChips filter={filter} />
       <p className="text-muted-foreground tabular-nums">{games.length}종</p>
       {games.length === 0 ? (
@@ -46,7 +48,7 @@ async function GamesContent({ searchParams }: Pick<PageProps<"/games">, "searchP
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {games.map((game) => (
             <li key={game.id}>
-              <GameCard game={game} />
+              <GameCard game={game} showAvailability={!result.offline} />
             </li>
           ))}
         </ul>

@@ -2,6 +2,7 @@ import "server-only";
 
 import { logError } from "@avocado/logger";
 import { hash } from "bcryptjs";
+import { sql } from "drizzle-orm";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 import { DEV_PASSWORD } from "@/server/auth/mock-users";
@@ -12,6 +13,7 @@ import { createDemoResetter, type DbTarget, type DemoResetter, openSharedDemoDb,
 import { type Database, openPglite, openPostgres } from "./index";
 import { insertSeedData, isEmpty } from "./seed";
 import { createSeedData } from "./seed-data";
+import { createSharedDbGuard, type SharedDbGuard } from "./shared-guard";
 
 /**
  * 서버 전체가 함께 쓰는 DB 연결.
@@ -19,6 +21,7 @@ import { createSeedData } from "./seed-data";
  * - 처음 열 때 마이그레이션을 적용하고, 비어 있으면 개발용 시드를 넣는다(운영에서는 SEED_DEMO=1일 때만).
  * - 공개 데모(NEXT_PUBLIC_DEMO_MODE=1)는 DATABASE_URL이 있으면 그 PostgreSQL을 모든 함수가 함께 쓰고(getSharedDemoDb, demo-shared.ts),
  *   없으면 메모리 PGlite 하나를 /api/demo/db로 함께 쓴다(getDemoOwnerDb, demo-proxy.ts).
+ *   공유 DB에 닿지 않으면(장애·무료 한도 초과·오프라인) 이 인스턴스의 메모리 PGlite 시드로 대신 보여 주고 잠시 뒤 다시 시도한다.
  * 개발 서버 HMR로 모듈이 다시 로드돼도 연결을 유지하도록 globalThis에 보관한다.
  */
 const globalForDb = globalThis as {
@@ -27,6 +30,7 @@ const globalForDb = globalThis as {
   demoProxyDb?: Database;
   sharedDemoDb?: Promise<Database>;
   resetSharedDemoDb?: DemoResetter;
+  sharedDemoGuard?: SharedDbGuard<Database>;
 };
 
 /** 이 프로세스가 쓸 DB 종류. 데모 빌드 중(정적 화면 미리 만들기)에는 배포가 아직 없으므로 이 프로세스의 메모리 DB(local)를 쓴다. */
@@ -41,7 +45,7 @@ export function dbTarget(): DbTarget {
 export function getDb(): Promise<Database> {
   switch (dbTarget()) {
     case "demo-shared":
-      return getSharedDemoDb(process.env.DATABASE_URL ?? "");
+      return getSharedDemoDbOrFallback();
     case "demo-proxy":
       return Promise.resolve((globalForDb.demoProxyDb ??= openDemoProxyDb(demoBaseUrl())));
     case "local":
@@ -67,6 +71,31 @@ async function getSharedDemoDb(url: string): Promise<Database> {
   }));
   await resetIfDue(db);
   return db;
+}
+
+/**
+ * 공유 데모 DB를 쓰되, 닿지 않으면 이 인스턴스의 메모리 PGlite(개발용 시드)로 대신한다.
+ * 시드 id가 고정이고 로그인은 JWT라, 함수마다 메모리 DB가 따로 생겨도 로그인과 화면은 그대로 동작한다(바꾼 내용만 함수마다 다를 수 있음).
+ */
+async function getSharedDemoDbOrFallback(): Promise<Database> {
+  const guard = (globalForDb.sharedDemoGuard ??= createSharedDbGuard({
+    open: () => getSharedDemoDb(process.env.DATABASE_URL ?? ""),
+    probe: (db) => db.execute(sql`select 1`),
+    // 잠금 대기(LOCK_TIMEOUT 20초)보다 길게 기다려, 다른 인스턴스가 되돌리는 중인 것을 장애로 보지 않는다.
+    openTimeoutMs: 25_000,
+    probeTimeoutMs: 5000,
+    probeEveryMs: 60_000,
+    retryMs: 60_000,
+    onError: (error) => logError("admin", "demo_shared_db_unreachable", { error }),
+  }));
+  return (await guard.get()) ?? getLocalDb();
+}
+
+/** 공개 데모가 공유 DB 대신 메모리 데이터로 대체 중인지. 화면 위쪽 안내가 쓴다. */
+export async function isDemoDbOffline(): Promise<boolean> {
+  if (dbTarget() !== "demo-shared") return false;
+  await getDb().catch(() => {});
+  return globalForDb.sharedDemoGuard?.offline() ?? false;
 }
 
 /** DATABASE_URL이 없는 공개 데모의 실제 메모리 DB. /api/demo/db만 직접 쓰고, 나머지는 getDb()로 그 경로를 거친다. */

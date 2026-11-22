@@ -1,8 +1,10 @@
-## App notes
+## 앱 메모
 
-See the root [AGENTS.md](../../AGENTS.md) and [docs/conventions.md](../../docs/conventions.md). Run scripts from the repo root (`pnpm --filter @avocado/admin <script>`).
+저장소 맨 위 [AGENTS.md](../../AGENTS.md)와 [docs/conventions.md](../../docs/conventions.md)를 따릅니다. 스크립트는 저장소 맨 위에서 실행합니다(`pnpm --filter @avocado/admin <script>`).
 
-Read `README.md` and `docs/architecture.md` in this folder first (domain model, permissions, `cacheComponents` rules, kiosk API).
+먼저 이 폴더의 `README.md`와 `docs/architecture.md`를 읽습니다(도메인 모델, 권한, `cacheComponents` 규칙, 키오스크 API).
+
+아래 `nextjs-agent-rules` 블록은 `next dev`가 자동으로 써 넣는 영어 원문이라 고치지 않습니다(바꾸면 다시 생깁니다).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

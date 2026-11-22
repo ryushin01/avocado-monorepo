@@ -1,16 +1,6 @@
-<!-- BEGIN:nextjs-agent-rules -->
-
-## This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
-
 # avocado-monorepo — 에이전트 작업 안내
 
-위 블록은 `next dev`가 다시 넣는 Next.js 안내이므로 지우지 않습니다. 앱 폴더마다 `AGENTS.md`가 따로 있으니 그 앱을 고칠 때 함께 읽습니다. 자세한 내용은 `README.md`, `docs/conventions.md`, `docs/development.md`, `docs/demo.md`, `docs/deployment.md`에 있습니다.
+`next dev`가 넣던 영어 안내 블록은 각 앱의 `next.config.ts`의 `agentRules: false`로 꺼 두었으므로 이 파일은 손으로 관리합니다. 그 블록의 내용은 이렇습니다: 이 저장소의 Next.js 16은 학습 데이터와 API·규칙·파일 구조가 다를 수 있으니, 코드를 쓰기 전에 앱 폴더의 `node_modules/next/dist/docs/`에서 해당 안내를 읽고 지원 중단(deprecation) 안내를 따릅니다. 앱 폴더마다 `AGENTS.md`가 따로 있으니 그 앱을 고칠 때 함께 읽습니다. 자세한 내용은 `README.md`, `docs/conventions.md`, `docs/development.md`, `docs/demo.md`, `docs/deployment.md`에 있습니다.
 
 ## 1. 프로젝트 개요
 

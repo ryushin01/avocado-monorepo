@@ -12,3 +12,6 @@ overrides:
   # Lighthouse CI(proxy-agent → get-uri)가 끌어오는 basic-ftp의 MLSD 파싱 DoS(GHSA, 6.2.4에서 고침).
   # get-uri는 최신판도 ^5를 요구해 덮어쓴다. ftp:// 주소는 Lighthouse 측정에서 쓰지 않는다.
   "basic-ftp@<6.2.4": ^6.2.4
+  # Storybook(@storybook/react-vite → vite-plugin-react-docgen-typescript)이 끌어오는 glob의
+  # AbortSignal 취소 우회(GHSA, 9.0.0~14.0.1, 14.0.2에서 고침). 개발 도구에서만 쓰인다.
+  "glob@>=9 <14.0.2": ^14.0.2

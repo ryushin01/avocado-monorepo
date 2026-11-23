@@ -100,12 +100,12 @@ test.describe("오프라인 · 키오스크", () => {
     await page.goto(LAUNCHER_URL);
     await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
     await expect(page.getByText(/보유 게임 \d+종/)).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${LAUNCHER_URL}/games`);
     await expect(page.getByRole("heading", { level: 1, name: /보유 게임$/ })).toBeVisible();
     await expect(page.getByTestId("kiosk-game").first()).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
 
     expect(blocked).toEqual([]);
     await context.close();

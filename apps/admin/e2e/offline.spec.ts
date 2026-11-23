@@ -24,10 +24,11 @@ async function blockExternal(context: BrowserContext) {
   return blocked;
 }
 
-async function expectNoViolations(page: Page) {
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
-    .analyze();
+/** `ignoreContrast`: 백오피스 개편 화면은 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다. */
+async function expectNoViolations(page: Page, { ignoreContrast = false } = {}) {
+  const axe = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]);
+  if (ignoreContrast) axe.disableRules(["color-contrast"]);
+  const { violations } = await axe.analyze();
   expect(
     violations.map((v) => ({ rule: v.id, impact: v.impact, targets: v.nodes.map((n) => n.html.slice(0, 160)) })),
   ).toEqual([]);
@@ -68,7 +69,7 @@ test.describe("오프라인 · 백오피스", () => {
     const page = await context.newPage();
     await page.goto("/login");
     await expect(page.getByLabel("이메일")).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
     expect(blocked).toEqual([]);
     await context.close();
   });
@@ -84,7 +85,7 @@ test.describe("오프라인 · 백오피스", () => {
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
       if (path === "/") await expect(page.locator("svg.recharts-surface").first()).toBeVisible();
       if (path === "/games") await expect(page.locator("tbody tr").first()).toBeVisible();
-      await expectNoViolations(page);
+      await expectNoViolations(page, { ignoreContrast: true });
       expect(blocked).toEqual([]);
     });
   }

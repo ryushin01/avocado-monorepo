@@ -8,10 +8,11 @@ import { LAUNCHER_URL, waitForMobileList } from "./helpers";
  * axe를 통과해도 KWCAG 준수는 아니므로, 새 화면은 키보드·화면 낭독기로 직접도 확인한다.
  * 홍보 사이트는 Lighthouse(접근성 100점)가 CI에서 따로 검사한다.
  */
-async function expectNoViolations(page: Page) {
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
-    .analyze();
+/** `ignoreContrast`: 백오피스 개편 화면은 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다. */
+async function expectNoViolations(page: Page, { ignoreContrast = false } = {}) {
+  const axe = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]);
+  if (ignoreContrast) axe.disableRules(["color-contrast"]);
+  const { violations } = await axe.analyze();
   // 실패하면 규칙 id와 걸린 요소를 보여 준다.
   expect(
     violations.map((v) => ({ rule: v.id, impact: v.impact, targets: v.nodes.map((n) => n.html.slice(0, 160)) })),
@@ -36,7 +37,7 @@ test.describe("백오피스 (관리자)", () => {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
       if (path === "/" || path === "/stats") await expect(page.locator("svg.recharts-surface").first()).toBeVisible();
-      await expectNoViolations(page);
+      await expectNoViolations(page, { ignoreContrast: true });
     });
   }
 
@@ -44,13 +45,13 @@ test.describe("백오피스 (관리자)", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/inventory");
     await waitForMobileList(page);
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
 
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/reservations?cafe=c_hongdae");
     await page.getByRole("button", { name: "예약 등록" }).click();
     await expect(page.getByRole("dialog", { name: "예약 등록" })).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
   });
 });
 
@@ -60,7 +61,7 @@ test.describe("로그인 전", () => {
   test("로그인 화면", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("button", { name: "로그인" })).toBeEnabled();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
   });
 });
 

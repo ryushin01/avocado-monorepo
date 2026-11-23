@@ -50,7 +50,7 @@ export default function HomePage() {
       <main
         id="main"
         tabIndex={-1}
-        className={cn("flex w-full flex-1 flex-col gap-14 pt-6 pb-10 outline-none", KIOSK_GUTTER)}
+        className={cn("flex w-full flex-1 flex-col gap-14 pt-6 pb-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring", KIOSK_GUTTER)}
       >
         <AutoRefresh seconds={60} />
         {/* 시작 화면은 확대된 채 남았을 때만 새로 연다. */}

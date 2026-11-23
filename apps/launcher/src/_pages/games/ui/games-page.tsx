@@ -16,7 +16,7 @@ export default function GamesPage({ searchParams }: PageProps<"/games">) {
   return (
     <>
       <KioskHeader current="games" />
-      <main id="main" tabIndex={-1} className={cn("flex w-full flex-col gap-10 pt-4 pb-16 outline-none", KIOSK_GUTTER)}>
+      <main id="main" tabIndex={-1} className={cn("flex w-full flex-col gap-10 pt-4 pb-16 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring", KIOSK_GUTTER)}>
         <IdleReturn />
         <Suspense fallback={<GamesSkeleton />}>
           <GamesContent searchParams={searchParams} />

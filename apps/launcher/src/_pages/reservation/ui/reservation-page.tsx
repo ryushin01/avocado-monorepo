@@ -15,7 +15,7 @@ export default function ReservationPage() {
       <main
         id="main"
         tabIndex={-1}
-        className={cn("grid w-full flex-1 content-start gap-10 pt-4 pb-16 outline-none lg:grid-cols-[1fr_1.15fr]", KIOSK_GUTTER)}
+        className={cn("grid w-full flex-1 content-start gap-10 pt-4 pb-16 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring lg:grid-cols-[1fr_1.15fr]", KIOSK_GUTTER)}
       >
         <IdleReturn />
         <KioskTitle label="Reservation" serif="예약" sans="확인" />

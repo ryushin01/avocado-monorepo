@@ -1,5 +1,5 @@
-import { Dices } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -8,7 +8,6 @@ import { Suspense } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -38,40 +37,72 @@ const DEMO_ACCOUNTS: DemoAccount[] = SEED_USERS.flatMap((u) =>
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main id="main" tabIndex={-1} className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-muted/40 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Dices className="size-5" />
-          </div>
-          <CardTitle className="text-xl">
-            <h1>보드게임 카페 백오피스</h1>
-          </CardTitle>
-          <CardDescription>직원 계정으로 로그인하세요.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Suspense fallback={<Skeleton className="h-48" />}>
-            <LoginContent searchParams={searchParams} />
-          </Suspense>
-        </CardContent>
-        {process.env.NODE_ENV !== "production" && (
-          <CardFooter className="flex-col items-start gap-1 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">개발용 계정 (비밀번호 {DEV_PASSWORD})</p>
-            {SEED_USERS.filter((u) => u.active).map((u) => (
-              <p key={u.id} className="tabular-nums">
-                {u.email} · {u.name} ({ROLE_LABELS[u.role]})
-              </p>
-            ))}
-          </CardFooter>
-        )}
-      </Card>
+    <main id="main" tabIndex={-1} className="flex min-h-dvh flex-col px-6 py-5 md:px-12 lg:px-20">
+      {/* 레퍼런스의 머리글: 왼쪽 주소 칩, 오른쪽 워드마크 */}
+      <div className="flex items-center justify-between gap-4">
+        <p lang="en" aria-hidden className="flex flex-wrap gap-4">
+          <span className="bo-chip" data-current="">
+            <span className="bo-chip__sign w-auto px-2">www</span>
+            <span className="bo-chip__label">avocado-admin</span>
+          </span>
+          <span className="bo-chip max-sm:hidden">
+            <span className="bo-chip__sign">/</span>
+            <span className="bo-chip__label">login</span>
+          </span>
+        </p>
+        <p className="flex items-center gap-3">
+          <span className="flex size-12 items-center justify-center border border-foreground bg-background">
+            <Image src="/brand/logo.png" alt="" width={32} height={32} />
+          </span>
+          <span lang="en" className="text-[1.75rem] leading-none font-semibold tracking-tight uppercase">
+            Avocado
+          </span>
+        </p>
+      </div>
+
+      <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[minmax(0,1fr)_25rem] lg:gap-16">
+        <div className="flex flex-col gap-4">
+          <p lang="en" aria-hidden className="bo-eyebrow flex flex-wrap items-center gap-4">
+            <span className="bo-plate">staff only</span>
+            <span>backoffice console</span>
+          </p>
+          <h1 className="text-[clamp(2.5rem,1.5rem+3.5vw,4.5rem)] leading-[1.05] font-bold tracking-[-0.03em]">
+            보드게임 카페 백오피스
+          </h1>
+          <p className="max-w-md text-lg leading-7 text-muted-foreground">
+            직원 계정으로 로그인하세요. 재고·이용 기록·예약을 한 화면에서 관리합니다.
+          </p>
+        </div>
+
+        <Card className="w-full gap-0 bg-background py-0">
+          <CardHeader className="flex h-10 items-center bg-foreground py-0 text-background">
+            <CardTitle className="font-mono text-sm font-normal tracking-[0.02em]">/ 로그인</CardTitle>
+          </CardHeader>
+          <CardContent className="py-5">
+            <Suspense fallback={<Skeleton className="h-48" />}>
+              <LoginContent searchParams={searchParams} />
+            </Suspense>
+          </CardContent>
+          {process.env.NODE_ENV !== "production" && (
+            <CardFooter className="flex-col items-start gap-1 border-t border-border bg-muted py-4 font-mono text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">개발용 계정 (비밀번호 {DEV_PASSWORD})</p>
+              {SEED_USERS.filter((u) => u.active).map((u) => (
+                <p key={u.id} className="tabular-nums">
+                  {u.email} · {u.name} ({ROLE_LABELS[u.role]})
+                </p>
+              ))}
+            </CardFooter>
+          )}
+        </Card>
+      </div>
+
       {/* 파비콘·사이드바 로고(Flaticon 아이콘)의 출처 표기 */}
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="font-mono text-xs text-muted-foreground">
         로고 아이콘:{" "}
         <a
           href="https://www.flaticon.com/authors/amonrat-rungreangfangsai"
           lang="en"
-          className="inline-flex min-h-6 items-center underline underline-offset-4"
+          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:bg-foreground hover:text-background"
         >
           Avocado icons created by amonrat rungreangfangsai - Flaticon
         </a>

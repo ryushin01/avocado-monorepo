@@ -10,11 +10,11 @@ import {
 } from "@avocado/ui/components/chart";
 import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
-// 단일 계열이므로 기본 팔레트의 1번(파랑)만 쓴다. 라이트·다크 각각 대비 검증을 통과한 값.
+// 단일 계열이므로 잉크(#111110) 한 색만 쓴다. 흰 바탕 대비 18:1.
 const chartConfig = {
   gameCount: {
     label: "게임",
-    theme: { light: "#2a78d6", dark: "#3987e5" },
+    theme: { light: "#111110", dark: "#f4f4f2" },
   },
 } satisfies ChartConfig;
 

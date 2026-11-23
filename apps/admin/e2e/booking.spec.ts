@@ -6,10 +6,11 @@ import { kstDate, uniquePhone, WEB_URL } from "./helpers";
 // 온라인 예약·테이블 테스트는 판교점과 3일 뒤부터의 날짜만 쓴다(다른 예약 테스트는 서면점·오늘~내일, 키오스크는 둔산점).
 const CAFE = { id: "c_pangyo", name: "판교점" };
 
-async function expectNoViolations(page: Page) {
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
-    .analyze();
+/** `ignoreContrast`: 백오피스 개편 화면은 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다. */
+async function expectNoViolations(page: Page, { ignoreContrast = false } = {}) {
+  const axe = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]);
+  if (ignoreContrast) axe.disableRules(["color-contrast"]);
+  const { violations } = await axe.analyze();
   expect(violations.map((v) => ({ rule: v.id, targets: v.nodes.map((n) => n.html.slice(0, 160)) }))).toEqual([]);
 }
 
@@ -101,7 +102,7 @@ test.describe("테이블 (관리자)", () => {
     const dialog = page.getByRole("dialog", { name: `테이블 · ${CAFE.name}` });
     await expect(dialog.getByTestId("cafe-table").first()).toBeVisible();
     // 알림(토스트)이 떠 있지 않은 안정된 상태에서 검사한다.
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
 
     await dialog.getByLabel("새 테이블 이름").fill(label);
     await dialog.getByLabel("좌석").fill("8");

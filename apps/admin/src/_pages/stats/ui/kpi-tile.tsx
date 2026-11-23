@@ -28,17 +28,17 @@ export function KpiTile({
   trend?: { current: number[]; previous: number[] };
 }) {
   return (
-    <Card data-testid="kpi-tile" className="gap-3">
-      <CardHeader>
-        <CardDescription className="flex items-center gap-1.5">
-          <Icon className="size-4" />
+    <Card data-testid="kpi-tile" className="gap-3 pt-0">
+      <CardHeader className="gap-3 px-0">
+        <CardDescription className="flex h-8 items-center gap-2 bg-foreground px-3 font-mono text-xs tracking-[0.02em] text-background">
+          <Icon className="size-3.5" aria-hidden />
           {label}
         </CardDescription>
-        <CardTitle className="text-2xl font-semibold">
+        <CardTitle className="px-(--card-spacing) text-[2.25rem] leading-none font-bold tracking-[-0.03em] tabular-nums">
           {value === null ? "–" : formatNumber(value)}
-          <span className="ml-0.5 text-base font-normal text-muted-foreground">{unit}</span>
+          <span className="ml-1 font-mono text-sm font-normal tracking-normal text-muted-foreground">{unit}</span>
         </CardTitle>
-        <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+        <p className="flex flex-wrap items-center gap-1 px-(--card-spacing) text-xs text-muted-foreground">
           <Delta current={value} previous={previous} upIsGood={upIsGood} />
           {comparedTo} 대비
           {previous !== null && <span className="tabular-nums">({formatNumber(previous)}{unit})</span>}

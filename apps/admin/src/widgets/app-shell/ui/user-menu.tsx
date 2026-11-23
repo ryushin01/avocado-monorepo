@@ -34,16 +34,20 @@ export function UserMenu({ user, cafeName }: { user: User; cafeName?: string }) 
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <SidebarMenuButton size="lg" disabled={pending} />
+              <SidebarMenuButton
+                size="lg"
+                disabled={pending}
+                className="border border-foreground bg-background hover:bg-foreground hover:text-background data-open:bg-foreground data-open:text-background group-data-[collapsible=icon]:border-0"
+              />
             }
           >
             {/* 접근 이름은 보이는 이름·역할에 '계정 메뉴'를 덧붙인다(KWCAG 6.5.3). 첫 글자 아바타는 꾸밈이다. */}
-            <Avatar className="size-8 rounded-lg" aria-hidden>
-              <AvatarFallback className="rounded-lg">{user.name.slice(0, 1)}</AvatarFallback>
+            <Avatar className="size-8 rounded-none after:hidden" aria-hidden>
+              <AvatarFallback className="rounded-none bg-foreground text-background">{user.name.slice(0, 1)}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
-              <span className="truncate text-xs text-muted-foreground">
+              <span className="truncate font-mono text-xs opacity-80">
                 {ROLE_LABELS[user.role]}
                 {cafeName && ` · ${cafeName}`}
               </span>

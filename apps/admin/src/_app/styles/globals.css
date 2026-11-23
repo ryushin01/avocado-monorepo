@@ -2,32 +2,415 @@
 
 /* 공통 UI 패키지의 클래스도 Tailwind가 찾도록 소스 위치를 알려준다. */
 @source "../../../../../packages/ui/src";
+/* 앱 src. 앱 빌드는 저절로 찾지만, Storybook처럼 다른 폴더에서 이 CSS를 쓸 때도 백오피스 클래스를 만든다. */
+@source "../..";
 
 /*
  * 통계 화면 색 (데이터 시각화 가이드의 검증 스크립트로 확인한 값)
- * - heat-1~6: 히트맵 순차 색. 한 색상(파랑)으로 적음→많음. 다크 모드는 바탕에 가까운 쪽이 적음이 되도록 뒤집는다.
+ * - heat-1~6: 히트맵 순차 색. 잉크(검정) 한 가지의 명도 단계로 적음→많음. 다크 모드는 바탕에 가까운 쪽이 적음이 되도록 뒤집는다.
  * - delta-up/down: 지난 기간 대비 증가(좋음)·감소(나쁨) 글자색. 화살표 아이콘과 함께 쓴다(색만으로 구분하지 않음).
  * - trend-previous: 지난 기간 선 (강조하지 않는 회색)
  */
 :root {
-  --heat-1: #cde2fb;
-  --heat-2: #9ec5f4;
-  --heat-3: #6da7ec;
-  --heat-4: #3987e5;
-  --heat-5: #256abf;
-  --heat-6: #184f95;
+  --heat-1: #e6e6e3;
+  --heat-2: #c4c4bf;
+  --heat-3: #9a9a95;
+  --heat-4: #6e6e69;
+  --heat-5: #42423f;
+  --heat-6: #111110;
   --delta-up: #006300;
   --delta-down: #d03b3b;
   --trend-previous: #898781;
 }
 .dark {
-  --heat-1: #104281;
-  --heat-2: #1c5cab;
-  --heat-3: #2a78d6;
-  --heat-4: #5598e7;
-  --heat-5: #86b6ef;
-  --heat-6: #cde2fb;
+  --heat-1: #2a2a28;
+  --heat-2: #4a4a47;
+  --heat-3: #706f6b;
+  --heat-4: #9a9a95;
+  --heat-5: #c4c4bf;
+  --heat-6: #f4f4f2;
   --delta-up: #0ca30c;
   --delta-down: #d03b3b;
   --trend-previous: #898781;
+}
+
+/*
+ * ───────────────────────────────────────────────────────────────
+ * 백오피스 테마: 흑백 "콘솔" 디자인
+ * 잉크(#111110)와 흰 바탕 두 색, 모서리 없는 상자, 고정폭 라벨 칩, 점 무늬 바탕을 쓴다.
+ * 공통 테마(packages/ui)는 키오스크도 쓰므로 고치지 않고, 이 앱에서만 토큰을 덮어쓴다.
+ * 색은 레퍼런스 값 그대로다(사용자 지시로 글자 대비는 맞추지 않고, 검사에서도 color-contrast만 뺀다).
+ * ───────────────────────────────────────────────────────────────
+ */
+/*
+ * IBM Plex Mono에는 한글이 없어 한글은 고딕으로 이어지는데, 고정폭 공백(0.6em)만 넓게 남는다.
+ * 고정폭 글자를 쓰는 곳은 단어 사이를 좁혀 한글 라벨이 벌어져 보이지 않게 한다.
+ */
+:is(
+    .font-mono,
+    .bo-chip,
+    [data-slot="badge"],
+    [data-slot="tabs-trigger"],
+    [data-slot="table-head"],
+    [data-slot="tooltip-content"]
+  ):not(:lang(en)) {
+  word-spacing: -0.3em;
+}
+
+@theme inline {
+  --font-sans:
+    "Instrument Sans Variable", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", system-ui,
+    sans-serif;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Apple SD Gothic Neo", "Malgun Gothic",
+    monospace;
+  --font-heading: var(--font-sans);
+}
+
+:root {
+  --ink: #111110;
+  --ground: #fff;
+  --quiet: #656561;
+  --hairline: #11111026;
+  --rule: #11111059;
+  --light: #f4f4f2;
+
+  --background: var(--ground);
+  --foreground: var(--ink);
+  --card: var(--ground);
+  --card-foreground: var(--ink);
+  --popover: var(--ground);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--ground);
+  --secondary: var(--light);
+  --secondary-foreground: var(--ink);
+  --muted: var(--light);
+  --muted-foreground: var(--quiet);
+  --accent: var(--light);
+  --accent-foreground: var(--ink);
+  --border: var(--hairline);
+  --input: var(--rule);
+  --ring: var(--ink);
+  --radius: 0rem;
+  --sidebar: var(--ground);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--ground);
+  --sidebar-accent: var(--light);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--hairline);
+  --sidebar-ring: var(--ink);
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+/* 점 무늬 바탕(레퍼런스의 래스터). 내용 상자는 흰 바탕이라 글자 대비는 바뀌지 않는다. */
+body,
+[data-slot="sidebar-inset"] {
+  background-color: var(--ground);
+  background-image: radial-gradient(circle, rgb(17 17 16 / 0.2) 0.55px, transparent 0.85px);
+  background-size: 4px 4px;
+}
+
+/* 초점: 모든 조작 요소에 3px 잉크 외곽선을 보인다(공통 부품의 옅은 ring 대신). */
+:where(a, button, input, select, textarea, summary, [tabindex], [role="button"], [role="tab"], [role="gridcell"], [role="menuitem"], [role="menuitemradio"], [role="option"], [role="separator"], [role="checkbox"], [role="radio"], [role="switch"], [role="combobox"]):focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* ── 글자 ───────────────────────────────────────────── */
+/* 제목은 굵고 좁게. base 층에 두어 화면이 준 유틸리티 클래스가 이긴다. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* 공통 부품의 기본 글자 크기·굵기(호출하는 쪽이 바꾸지 않았을 때만 붙어 있는 클래스)를 덮어쓴다. */
+:is([data-slot="card-title"], [data-slot="dialog-title"], [data-slot="sheet-title"], [data-slot="alert-dialog-title"]).font-medium {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+[data-slot="card-title"].text-base {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+}
+
+/* ── 상자 ───────────────────────────────────────────── */
+[data-slot="card"] {
+  border: 1px solid var(--rule);
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="sheet-content"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="combobox-content"] {
+  border: 1px solid var(--ink);
+  box-shadow: 6px 6px 0 rgb(17 17 16 / 0.12);
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+[data-slot="dialog-overlay"],
+[data-slot="alert-dialog-overlay"],
+[data-slot="sheet-overlay"] {
+  background-color: rgb(17 17 16 / 0.45);
+  backdrop-filter: none;
+}
+
+[data-slot="tooltip-content"] {
+  background: var(--ink);
+  color: var(--ground);
+  font: 400 0.75rem/1rem var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* ── 버튼 ───────────────────────────────────────────── */
+/*
+ * 주 버튼은 레퍼런스의 "잘린 버튼": 왼쪽 끝에 좁은 잉크 조각과 틈을 두고, 마우스를 올리면
+ * 틈이 오른쪽으로 쓸고 지나가며 한 덩어리가 된다(--cut 0% → 100%).
+ */
+@property --cut {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+.group\/button {
+  font-weight: 600;
+}
+
+.group\/button.bg-primary:is(.px-2\.5, .px-2) {
+  --cut: 0%;
+  --slice: 8px;
+  --gap: 3px;
+  background-color: transparent;
+  background-image: linear-gradient(
+    to right,
+    var(--ink) 0,
+    var(--ink) calc(var(--cut) + var(--slice)),
+    transparent calc(var(--cut) + var(--slice)),
+    transparent calc(var(--cut) + var(--slice) + var(--gap)),
+    var(--ink) calc(var(--cut) + var(--slice) + var(--gap))
+  );
+  padding-left: calc(var(--slice) + var(--gap) + 0.75rem);
+  padding-right: 0.875rem;
+  transition: --cut 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.group\/button.bg-primary:is(.px-2\.5, .px-2):hover:not(:disabled, [aria-disabled="true"]),
+.group\/button.bg-primary:is(.px-2\.5, .px-2):focus-visible {
+  --cut: 100%;
+}
+
+.group\/button.border-border {
+  border-color: var(--ink);
+  background-color: var(--ground);
+}
+
+.group\/button.border-border:hover:not(:disabled, [aria-disabled="true"]),
+.group\/button.border-border[aria-expanded="true"],
+.group\/button.hover\:bg-muted:hover:not(:disabled, [aria-disabled="true"]) {
+  background-color: var(--ink);
+  color: var(--ground);
+}
+
+.group\/button.bg-secondary {
+  border-color: var(--rule);
+}
+
+/* 큰 버튼은 레퍼런스처럼 3rem 높이 */
+.group\/button.h-9 {
+  height: 2.5rem;
+}
+
+/* ── 배지·탭 ─────────────────────────────────────────── */
+[data-slot="badge"] {
+  font: 400 0.75rem/1rem var(--font-mono);
+  letter-spacing: 0.02em;
+  border-radius: 0;
+}
+
+[data-slot="tabs-list"] {
+  background: transparent;
+  border: 1px solid var(--ink);
+  padding: 0;
+  gap: 0;
+}
+
+[data-slot="tabs-trigger"] {
+  font: 400 0.8125rem/1rem var(--font-mono);
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+}
+
+[data-slot="tabs-trigger"]:hover {
+  background: var(--light);
+}
+
+[data-slot="tabs-trigger"][data-active],
+[data-slot="tabs-trigger"][aria-selected="true"] {
+  background: var(--ink);
+  color: var(--ground);
+  box-shadow: none;
+}
+
+/* ── 입력칸 ──────────────────────────────────────────── */
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"],
+[data-slot="native-select"],
+[data-slot="input-group"],
+[data-slot="combobox-trigger"] {
+  border-color: var(--input);
+  background-color: var(--ground);
+}
+
+[data-slot="input"]:hover,
+[data-slot="textarea"]:hover,
+[data-slot="select-trigger"]:hover,
+[data-slot="native-select"]:hover {
+  border-color: var(--ink);
+}
+
+[data-slot="field-label"],
+[data-slot="label"] {
+  font-weight: 600;
+}
+
+/* ── 표 ─────────────────────────────────────────────── */
+/* 점 무늬 위에 바로 놓이는 표도 흰 바탕으로 읽히게 한다. */
+[data-slot="table-container"] {
+  background-color: var(--ground);
+}
+
+[data-slot="table-head"] {
+  font: 400 0.75rem/1rem var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--quiet);
+  text-transform: uppercase;
+}
+
+[data-slot="table-header"] [data-slot="table-row"] {
+  border-bottom-color: var(--ink);
+}
+
+[data-slot="table-row"]:hover {
+  background-color: var(--light);
+}
+
+/* ── 고정폭 경로 칩(레퍼런스의 "/ how-it-works") ───────────── */
+.bo-chip {
+  display: inline-flex;
+  align-items: stretch;
+  min-width: 0;
+  height: 2rem;
+  font: 400 0.875rem/1 var(--font-mono);
+  color: var(--ink);
+}
+
+.bo-chip__sign,
+.bo-chip__label {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--ink);
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.bo-chip__sign {
+  flex: none;
+  justify-content: center;
+  width: 2rem;
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.bo-chip__label {
+  min-width: 0;
+  padding-inline: 0.625rem;
+  border-left: 0;
+  background: var(--ground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 마우스를 올리면 칩이 뒤집힌다. 현재 위치는 라벨이 잉크로 채워진다. */
+:is(a, button):hover > .bo-chip .bo-chip__sign,
+:is(a, button)[data-active] > .bo-chip .bo-chip__sign,
+.bo-chip[data-current] .bo-chip__sign {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+:is(a, button):hover > .bo-chip .bo-chip__label,
+:is(a, button)[data-active] > .bo-chip .bo-chip__label,
+.bo-chip[data-current] .bo-chip__label {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+/* 검은 판 라벨(레퍼런스의 "AN SEO CHECK") */
+.bo-plate {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  padding-inline: 0.75rem;
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.bo-eyebrow {
+  font: 500 0.875rem/1.5rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── 들어올 때 움직임(레퍼런스의 넘김) ──────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  #main > * {
+    animation: bo-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  #main > :nth-child(2) {
+    animation-delay: 0.04s;
+  }
+
+  #main > :nth-child(n + 3) {
+    animation-delay: 0.08s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group\/button.bg-primary:is(.px-2\.5, .px-2) {
+    transition: none;
+  }
+}
+
+@keyframes bo-rise {
+  from {
+    transform: translateY(0.75rem);
+  }
+}
+
+@media (forced-colors: active) {
+  .group\/button.bg-primary:is(.px-2\.5, .px-2) {
+    background-image: none;
+  }
 }

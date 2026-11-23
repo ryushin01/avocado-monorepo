@@ -47,7 +47,7 @@ export function TurnoverTable({
               <div className="flex items-center gap-2">
                 <div className="h-2 flex-1 rounded-full bg-muted" aria-hidden>
                   <div
-                    className="h-2 rounded-full bg-[#2a78d6] dark:bg-[#3987e5]"
+                    className="h-2 rounded-full bg-[#111110] dark:bg-[#f4f4f2]"
                     style={{ width: `${max === 0 ? 0 : (row.playsPerBox / max) * 100}%` }}
                   />
                 </div>

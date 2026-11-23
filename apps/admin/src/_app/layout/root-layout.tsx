@@ -1,10 +1,13 @@
 import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata } from "next";
-import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
 import { SidebarStateScript, SidebarWidthScript } from "@avocado/ui/components/sidebar";
 import { Toaster } from "@avocado/ui/components/sonner";
 
+// 글꼴은 패키지(Fontsource, OFL)에 든 파일을 함께 배포해 빌드·실행 모두 외부 글꼴 서버 없이 동작한다.
+// 본문·제목은 Instrument Sans, 라벨·경로 칩은 IBM Plex Mono(글꼴 이름은 globals.css의 --font-*).
+import "@fontsource-variable/instrument-sans/wght.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +19,7 @@ export function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col">
         <SkipLink />

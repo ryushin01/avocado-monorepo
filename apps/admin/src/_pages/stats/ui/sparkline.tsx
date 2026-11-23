@@ -6,11 +6,11 @@ import { type ChartConfig, ChartContainer } from "@avocado/ui/components/chart";
 
 const config = {
   previous: { label: "지난 기간", color: "var(--trend-previous)" },
-  current: { label: "이번 기간", theme: { light: "#2a78d6", dark: "#3987e5" } },
+  current: { label: "이번 기간", theme: { light: "#111110", dark: "#f4f4f2" } },
 } satisfies ChartConfig;
 
 /**
- * 작은 추이선. 지난 기간은 회색, 이번 기간은 파랑으로 이어 그린다.
+ * 작은 추이선. 지난 기간은 회색, 이번 기간은 잉크(검정)로 이어 그린다.
  * 숫자는 옆의 글자가 전하므로 화면 낭독기에는 숨긴다.
  * max를 주면 여러 줄(매장별)이 같은 세로 축을 쓴다.
  */

@@ -10,7 +10,7 @@ import {
 import { formatNumber } from "@/shared/lib/format";
 
 
-/** 숫자 하나를 크게 보여주는 요약 칸 */
+/** 숫자 하나를 크게 보여주는 요약 칸. 레퍼런스의 결과 칸처럼 잉크 띠(고정폭 라벨) 아래에 큰 숫자를 둔다. */
 export function StatTile({
   label,
   value,
@@ -25,19 +25,19 @@ export function StatTile({
   hint?: string;
 }) {
   return (
-    <Card data-testid="stat-tile">
-      <CardHeader>
-        <CardDescription className="flex items-center gap-1.5">
-          <Icon className="size-4" />
+    <Card data-testid="stat-tile" className="gap-3 pt-0">
+      <CardHeader className="gap-3 px-0">
+        <CardDescription className="flex h-8 items-center gap-2 bg-foreground px-3 font-mono text-xs tracking-[0.02em] text-background">
+          <Icon className="size-3.5" aria-hidden />
           {label}
         </CardDescription>
-        <CardTitle className="text-2xl font-semibold tabular-nums">
+        <CardTitle className="px-(--card-spacing) text-[2.25rem] leading-none font-bold tracking-[-0.03em] tabular-nums">
           {formatNumber(value)}
-          <span className="ml-0.5 text-base font-normal text-muted-foreground">
+          <span className="ml-1 font-mono text-sm font-normal tracking-normal text-muted-foreground">
             {unit}
           </span>
         </CardTitle>
-        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+        {hint && <p className="px-(--card-spacing) text-xs text-muted-foreground">{hint}</p>}
       </CardHeader>
     </Card>
   );

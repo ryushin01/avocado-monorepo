@@ -15,12 +15,12 @@ import { formatShortDate, formatTickDate } from "@/shared/lib/format";
 import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
 /**
- * 일별 이용 추이. 이번 기간(파랑 실선)을 강조하고, 지난 기간(회색 점선)은 비교용으로 겹친다.
+ * 일별 이용 추이. 이번 기간(잉크 실선)을 강조하고, 지난 기간(회색 점선)은 비교용으로 겹친다.
  * 회색은 강조하지 않는 맥락 색이라 색 하나만으로 구분하지 않도록 점선·범례를 함께 쓴다.
  */
 export function TrendChart({ data, period }: { data: DailyPoint[]; period: number }) {
   const config = {
-    current: { label: `최근 ${period}일`, theme: { light: "#2a78d6", dark: "#3987e5" } },
+    current: { label: `최근 ${period}일`, theme: { light: "#111110", dark: "#f4f4f2" } },
     previous: { label: `그 전 ${period}일`, color: "var(--trend-previous)" },
   } satisfies ChartConfig;
 
@@ -28,7 +28,7 @@ export function TrendChart({ data, period }: { data: DailyPoint[]; period: numbe
     <div className="relative flex flex-col gap-3">
       <ul className="flex flex-wrap gap-4 text-sm" aria-label="범례">
         <li className="flex items-center gap-2">
-          <span className="h-0.5 w-5 rounded-full bg-[#2a78d6] dark:bg-[#3987e5]" aria-hidden />
+          <span className="h-0.5 w-5 rounded-full bg-[#111110] dark:bg-[#f4f4f2]" aria-hidden />
           {config.current.label}
         </li>
         <li className="flex items-center gap-2 text-muted-foreground">

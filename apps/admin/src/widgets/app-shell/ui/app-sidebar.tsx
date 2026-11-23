@@ -34,30 +34,39 @@ export function AppSidebar({ nav, footer }: { nav: ReactNode; footer: ReactNode 
     <Sidebar collapsible="icon">
       {/* 사이드바의 모든 내용(브랜드·메뉴·계정·너비 조절)을 랜드마크 안에 둔다. 레이아웃은 그대로 세로 흐름이다. */}
       <nav aria-label="백오피스 메뉴" className="flex min-h-0 flex-1 flex-col">
-        <SidebarHeader>
+        <SidebarHeader className="px-3 pt-5 pb-4">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" render={<Link href="/" />}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#f3f7ea]">
-                  <Image src="/brand/logo.png" alt="" width={24} height={24} />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">보드게임 카페</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    백오피스
+              {/* 레퍼런스의 워드마크: 테두리 상자 안의 로고와 큰 대문자 이름 */}
+              <SidebarMenuButton
+                size="lg"
+                render={<Link href="/" />}
+                className="h-auto gap-3 p-0 hover:bg-transparent active:bg-transparent group-data-[collapsible=icon]:size-8!"
+              >
+                <span className="flex size-10 shrink-0 items-center justify-center border border-foreground bg-background group-data-[collapsible=icon]:size-8">
+                  <Image src="/brand/logo.png" alt="" width={26} height={26} />
+                </span>
+                <span className="grid flex-1 text-left leading-none">
+                  <span lang="en" className="truncate text-[1.375rem] font-semibold tracking-tight uppercase">
+                    Avocado
                   </span>
-                </div>
+                  <span className="mt-1 truncate font-mono text-xs text-muted-foreground">
+                    보드게임 카페 백오피스
+                  </span>
+                </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>메뉴</SidebarGroupLabel>
+          <SidebarGroup className="px-3">
+            <SidebarGroupLabel className="h-6 px-0 font-mono text-xs tracking-[0.02em] text-muted-foreground">
+              / 메뉴
+            </SidebarGroupLabel>
             <SidebarGroupContent>{nav}</SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter>{footer}</SidebarFooter>
+        <SidebarFooter className="px-3 pb-4">{footer}</SidebarFooter>
         <SidebarRail />
       </nav>
     </Sidebar>
@@ -70,18 +79,24 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
   const active = findNavItem(pathname);
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="gap-2">
       {items.map((item) => {
         const Icon = NAV_ICONS[item.icon];
         return (
           <SidebarMenuItem key={item.href}>
+            {/* 레퍼런스의 경로 칩: 잉크 칸(아이콘) + 테두리 라벨. 접으면 아이콘 칸만 남는다. */}
             <SidebarMenuButton
               isActive={active?.href === item.href}
               tooltip={item.title}
               render={<Link href={item.href} />}
+              className="h-8 p-0 hover:bg-transparent hover:text-sidebar-foreground active:bg-transparent data-active:bg-transparent data-active:font-normal group-data-[collapsible=icon]:p-0!"
             >
-              <Icon />
-              <span>{item.title}</span>
+              <span className="bo-chip max-w-full">
+                <span className="bo-chip__sign">
+                  <Icon aria-hidden />
+                </span>
+                <span className="bo-chip__label">{item.title}</span>
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         );
@@ -97,8 +112,8 @@ export function SidebarNavSkeleton() {
     <SidebarMenu>
       {["70%", "55%", "80%", "60%"].map((width) => (
         <SidebarMenuItem key={width}>
-          <div className="flex h-8 items-center gap-2 px-2">
-            <Skeleton className="size-4 rounded-md" />
+          <div className="flex h-8 items-center gap-0">
+            <Skeleton className="size-8" />
             <Skeleton className="h-4" style={{ width }} />
           </div>
         </SidebarMenuItem>

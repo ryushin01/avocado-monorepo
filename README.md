@@ -154,16 +154,19 @@ docs/
 |---|---|---|
 | Comfortaa | 홍보 사이트 영문·숫자 (제목·본문·수치) | 300~700 가변 |
 | 고운돋움 | 홍보 사이트 한글 (제목·본문·수치 옆 글자) | 400 |
-| Geist | 백오피스·런처 | 가변 |
-| Geist Mono | 백오피스 고정폭 (차트 수치·오류 번호) | 가변 |
+| Geist | 런처 | 가변 |
+| Instrument Sans | 백오피스 영문·숫자 (제목·본문) | 400~700 가변 |
+| IBM Plex Mono | 백오피스 고정폭 (경로 칩·라벨·표 머리·차트 수치) | 400·500 |
 
-저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 npm 패키지(Geist는 `geist`, Comfortaa·고운돋움은 Fontsource `@fontsource-variable/comfortaa`·`@fontsource/gowun-dodum`)에 든 파일을 함께 배포해 같은 사이트에서 제공하므로, 빌드할 때도 글꼴 서버에 접속하지 않습니다. 고운돋움은 글자 묶음별 조각이라 화면에 쓰인 조각만 받습니다.
+저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 npm 패키지(Geist는 `geist`, 나머지는 Fontsource `@fontsource-variable/comfortaa`·`@fontsource/gowun-dodum`·`@fontsource-variable/instrument-sans`·`@fontsource/ibm-plex-mono`)에 든 파일을 함께 배포해 같은 사이트에서 제공하므로, 빌드할 때도 글꼴 서버에 접속하지 않습니다. 고운돋움은 글자 묶음별 조각이라 화면에 쓰인 조각만 받습니다.
 
 ## 출처
 
 | 자료 | 저작자 | 사용 허락 | 원본 |
 |---|---|---|---|
-| Geist · Geist Mono 글꼴 | The Geist Project Authors(Vercel) | SIL OFL 1.1 | [vercel/geist-font](https://github.com/vercel/geist-font) |
+| Geist 글꼴 | The Geist Project Authors(Vercel) | SIL OFL 1.1 | [vercel/geist-font](https://github.com/vercel/geist-font) |
+| Instrument Sans 글꼴 | The Instrument Sans Project Authors | SIL OFL 1.1 | [Instrument/instrument-sans](https://github.com/Instrument/instrument-sans) |
+| IBM Plex Mono 글꼴 | IBM Corp. | SIL OFL 1.1 | [IBM/plex](https://github.com/IBM/plex) |
 | Gowun Dodum(고운돋움) 글꼴 | The Gowun Dodum Project Authors(류양희) | SIL OFL 1.1 | [yangheeryu/Gowun-Dodum](https://github.com/yangheeryu/Gowun-Dodum) |
 | Comfortaa 글꼴 | Johan Aakerlund | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Comfortaa) |
 | 아보카도 로고 (세 앱의 파비콘·로고, 키오스크 앱 아이콘, 홍보 사이트 공유 이미지) | [amonrat rungreangfangsai](https://www.flaticon.com/authors/amonrat-rungreangfangsai) | Flaticon 라이선스 (출처 표기: 홍보 사이트 바닥글, 백오피스 로그인 화면, 키오스크 시작 화면. 매장 태블릿에 설치한 키오스크 앱에서는 손님이 나가지 않게 링크 없이 글자로) | [Flaticon](https://www.flaticon.com/) 아이콘 6974016 (원본 512px: `apps/launcher/public/icon-512.png`) |

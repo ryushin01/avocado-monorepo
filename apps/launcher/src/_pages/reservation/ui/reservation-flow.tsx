@@ -1,12 +1,12 @@
 "use client";
 
-import { CalendarCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { type ReactNode, useState, useTransition } from "react";
 
 import type { KioskReservation } from "@avocado/domain/kiosk";
 import { Badge } from "@avocado/ui/components/badge";
 import { Button } from "@avocado/ui/components/button";
-import { Card, CardContent } from "@avocado/ui/components/card";
+import { cn } from "@avocado/ui/lib/utils";
 
 import { checkInAction, lookupReservationsAction } from "@/shared/api";
 import { formatKstTime } from "@/shared/lib/format";
@@ -14,6 +14,7 @@ import { formatKstTime } from "@/shared/lib/format";
 import { AlertMessage } from "@/shared/ui/alert-message";
 import { IdleReturn } from "@/shared/ui/idle-return";
 import { Keypad } from "@/shared/ui/keypad";
+import { kioskOutlineButton, kioskSolidButton, MonoLabel } from "@/shared/ui/kiosk-header";
 
 type Step =
   | { name: "enter"; message?: string }
@@ -47,13 +48,13 @@ export function ReservationFlow() {
   let content: ReactNode;
   if (step.name === "arrived") {
     content = (
-      <div className="flex flex-col items-center gap-4 py-10 text-center">
-        <CheckCircle2 className="size-16 text-emerald-600" />
-        <h2 className="text-3xl font-bold">도착을 알렸습니다</h2>
+      <div className="flex flex-col items-start gap-5 rounded-[10px] border border-input p-10">
+        <CheckCircle2 aria-hidden strokeWidth={1} className="size-14 text-emerald-400" />
+        <h2 className="text-4xl tracking-[-0.02em]">도착을 알렸습니다</h2>
         <p className="text-lg text-muted-foreground">
           {step.reservation.maskedName}님, {formatKstTime(step.reservation.startsAt)} 예약 {step.reservation.partySize}명. 직원이 곧 자리로 안내해드립니다.
         </p>
-        <Button size="lg" className="h-12 px-6 text-base" onClick={() => setStep({ name: "enter" })}>
+        <Button size="lg" className={cn(kioskSolidButton, "h-12 px-7 text-base")} onClick={() => setStep({ name: "enter" })}>
           처음으로
         </Button>
       </div>
@@ -62,47 +63,51 @@ export function ReservationFlow() {
     const { phone4, reservations } = step;
     content = (
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-2xl">
           뒷자리 {phone4}로 찾은 오늘 예약 {reservations.length}건
         </h2>
         {reservations.length === 0 ? (
-          <p className="rounded-xl border bg-background p-8 text-center text-lg text-muted-foreground">
+          <p className="rounded-[10px] border border-input p-8 text-center text-lg text-muted-foreground">
             오늘 예약을 찾을 수 없습니다. 번호를 다시 확인하시거나 직원에게 문의해주세요.
           </p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {reservations.map((r) => (
-              <li key={r.id}>
-                <Card>
-                  <CardContent className="flex flex-wrap items-center gap-4">
-                    <CalendarCheck className="size-8 text-muted-foreground" />
-                    <div className="flex flex-1 flex-col gap-1">
-                      <p className="text-xl font-semibold">
-                        {r.maskedName}님 · {formatKstTime(r.startsAt)} · {r.partySize}명
-                      </p>
-                      <div className="flex gap-1">
-                        <Badge variant={r.status === "confirmed" ? "default" : "outline"}>
-                          {r.status === "confirmed" ? "예약 확정" : "확정 대기"}
-                        </Badge>
-                        {r.arrived && <Badge variant="secondary">도착 알림 완료</Badge>}
-                      </div>
-                    </div>
-                    <Button
-                      size="lg"
-                      className="h-12 px-6 text-base"
-                      disabled={pending || r.arrived}
-                      onClick={() => checkIn(phone4, r)}
-                    >
-                      {pending && <Loader2 className="animate-spin" />}
-                      도착했어요
-                    </Button>
-                  </CardContent>
-                </Card>
+          <ul className="flex flex-col">
+            {reservations.map((r, i) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-4 border-b border-input py-5">
+                <div className="flex flex-1 flex-col gap-2">
+                  <MonoLabel>
+                    <span aria-hidden>Booking /0{i + 1}</span>
+                  </MonoLabel>
+                  <p className="text-2xl tracking-[-0.01em]">
+                    {r.maskedName}님 · {formatKstTime(r.startsAt)} · {r.partySize}명
+                  </p>
+                  <div className="flex gap-1">
+                    <Badge variant={r.status === "confirmed" ? "default" : "outline"}>
+                      {r.status === "confirmed" ? "예약 확정" : "확정 대기"}
+                    </Badge>
+                    {r.arrived && <Badge variant="secondary">도착 알림 완료</Badge>}
+                  </div>
+                </div>
+                <Button
+                  size="lg"
+                  className={cn(kioskSolidButton, "h-12 px-7 text-base")}
+                  disabled={pending || r.arrived}
+                  onClick={() => checkIn(phone4, r)}
+                >
+                  {pending && <Loader2 className="animate-spin" />}
+                  도착했어요
+                  <ArrowRight aria-hidden strokeWidth={1.5} />
+                </Button>
               </li>
             ))}
           </ul>
         )}
-        <Button variant="outline" size="lg" className="h-12 self-start px-6 text-base" onClick={() => setStep({ name: "enter" })}>
+        <Button
+          variant="outline"
+          size="lg"
+          className={cn(kioskOutlineButton, "h-12 self-start px-7 text-base")}
+          onClick={() => setStep({ name: "enter" })}
+        >
           다시 입력
         </Button>
       </div>

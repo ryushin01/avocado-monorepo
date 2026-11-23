@@ -28,6 +28,8 @@ test("키오스크: 인터넷이 끊기면 알리고, 새로 열어도 안내 �
   await expect(kiosk.getByRole("heading", { name: "인터넷 연결이 끊겼습니다" })).toBeVisible();
   const { violations } = await new AxeBuilder({ page: kiosk })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+    // 키오스크 개편 화면만 색 대비를 보지 않는다(사용자 지시로 글자 대비 무시). 다른 규칙은 그대로 검사한다.
+    .disableRules(["color-contrast"])
     .analyze();
   expect(violations.map((v) => v.id)).toEqual([]);
 

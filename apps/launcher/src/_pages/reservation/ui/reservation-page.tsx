@@ -1,24 +1,26 @@
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { buttonVariants } from "@avocado/ui/components/button";
+import { cn } from "@avocado/ui/lib/utils";
 
 import { IdleReturn } from "@/shared/ui/idle-return";
+import { KIOSK_GUTTER, KioskHeader, KioskTitle } from "@/shared/ui/kiosk-header";
 import { ReservationFlow } from "./reservation-flow";
 
 export const metadata: Metadata = { title: "예약 확인" };
 
 export default function ReservationPage() {
   return (
-    <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <IdleReturn />
-      <Link href="/" className={buttonVariants({ variant: "ghost", size: "lg", className: "h-12 self-start px-4 text-base" })}>
-        <ArrowLeft />
-        처음으로
-      </Link>
-      <h1 className="text-3xl font-bold tracking-tight">예약 확인</h1>
-      <ReservationFlow />
-    </main>
+    <>
+      <KioskHeader current="reservation" />
+      <main
+        id="main"
+        tabIndex={-1}
+        className={cn("grid w-full flex-1 content-start gap-10 pt-4 pb-16 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring lg:grid-cols-[1fr_1.15fr]", KIOSK_GUTTER)}
+      >
+        <IdleReturn />
+        <KioskTitle label="Reservation" serif="예약" sans="확인" />
+        <ReservationFlow />
+      </main>
+    </>
   );
 }

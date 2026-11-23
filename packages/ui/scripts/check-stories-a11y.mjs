@@ -57,9 +57,9 @@ try {
     ]));
     // portal(body 아래)로 그리는 팝업도 보도록 문서 전체를 검사한다. 부품 하나만 놓인 화면이라
     // 페이지 단위 규칙(랜드마크, h1, 본문 바로가기)은 끈다(앱 화면은 E2E의 axe가 본다).
-    // 백오피스 스토리는 개편 화면이라 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다.
+    // 백오피스·키오스크 스토리는 개편 화면이라 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다.
     const skipped = ["region", "landmark-one-main", "page-has-heading-one", "bypass"];
-    if (story.title.startsWith("백오피스/")) skipped.push("color-contrast");
+    if (story.title.startsWith("백오피스/") || story.title.startsWith("키오스크/")) skipped.push("color-contrast");
     const { violations } = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
       .disableRules(skipped)

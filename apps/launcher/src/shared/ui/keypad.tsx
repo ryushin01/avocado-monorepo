@@ -6,6 +6,8 @@ import { useEffect, useId, useState } from "react";
 import { Button } from "@avocado/ui/components/button";
 import { cn } from "@avocado/ui/lib/utils";
 
+import { kioskOutlineButton } from "./kiosk-header";
+
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
 
 /**
@@ -51,7 +53,7 @@ export function Keypad({
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <p className="text-center text-lg font-medium" id={labelId}>
+      <p className="text-center text-lg" id={labelId}>
         {label}
       </p>
       {/* 네모 칸은 보이는 표시만 하고, 화면 낭독기에는 아래 상태 문구로 몇 자리를 눌렀는지 알린다. */}
@@ -60,8 +62,9 @@ export function Keypad({
           <span
             key={i}
             className={cn(
-              "flex size-14 items-center justify-center rounded-xl border-2 text-3xl font-bold tabular-nums",
-              i < digits.length ? "border-primary" : "border-border text-muted-foreground",
+              // 레퍼런스의 밑줄 칸: 아래 선만 두고, 채운 칸은 선을 밝게 한다.
+              "flex h-16 w-14 items-end justify-center border-b-2 pb-1 text-4xl tabular-nums transition-colors duration-300",
+              i < digits.length ? "border-foreground" : "border-input text-muted-foreground",
             )}
           >
             {digits[i] ?? ""}
@@ -73,24 +76,24 @@ export function Keypad({
       </p>
       <div className="grid grid-cols-3 gap-3" role="group" aria-labelledby={labelId}>
         {KEYS.map((k) => (
-          <Button key={k} variant="outline" className="h-16 text-2xl" disabled={disabled} onClick={() => press(k)}>
+          <Button key={k} variant="outline" className={cn(kioskOutlineButton, "h-16 text-2xl")} disabled={disabled} onClick={() => press(k)}>
             {k}
           </Button>
         ))}
-        <Button variant="ghost" className="h-16 text-base" disabled={disabled} onClick={() => press("clear")}>
+        <Button variant="ghost" className="h-16 rounded-[5px] text-base font-normal" disabled={disabled} onClick={() => press("clear")}>
           지우기
         </Button>
-        <Button variant="outline" className="h-16 text-2xl" disabled={disabled} onClick={() => press("0")}>
+        <Button variant="outline" className={cn(kioskOutlineButton, "h-16 text-2xl")} disabled={disabled} onClick={() => press("0")}>
           0
         </Button>
         <Button
           variant="ghost"
-          className="h-16"
+          className="h-16 rounded-[5px]"
           disabled={disabled}
           onClick={() => press("back")}
           aria-label="한 자리 지우기"
         >
-          <Delete className="size-6" />
+          <Delete className="size-6" strokeWidth={1.5} />
         </Button>
       </div>
     </div>

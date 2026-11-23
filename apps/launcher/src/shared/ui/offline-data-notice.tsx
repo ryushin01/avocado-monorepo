@@ -2,13 +2,13 @@ import { CloudOff } from "lucide-react";
 
 /**
  * 백오피스에 닿지 않아 함께 배포한 스냅숏으로 대신 보여 줄 때의 안내.
- * 화면 낭독기도 알 수 있게 role="status"로 둔다. 노란 바탕 위 amber-950 글자는 대비 4.5:1을 넘는다.
+ * 화면 낭독기도 알 수 있게 role="status"로 둔다. 어두운 바탕 위 amber-100 글자는 대비 4.5:1을 넘는다.
  */
 export function OfflineDataNotice() {
   return (
     <p
       role="status"
-      className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-4 text-base text-amber-950"
+      className="flex items-start gap-2 rounded-[10px] border border-amber-300/40 bg-amber-300/10 p-4 text-base text-amber-100"
     >
       <CloudOff aria-hidden className="mt-0.5 size-5 shrink-0" />
       <span>

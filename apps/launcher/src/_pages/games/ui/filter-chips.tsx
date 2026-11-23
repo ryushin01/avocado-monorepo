@@ -1,8 +1,10 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { GAME_CATEGORIES, GAME_CATEGORY_LABELS } from "@avocado/domain/catalog";
-import { buttonVariants } from "@avocado/ui/components/button";
+import { cn } from "@avocado/ui/lib/utils";
 
+import { MonoLabel, outlineAction } from "@/shared/ui/kiosk-header";
 import { type KioskFilter, kioskFilterHref, PLAYER_OPTIONS } from "../model/filter-games";
 
 function Chip({ href, active, children }: { href: string; active: boolean; children: string }) {
@@ -12,15 +14,34 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
       replace
       scroll={false}
       aria-current={active ? "true" : undefined}
-      // 손가락으로 누르기 쉽게 높이 48px 이상 (터치 권장 크기 44px)
-      className={buttonVariants({
-        variant: active ? "default" : "outline",
-        size: "lg",
-        className: "h-12 px-4 text-base",
-      })}
+      // 손가락으로 누르기 쉽게 높이 48px (터치 권장 크기 44px). 고른 조건은 밝게 채운다.
+      className={cn(
+        outlineAction,
+        "h-12 px-5 text-base aria-[current=true]:border-primary aria-[current=true]:bg-primary aria-[current=true]:text-primary-foreground",
+      )}
     >
       {children}
     </Link>
+  );
+}
+
+/** 왼쪽 고정폭 꼬리표와 외곽선 버튼 줄. 조건은 주소에 남는다. */
+function Row({ label, children }: { label?: string; children: ReactNode }) {
+  return (
+    <div
+      role={label ? "group" : undefined}
+      aria-label={label}
+      className="grid items-center gap-3 md:grid-cols-[8rem_1fr]"
+    >
+      {label ? (
+        <MonoLabel>
+          {label} <span aria-hidden>►</span>
+        </MonoLabel>
+      ) : (
+        <span />
+      )}
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
+    </div>
   );
 }
 
@@ -28,8 +49,7 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
 export function FilterChips({ filter }: { filter: KioskFilter }) {
   return (
     <div className="flex flex-col gap-3">
-      <div role="group" aria-label="인원" className="flex flex-wrap items-center gap-2">
-        <span className="w-12 text-base font-medium text-muted-foreground">인원</span>
+      <Row label="인원">
         <Chip href={kioskFilterHref({ ...filter, players: undefined })} active={!filter.players}>
           전체
         </Chip>
@@ -38,9 +58,8 @@ export function FilterChips({ filter }: { filter: KioskFilter }) {
             {n === 8 ? "8명 이상" : `${n}명`}
           </Chip>
         ))}
-      </div>
-      <div role="group" aria-label="유형" className="flex flex-wrap items-center gap-2">
-        <span className="w-12 text-base font-medium text-muted-foreground">유형</span>
+      </Row>
+      <Row label="유형">
         <Chip href={kioskFilterHref({ ...filter, category: undefined })} active={!filter.category}>
           전체
         </Chip>
@@ -49,16 +68,15 @@ export function FilterChips({ filter }: { filter: KioskFilter }) {
             {GAME_CATEGORY_LABELS[c]}
           </Chip>
         ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="w-12" />
+      </Row>
+      <Row>
         <Chip
           href={kioskFilterHref({ ...filter, availableOnly: !filter.availableOnly })}
           active={Boolean(filter.availableOnly)}
         >
           지금 이용 가능한 게임만
         </Chip>
-      </div>
+      </Row>
     </div>
   );
 }

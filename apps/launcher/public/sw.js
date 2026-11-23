@@ -3,7 +3,7 @@
 // 화면·데이터는 저장하지 않는다. 손님 정보가 기기에 남지 않고, 늘 백오피스의 최신 정보를 보여 주기 위해서다.
 // 열려 있는 화면에서 끊긴 경우는 Next.js(experimental.useOffline)가 요청을 미뤘다가 다시 보내고, OfflineNotice가 알린다.
 
-const CACHE = "kiosk-offline-v1";
+const CACHE = "kiosk-offline-v2";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {

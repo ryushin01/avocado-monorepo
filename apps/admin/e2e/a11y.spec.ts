@@ -71,23 +71,23 @@ test.describe("키오스크", () => {
   test("시작·게임 둘러보기 화면", async ({ page }) => {
     await page.goto(LAUNCHER_URL);
     await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${LAUNCHER_URL}/games`);
     await expect(page.getByRole("heading", { name: /보유 게임$/ })).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
   });
 
   test("예약 확인·대기 등록 화면", async ({ page }) => {
     await page.goto(`${LAUNCHER_URL}/reservation`);
     await expect(page.getByRole("button", { name: "1", exact: true })).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${LAUNCHER_URL}/waitlist`);
     await expect(page.getByText(/팀이 기다리고 있습니다/)).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
     await page.getByRole("button", { name: "대기 등록하기" }).click();
     await expect(page.getByLabel("휴대전화")).toBeVisible();
-    await expectNoViolations(page);
+    await expectNoViolations(page, { ignoreContrast: true });
   });
 });

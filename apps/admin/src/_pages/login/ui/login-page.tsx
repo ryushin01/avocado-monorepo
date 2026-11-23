@@ -52,7 +52,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
         </p>
         <p className="flex items-center gap-3">
           <span className="flex size-12 items-center justify-center border border-foreground bg-background">
-            <Image src="/brand/logo.png" alt="" width={32} height={32} />
+            <Image src="/brand/logo.png" alt="" width={32} height={32} unoptimized />
           </span>
           <span lang="en" className="text-[1.75rem] leading-none font-semibold tracking-tight uppercase">
             Avocado

@@ -44,7 +44,7 @@ export function AppSidebar({ nav, footer }: { nav: ReactNode; footer: ReactNode 
                 className="h-auto gap-3 p-0 hover:bg-transparent active:bg-transparent group-data-[collapsible=icon]:size-8!"
               >
                 <span className="flex size-10 shrink-0 items-center justify-center border border-foreground bg-background group-data-[collapsible=icon]:size-8">
-                  <Image src="/brand/logo.png" alt="" width={26} height={26} />
+                  <Image src="/brand/logo.png" alt="" width={26} height={26} unoptimized />
                 </span>
                 <span className="grid flex-1 text-left leading-none">
                   <span lang="en" className="truncate text-[1.375rem] font-semibold tracking-tight uppercase">

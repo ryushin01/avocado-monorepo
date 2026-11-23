@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-23
+
+### 고침
+
+- 운영 백오피스의 로고(로그인 화면·사이드바)가 `/_next/image` 요청 402(Vercel 무료 플랜의 이미지 변환 한도)로 막혀 깨져 보이던 문제를 고쳤다. 로고는 12.8 kB 작은 PNG라 `next/image`에 `unoptimized`를 붙여 변환 없이 원본을 그대로 보낸다. 모양·크기는 그대로이고 `next.config.ts`는 건드리지 않았다. 백오피스의 모든 `next/image`에 `unoptimized`가 붙었는지 `unoptimized-images.test.ts`가 검사한다.
+
 ## [1.2.0] - 2026-11-23
 
 ### 바뀜
@@ -115,7 +121,9 @@ v1.0.0 런칭을 가정하고 다시 점검해 나온 문제를 고쳤습니다.
 
 첫 릴리스: 백오피스, 가맹점 런처(키오스크), 홍보 사이트. 자세한 내용은 [릴리스 노트](https://github.com/ryushin01/avocado-monorepo/releases/tag/v0.1.0)에 있습니다.
 
-[Unreleased]: https://github.com/ryushin01/avocado-monorepo/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ryushin01/avocado-monorepo/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/ryushin01/avocado-monorepo/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/ryushin01/avocado-monorepo/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ryushin01/avocado-monorepo/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ryushin01/avocado-monorepo/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/ryushin01/avocado-monorepo/compare/v0.1.0...v0.2.0

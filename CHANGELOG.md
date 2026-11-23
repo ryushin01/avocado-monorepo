@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-23
+
 ### 추가
 
 - 오프라인 동작: 포트폴리오 데모가 외부 서비스 장애로 비어 보이지 않게 했다([docs/demo.md](docs/demo.md#오프라인-동작)).
@@ -102,7 +104,8 @@ v1.0.0 런칭을 가정하고 다시 점검해 나온 문제를 고쳤습니다.
 
 첫 릴리스: 백오피스, 가맹점 런처(키오스크), 홍보 사이트. 자세한 내용은 [릴리스 노트](https://github.com/ryushin01/avocado-monorepo/releases/tag/v0.1.0)에 있습니다.
 
-[Unreleased]: https://github.com/ryushin01/avocado-monorepo/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ryushin01/avocado-monorepo/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ryushin01/avocado-monorepo/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ryushin01/avocado-monorepo/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/ryushin01/avocado-monorepo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ryushin01/avocado-monorepo/releases/tag/v0.1.0

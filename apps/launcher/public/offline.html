@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   키오스크 태블릿의 인터넷이 끊긴 채 페이지를 새로 열 때(자동 복귀, 기기 재시작 등) 서비스 워커(sw.js)가 대신 보여 주는 화면.
-  네트워크 없이 떠야 하므로 CSS·아이콘·스크립트를 모두 이 파일 안에 둔다. 색은 공통 테마(packages/ui)의 값과 같다.
+  네트워크 없이 떠야 하므로 CSS·아이콘·스크립트를 모두 이 파일 안에 둔다. 색은 키오스크 테마(src/_app/styles/globals.css의 .kiosk-theme)의 값과 같다.
   다시 연결되면 처음 화면으로 돌아간다.
 -->
 <html lang="ko">
@@ -11,14 +11,14 @@
     <title>인터넷 연결이 끊겼습니다 · 보드게임 카페 키오스크</title>
     <style>
       :root {
-        --background: oklch(1 0 0);
-        --foreground: oklch(0.145 0 0);
-        --muted: oklch(0.97 0 0);
-        --muted-foreground: oklch(0.556 0 0);
-        --primary: oklch(0.205 0 0);
-        --primary-foreground: oklch(0.985 0 0);
-        --border: oklch(0.922 0 0);
-        --ring: oklch(0.708 0 0);
+        --background: #161616;
+        --foreground: #ffffff;
+        --muted: #232323;
+        --muted-foreground: #919191;
+        --primary: #eaeaea;
+        --primary-foreground: #161616;
+        --border: #6b6b6c;
+        --ring: #eaeaea;
       }
       * {
         box-sizing: border-box;
@@ -31,8 +31,7 @@
       body {
         display: flex;
         flex-direction: column;
-        /* 키오스크 화면의 bg-muted/40 */
-        background: color-mix(in oklch, var(--muted) 40%, var(--background));
+        background: var(--background);
         color: var(--foreground);
         font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -55,7 +54,7 @@
         align-items: center;
         gap: 1.5rem;
         border: 1px solid var(--border);
-        border-radius: 0.75rem;
+        border-radius: 10px;
         background: var(--background);
         padding: 3rem 1.5rem;
         text-align: center;
@@ -75,9 +74,9 @@
       }
       h1 {
         margin: 0;
-        font-size: 1.125rem;
-        font-weight: 500;
-        letter-spacing: -0.01em;
+        font-size: 1.75rem;
+        font-weight: 400;
+        letter-spacing: -0.02em;
       }
       p {
         margin: 0.5rem 0 0;
@@ -92,13 +91,13 @@
         justify-content: center;
         gap: 0.5rem;
         border: 0;
-        border-radius: 0.5rem;
+        border-radius: 5px;
         background: var(--primary);
-        padding: 0 1.5rem;
+        padding: 0 1.75rem;
         color: var(--primary-foreground);
         font: inherit;
         font-size: 1rem;
-        font-weight: 500;
+        font-weight: 400;
         cursor: pointer;
       }
       button:focus-visible {

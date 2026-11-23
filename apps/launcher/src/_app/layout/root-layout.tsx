@@ -1,5 +1,6 @@
 import { SkipLink } from "@avocado/ui/components/skip-link";
 import type { Metadata, Viewport } from "next";
+import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 
 import { OfflineNotice } from "../pwa/offline-notice";
@@ -21,8 +22,9 @@ export const viewport: Viewport = {
 
 export function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${GeistSans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-muted/40">
+    // 키오스크는 어두운 편집 디자인 하나만 쓴다(.dark 값을 styles/globals.css의 .kiosk-theme이 키오스크 색으로 덮음).
+    <html lang="ko" className={`${GeistSans.variable} ${GeistMono.variable} dark kiosk-theme h-full antialiased`}>
+      <body className="flex min-h-full flex-col bg-background text-foreground">
         <SkipLink />
         <OfflineNotice />
         {children}

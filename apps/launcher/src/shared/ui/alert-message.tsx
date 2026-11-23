@@ -9,7 +9,7 @@ export function AlertMessage({ message, className }: { message?: string; classNa
     <p
       role="alert"
       className={cn(
-        message ? "rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-destructive" : "sr-only",
+        message ? "rounded-[10px] border border-destructive/60 bg-destructive/10 p-4 text-destructive" : "sr-only",
         className,
       )}
     >

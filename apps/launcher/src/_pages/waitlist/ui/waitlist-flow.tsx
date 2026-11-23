@@ -1,15 +1,15 @@
 "use client";
 
-import { Loader2, Ticket as TicketIcon } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState, useTransition } from "react";
 
 import type { KioskWaitlistEntry } from "@avocado/domain/kiosk";
 import { Button } from "@avocado/ui/components/button";
-import { Card, CardContent } from "@avocado/ui/components/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@avocado/ui/components/field";
 import { Input } from "@avocado/ui/components/input";
 import { errorIdOf, fieldA11y } from "@avocado/ui/lib/field-a11y";
+import { cn } from "@avocado/ui/lib/utils";
 
 import {
   joinWaitlistAction,
@@ -20,6 +20,7 @@ import {
 import { AlertMessage } from "@/shared/ui/alert-message";
 import { IdleReturn } from "@/shared/ui/idle-return";
 import { Keypad } from "@/shared/ui/keypad";
+import { kioskOutlineButton, kioskSolidButton, MonoLabel } from "@/shared/ui/kiosk-header";
 import { PartySizeStepper } from "@/shared/ui/party-size-stepper";
 
 type Mode = "choose" | "join" | "check";
@@ -35,19 +36,67 @@ const RESULT_SECONDS = 30;
 /** 대기 번호와 앞에 남은 팀 수 (등록 직후와 '내 순서 확인' 공통) */
 function WaitTicket({ entry }: { entry: KioskWaitlistEntry }) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-2 py-6 text-center">
-        <p className="text-muted-foreground">{entry.maskedName}님 · {entry.partySize}명</p>
-        <p className="text-6xl font-bold tabular-nums">{entry.number}번</p>
-        <p className="text-xl">
-          {entry.status === "called"
-            ? "지금 호출됐습니다. 카운터로 와주세요."
-            : entry.ahead === 0
-              ? "다음 순서입니다."
-              : `앞에 ${entry.ahead}팀이 기다리고 있습니다.`}
-        </p>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-4 rounded-[10px] border border-input p-8">
+      <p className="flex items-baseline justify-between gap-3">
+        <MonoLabel>
+          <span aria-hidden>Ticket ►</span>
+        </MonoLabel>
+        <span className="text-muted-foreground">
+          {entry.maskedName}님 · {entry.partySize}명
+        </span>
+      </p>
+      <p className="text-[clamp(4.5rem,9vw,7rem)] leading-none tracking-[-0.04em] tabular-nums">{entry.number}번</p>
+      <p className="font-serif text-2xl">
+        {entry.status === "called"
+          ? "지금 호출됐습니다. 카운터로 와주세요."
+          : entry.ahead === 0
+            ? "다음 순서입니다."
+            : `앞에 ${entry.ahead}팀이 기다리고 있습니다.`}
+      </p>
+    </div>
+  );
+}
+
+/** 밑줄만 있는 큰 입력칸(레퍼런스의 가는 선). 초점을 받으면 선이 밝아지고 바깥 테두리로도 표시한다. */
+const underlineInput =
+  "h-14 rounded-none border-0 border-b border-input bg-transparent px-0 text-xl focus-visible:border-foreground dark:bg-transparent";
+
+/**
+ * 고르기 화면의 큰 선택 버튼: 위에 고정폭 번호, 아래 큰 글자와 화살표(레퍼런스의 연락 상자 모양).
+ * solid면 밝게 채운 버튼, 아니면 외곽선 버튼.
+ */
+function ChoiceButton({
+  index,
+  solid,
+  onClick,
+  children,
+}: {
+  index: number;
+  solid?: boolean;
+  onClick: () => void;
+  children: string;
+}) {
+  return (
+    <Button
+      variant={solid ? "default" : "outline"}
+      onClick={onClick}
+      className={cn(
+        solid ? kioskSolidButton : kioskOutlineButton,
+        "group h-36 flex-col items-stretch justify-between rounded-[10px] p-7 text-left whitespace-normal",
+      )}
+    >
+      <span aria-hidden className="font-mono text-xs opacity-70">
+        0{index} ►
+      </span>
+      <span className="flex items-center justify-between gap-4 text-[2rem] tracking-[-0.02em]">
+        {children}
+        <ArrowRight
+          aria-hidden
+          strokeWidth={1}
+          className="size-8 transition-transform duration-300 group-hover:translate-x-1.5"
+        />
+      </span>
+    </Button>
   );
 }
 
@@ -89,10 +138,10 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
     return (
       <div className="flex flex-col gap-4">
         <IdleReturn seconds={RESULT_SECONDS} />
-        <h2 className="text-2xl font-bold">대기 등록을 마쳤습니다</h2>
+        <h2 className="text-3xl tracking-[-0.02em]">대기 등록을 마쳤습니다</h2>
         <WaitTicket entry={state.entry} />
         <p className="text-muted-foreground">순서가 되면 직원이 이름을 불러드립니다. 번호를 기억해주세요.</p>
-        <Button size="lg" className="h-12 self-start px-6 text-base" onClick={reset}>
+        <Button size="lg" className={cn(kioskSolidButton, "h-12 self-start px-7 text-base")} onClick={reset}>
           처음으로
         </Button>
       </div>
@@ -106,7 +155,7 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
     const invalid = (name: string) => Boolean(errors[name]?.length);
     return (
       <div className="flex flex-col gap-6">
-        <h2 className="text-2xl font-bold">대기 등록</h2>
+        <h2 className="text-3xl tracking-[-0.02em]">대기 등록</h2>
         {/* 다시 그리는 폼 밖에 두어, 처음부터 있던 알림 영역의 내용만 바뀌게 한다. */}
         <AlertMessage message={state.status === "error" ? state.message : undefined} />
         <form
@@ -118,7 +167,7 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
         >
           <FieldGroup>
             <Field>
-              <FieldLabel id={PARTY_LABEL_ID} className="text-base">인원</FieldLabel>
+              <FieldLabel id={PARTY_LABEL_ID} className="font-mono text-xs font-normal text-muted-foreground">인원</FieldLabel>
               <PartySizeStepper
                 name="partySize"
                 labelledBy={PARTY_LABEL_ID}
@@ -126,19 +175,19 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
               />
             </Field>
             <Field data-invalid={invalid("name")}>
-              <FieldLabel htmlFor={fieldId("name")} className="text-base">이름</FieldLabel>
+              <FieldLabel htmlFor={fieldId("name")} className="font-mono text-xs font-normal text-muted-foreground">이름</FieldLabel>
               <Input
                 id={fieldId("name")}
                 name="name"
                 autoComplete="off"
                 defaultValue={values?.name}
-                className="h-12 text-lg"
+                className={underlineInput}
                 {...fieldA11y(fieldId("name"), invalid("name"))}
               />
               <FieldError id={errorIdOf(fieldId("name"))} errors={err("name")} />
             </Field>
             <Field data-invalid={invalid("phone")}>
-              <FieldLabel htmlFor={fieldId("phone")} className="text-base">휴대전화</FieldLabel>
+              <FieldLabel htmlFor={fieldId("phone")} className="font-mono text-xs font-normal text-muted-foreground">휴대전화</FieldLabel>
               <Input
                 id={fieldId("phone")}
                 name="phone"
@@ -147,7 +196,7 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
                 autoComplete="off"
                 placeholder="010-1234-5678"
                 defaultValue={values?.phone}
-                className="h-12 text-lg"
+                className={underlineInput}
                 {...fieldA11y(fieldId("phone"), invalid("phone"))}
               />
               <FieldError id={errorIdOf(fieldId("phone"))} errors={err("phone")} />
@@ -162,13 +211,19 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
               type="button"
               variant="outline"
               size="lg"
-              className="h-12 px-6 text-base"
+              className={cn(kioskOutlineButton, "h-12 px-7 text-base")}
               onClick={reset}
               disabled={joining}
             >
               뒤로
             </Button>
-            <Button id={SUBMIT_ID} type="submit" size="lg" className="h-12 flex-1 text-base" disabled={joining}>
+            <Button
+              id={SUBMIT_ID}
+              type="submit"
+              size="lg"
+              className={cn(kioskSolidButton, "h-12 flex-1 text-base")}
+              disabled={joining}
+            >
               {joining && <Loader2 className="animate-spin" />}
               대기 등록
             </Button>
@@ -181,19 +236,24 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
   if (mode === "check") {
     return (
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold">내 순서 확인</h2>
+        <h2 className="text-3xl tracking-[-0.02em]">내 순서 확인</h2>
         {found !== null && <IdleReturn seconds={RESULT_SECONDS} />}
         <AlertMessage message={message} />
         {found === null ? (
           <Keypad label="등록하신 휴대전화 번호 뒷자리 4자리를 눌러주세요" disabled={checking} onComplete={check} />
         ) : found.length === 0 ? (
-          <p className="rounded-xl border bg-background p-8 text-center text-lg text-muted-foreground">
+          <p className="rounded-[10px] border border-input p-8 text-center text-lg text-muted-foreground">
             대기 중인 번호를 찾을 수 없습니다. 이미 입장했거나 번호가 다를 수 있습니다.
           </p>
         ) : (
           found.map((entry) => <WaitTicket key={entry.id} entry={entry} />)
         )}
-        <Button variant="outline" size="lg" className="h-12 self-start px-6 text-base" onClick={reset}>
+        <Button
+          variant="outline"
+          size="lg"
+          className={cn(kioskOutlineButton, "h-12 self-start px-7 text-base")}
+          onClick={reset}
+        >
           처음으로
         </Button>
       </div>
@@ -201,14 +261,13 @@ function WaitlistSession({ onRestart }: { onRestart: () => void }) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Button className="h-28 flex-col gap-2 text-xl" onClick={() => setMode("join")}>
-        <TicketIcon className="size-8" />
+    <div className="flex flex-col gap-4">
+      <ChoiceButton index={1} solid onClick={() => setMode("join")}>
         대기 등록하기
-      </Button>
-      <Button variant="outline" className="h-28 flex-col gap-2 text-xl" onClick={() => setMode("check")}>
+      </ChoiceButton>
+      <ChoiceButton index={2} onClick={() => setMode("check")}>
         내 순서 확인
-      </Button>
+      </ChoiceButton>
     </div>
   );
 }

@@ -42,7 +42,7 @@
 
 | 키오스크 시작 | 키오스크 게임 둘러보기 |
 |---|---|
-| ![키오스크 시작 화면의 큰 메뉴](docs/images/kiosk-home.jpg) | ![인원과 유형으로 거르는 키오스크 게임 목록](docs/images/kiosk-games.jpg) |
+| ![어두운 편집 디자인의 키오스크 시작 화면: 큰 제목과 번호 메뉴](docs/images/kiosk-home.jpg) | ![인원과 유형 외곽선 버튼으로 거르는 키오스크 게임 목록](docs/images/kiosk-games.jpg) |
 
 | 홍보 사이트 홈 | 브랜드 소개 |
 |---|---|

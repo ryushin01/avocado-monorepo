@@ -4,6 +4,9 @@ import { Minus, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@avocado/ui/components/button";
+import { cn } from "@avocado/ui/lib/utils";
+
+import { kioskOutlineButton } from "./kiosk-header";
 
 /**
  * 인원 고르기: 큰 −/+ 버튼. 값은 숨은 input(name)으로 폼에 실린다.
@@ -28,14 +31,14 @@ export function PartySizeStepper({
       aria-label={labelledBy ? undefined : "인원"}
     >
       <input type="hidden" name={name} value={value} />
-      <Button type="button" variant="outline" className="size-14" onClick={() => set(value - 1)} aria-label="인원 줄이기">
-        <Minus className="size-6" />
+      <Button type="button" variant="outline" className={cn(kioskOutlineButton, "size-14")} onClick={() => set(value - 1)} aria-label="인원 줄이기">
+        <Minus className="size-6" strokeWidth={1.5} />
       </Button>
-      <span className="w-20 text-center text-3xl font-bold tabular-nums" aria-live="polite">
+      <span className="w-24 text-center text-4xl tabular-nums" aria-live="polite">
         {value}명
       </span>
-      <Button type="button" variant="outline" className="size-14" onClick={() => set(value + 1)} aria-label="인원 늘리기">
-        <Plus className="size-6" />
+      <Button type="button" variant="outline" className={cn(kioskOutlineButton, "size-14")} onClick={() => set(value + 1)} aria-label="인원 늘리기">
+        <Plus className="size-6" strokeWidth={1.5} />
       </Button>
     </div>
   );

@@ -5,7 +5,7 @@ export function DemoNotice() {
   if (!isDemoMode()) return null;
   const backofficeUrl = demoBackofficeUrl();
   return (
-    <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm text-amber-950">
+    <div className="border-b border-amber-300/30 bg-amber-300/10 px-4 py-2 text-center text-sm text-amber-100">
       <p>
         <strong className="font-semibold">공개 데모</strong> · 매장과 손님은 가상 데이터이고, 30분마다 처음 상태로
         돌아갑니다.
@@ -17,7 +17,7 @@ export function DemoNotice() {
               href={backofficeUrl}
               target="_blank"
               rel="noopener"
-              className="inline-block py-0.5 font-medium underline underline-offset-2 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#005fcc]"
+              className="inline-block py-0.5 font-medium underline underline-offset-2 outline-none focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/60"
             >
               백오피스 데모 (새 탭)
             </a>

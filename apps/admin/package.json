@@ -1,6 +1,6 @@
 {
   "name": "@avocado/admin",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "scripts": {
     "dev": "copy-catalog-assets public && next dev --port 3000",
@@ -45,6 +45,7 @@
     "recharts": "^3.11.0",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
+    "superagent": "^10.4.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -59,6 +60,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/superagent": "^8.1.11",
     "@vitejs/plugin-react": "^6.3.0",
     "@vitest/coverage-v8": "5.1.1",
     "babel-plugin-react-compiler": "1.0.0",

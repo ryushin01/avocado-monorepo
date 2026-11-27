@@ -4,6 +4,8 @@ import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 
 import type { PGlite, Transaction } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pg-proxy";
+import superagent from "superagent";
+import { z } from "zod";
 
 import type { Database } from "./index";
 import * as schema from "./schema";
@@ -78,16 +80,45 @@ function createLine(): Line {
  */
 const sharedLine = createLine();
 
+/** 받는 쪽의 응답. 쿼리 결과(rows)나 PostgreSQL 오류의 code·constraint 등(error) */
+const ProxyResponseSchema = z.object({
+  rows: z.array(z.unknown()).optional(),
+  error: z
+    .object({
+      message: z.string().optional(),
+      code: z.string().optional(),
+      detail: z.string().optional(),
+      constraint: z.string().optional(),
+      table: z.string().optional(),
+      column: z.string().optional(),
+    })
+    .optional(),
+});
+
+/** 버퍼로 받은 본문을 JSON으로 읽는다. 비었거나 JSON이 아니면 undefined */
+function readJson(body: unknown): unknown {
+  if (!Buffer.isBuffer(body)) return undefined;
+  try {
+    return JSON.parse(body.toString("utf8"));
+  } catch {
+    return undefined;
+  }
+}
+
 async function send(url: string, query: ProxyQuery): Promise<unknown[]> {
   const key = proxyKey();
   if (!key) throw new Error("NEXTAUTH_SECRET이 없어 데모 DB에 연결할 수 없습니다.");
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-demo-db-key": key },
-    body: toJson(query),
-    cache: "no-store",
-  });
-  const body = (await response.json().catch(() => ({}))) as { rows?: unknown[]; error?: ProxyError };
+  // SuperAgent(Node http)는 Next.js의 fetch 캐시를 거치지 않으므로 cache: "no-store"와 같게 매번 새로 보낸다.
+  // .ok(() => true): 오류 응답(400 등)도 예외 대신 받아, 본문의 PostgreSQL 오류를 아래에서 그대로 던진다.
+  const response = await superagent
+    .post(url)
+    .set("content-type", "application/json")
+    .set("x-demo-db-key", key)
+    .ok(() => true)
+    .responseType("arraybuffer")
+    .send(toJson(query));
+  const parsed = ProxyResponseSchema.safeParse(readJson(response.body));
+  const body = parsed.success ? parsed.data : {};
   if (response.ok && body.rows) return body.rows;
   // PostgreSQL 오류의 code·constraint 등을 그대로 붙여, 직접 연결했을 때와 같은 모양으로 던진다.
   const { message = `데모 DB 요청이 실패했습니다 (${response.status}).`, ...details } = body.error ?? {};

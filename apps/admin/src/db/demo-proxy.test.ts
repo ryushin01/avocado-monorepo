@@ -1,4 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+// @vitest-environment node
+import { createServer } from "node:http";
+
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -13,24 +16,52 @@ import * as schema from "./schema";
 import { pgliteOf } from "./server";
 import { createTestDb } from "./testing";
 
+/* /api/demo/db를 맡은 함수 대신 응답하는 로컬 HTTP 서버. 보내는 쪽은 SuperAgent(Node http)로 실제로 SQL을 보낸다. */
+let owner: Database;
+const sent: string[] = [];
+const server = createServer((req, res) => {
+  let body = "";
+  req.setEncoding("utf8");
+  req.on("data", (chunk: string) => (body += chunk));
+  req.on("end", async () => {
+    sent.push(body);
+    // 받는 쪽이 보는 머리글만 옮긴다.
+    const headers = new Headers();
+    for (const name of ["content-type", "x-demo-db-key"]) {
+      const value = req.headers[name];
+      if (typeof value === "string") headers.set(name, value);
+    }
+    try {
+      const response = await handleDemoDbRequest(
+        new Request(`http://demo.test${req.url ?? "/"}`, { method: req.method, headers, body }),
+        async () => pgliteOf(owner)!,
+      );
+      res.writeHead(response.status, Object.fromEntries(response.headers));
+      res.end(await response.text());
+    } catch (error) {
+      res.writeHead(500).end(String(error));
+    }
+  });
+});
+await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+const address = server.address();
+if (address === null || typeof address === "string") throw new Error("테스트 서버 주소가 없습니다");
+const baseUrl = `http://127.0.0.1:${address.port}`;
+afterAll(() => new Promise<void>((resolve) => server.close(() => resolve())));
+
 const tables = Object.values(schema).flatMap((value) => (isTable(value) ? [value as PgTable] : []));
 
 describe("공개 데모 DB 중계", () => {
-  let owner: Database;
   let remote: Database;
 
   beforeEach(async () => {
     vi.stubEnv("NEXTAUTH_SECRET", "test-secret");
     owner = await createTestDb();
-    // fetch를 /api/demo/db 처리기로 바로 넘긴다(배포에서는 같은 일을 HTTP로 한다).
-    vi.stubGlobal("fetch", (url: string, init: RequestInit) =>
-      handleDemoDbRequest(new Request(url, init), async () => pgliteOf(owner)!),
-    );
-    remote = openDemoProxyDb("http://demo.test");
+    sent.length = 0;
+    remote = openDemoProxyDb(baseUrl);
   });
   afterEach(() => {
     vi.unstubAllEnvs();
-    vi.unstubAllGlobals();
   });
 
   for (const table of tables) {
@@ -63,12 +94,6 @@ describe("공개 데모 DB 중계", () => {
 
   it("한 트랜잭션에서 Promise.all로 동시에 보낸 쿼리를 모두 처리하고, 결과로 이어서 쓴다", async () => {
     // 테이블 고르기처럼: 트랜잭션 안에서 두 쿼리를 동시에 읽고, 그 결과로 쓴다.
-    const sent: string[] = [];
-    const realFetch = globalThis.fetch;
-    vi.stubGlobal("fetch", (url: string, init: RequestInit) => {
-      sent.push((JSON.parse(String(init.body)) as { sql: string }).sql.split(" ")[0]);
-      return realFetch(url, init);
-    });
     const name = await remote.transaction(async (tx) => {
       const [cafeRows, gameRows] = await Promise.all([
         tx.select().from(schema.cafes).where(eq(schema.cafes.id, "c_gangnam")).for("update"),
@@ -80,7 +105,13 @@ describe("공개 데모 DB 중계", () => {
     const [cafe] = await owner.select().from(schema.cafes).where(eq(schema.cafes.id, "c_gangnam"));
     expect(cafe.name).toBe(name);
     // begin → 두 select(부른 순서대로) → update → commit
-    expect(sent).toEqual(["begin", "select", "select", "update", "commit"]);
+    expect(sent.map((body) => (JSON.parse(body) as { sql: string }).sql.split(" ")[0])).toEqual([
+      "begin",
+      "select",
+      "select",
+      "update",
+      "commit",
+    ]);
   });
 
   it("한 트랜잭션에서 동시에 보낸 쿼리 하나가 실패하면 함께 보낸 쓰기까지 모두 되돌린다", async () => {

@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-11-27
+
+### 바뀜
+
+- 앱 서버 코드의 HTTP 호출을 Fetch API에서 SuperAgent(`superagent` 10)로 바꿨다. 동작·오류 처리·오프라인 대체는 그대로다.
+  - 키오스크의 백오피스 키오스크 API 호출(`apps/launcher/src/shared/api/backoffice.ts`): Bearer 토큰, 데모 15초·그 밖 5초 시간 제한(`.timeout()`), 응답 zod 검증, 상태별 결과(not-found·rejected·unreachable)와 카탈로그 스냅숏 대체를 그대로 둔다.
+  - 홍보 사이트의 예약 API 호출(`apps/web/src/shared/api/booking.ts`): 토큰·방문자 키(HMAC) 머리글, 5초 시간 제한, zod 검증, 전화 예약 안내(off)를 그대로 둔다.
+  - 백오피스 공개 데모의 DB 중계(`apps/admin/src/db/demo-proxy.ts`): 보내는 쪽이 SuperAgent로 SQL을 보내고, 받은 응답을 zod로 확인한다(`as` 단언 제거).
+  - 세 곳 모두 Node 런타임 서버 코드다. SuperAgent는 Next.js의 fetch 캐시를 거치지 않으므로 `cache: "no-store"`와 같게 매번 새로 읽고, 요청 시점 확인(`connection()`)은 그대로 부른다. 4xx·5xx는 `.ok(() => true)`로 받아 상태별로 나누고, 본문은 버퍼로 받아 JSON이 아니어도 예외 대신 검증에서 걸러 낸다.
+  - Next.js fetch에만 있던 "프리렌더링이 끝나 끊긴 요청" 예외 처리는 SuperAgent에서 생기지 않아 지웠다(프리렌더링 중에는 `connection()`이 호출까지 가지 않게 한다).
+  - 단위 테스트는 전역 `fetch`를 바꾸는 대신 로컬 HTTP 서버로 실제 요청을 주고받아 머리글·본문·시간 초과·연결 거부를 검사한다.
+
 ## [1.2.1] - 2026-11-23
 
 ### 고침

@@ -36,6 +36,10 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm dev:web` | 홍보 사이트만 |
 | `pnpm build` | 모든 앱 프로덕션 빌드 |
 | `pnpm preview` | 세 앱을 빌드한 뒤 프로덕션 모드로 띄움. `.env` 없이 앱별 `preview` 스크립트가 로컬 전용 값(메모리 PGlite, `SEED_DEMO=1`, 개발용 키오스크 토큰)을 넣음. 운영·데모 배포에는 쓰지 않음 |
+| `pnpm check` | CI와 같은 검사를 차례로(`static` 감사·타입·린트·커버리지 → `build` 빌드·번들 예산 → `lhci` → `e2e` → `stories` → `visual`). `pnpm check <단계> [인자]`로 한 단계만(예: `pnpm check e2e --shard=1/2`). 단계 설명은 `scripts/check.mjs` |
+| `pnpm check visual` | 시각 회귀(세 앱 주요 화면 + 모든 스토리). 기준 이미지가 리눅스 결과물이라 macOS에서는 Playwright 공식 Docker 이미지 안(tmpfs, 저장소는 붙이기만)에서 설치·빌드해 돕니다. 기준 이미지 새로 만들기: `pnpm check visual --update-snapshots=all` |
+| `node scripts/coverage-report.mjs [--update]` | 커버리지 표와 기준 비교(`pnpm test:coverage` 뒤). `--update`는 커버리지가 오른 뒤 기준선을 올릴 때만 |
+| `pnpm load:api http://localhost:<포트> [초] [동시]` | 로컬 백오피스 API 부하 측정(키오스크·예약 읽기 API의 초당 요청·p50/p95/p99). 운영·데모 주소에는 쓰지 않음 |
 | `pnpm typecheck` | 모든 앱·패키지 타입 검사 |
 | `pnpm lint` | ESLint, Steiger(FSD 폴더 구조·공개 API) |
 | `pnpm test` | 단위·컴포넌트 테스트 (Vitest) |
@@ -46,7 +50,7 @@ pnpm 12는 공개된 지 하루가 안 된 패키지 버전을 설치하지 않�
 | `pnpm import:avocado` | avocado 데이터로 카탈로그 다시 생성 (`packages/domain/data/catalog.json`) |
 | `pnpm import:avocado-media` | avocado 사진·10위권 배지를 홍보 사이트용으로 다시 생성 (`apps/web/public/images`). 파비콘·앱 아이콘(아보카도 로고)은 건드리지 않음 |
 
-`main` 푸시와 PR마다 GitHub Actions가 검사를 모두 실행합니다(`.github/workflows/ci.yml`). PR 리뷰는 CodeRabbit이 합니다(`.coderabbit.yaml`, GitHub에 앱 설치 필요).
+`main` 푸시와 PR마다 GitHub Actions가 `pnpm check`의 단계를 작업으로 나눠 병렬로 실행하고, 마지막 `check` 작업이 결과를 모읍니다(`.github/workflows/ci.yml`). 실패한 작업만 리포트·차이 이미지를 7일간 올리고, 커버리지 표는 작업 요약에 씁니다. PR 리뷰는 CodeRabbit이 합니다(`.coderabbit.yaml`, GitHub에 앱 설치 필요).
 
 avocado 데이터가 바뀌면 `import:avocado-images` → `import:avocado` 순서로 실행합니다. 둘 다 기본으로 이 저장소 옆의 `../avocado-master`를 읽고, 다른 위치라면 경로를 인자로 넘기세요.
 

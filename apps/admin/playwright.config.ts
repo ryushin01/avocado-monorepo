@@ -26,7 +26,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
-  expect: { timeout: 10_000 },
+  expect: {
+    timeout: 10_000,
+    // 시각 회귀: 글꼴 경계의 안티에일리어싱 정도만 허용한다.
+    toHaveScreenshot: { maxDiffPixelRatio: 0.002 },
+  },
+  // 기준 이미지는 리눅스(Playwright 공식 Docker 이미지) 결과물 하나만 둔다(e2e/visual.spec.ts).
+  snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{ext}",
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "on-first-retry",
@@ -36,10 +42,22 @@ export default defineConfig({
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
       name: "chromium",
+      testIgnore: /visual(-stories)?\.spec\.ts/,
       // 기본은 관리자로 로그인한 상태. 스태프는 loginAs(context, USERS.hongdaeStaff)
       use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/admin.json" },
       dependencies: ["setup"],
     },
+    // 시각 회귀(pnpm check visual). 다른 E2E가 바꾼 데이터가 섞이지 않게 새 서버로 따로 돌고, 리눅스 기준 이미지와 비교한다.
+    ...(process.env.VISUAL
+      ? [
+          {
+            name: "visual",
+            testMatch: /visual(-stories)?\.spec\.ts/,
+            use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/admin.json" },
+            dependencies: ["setup"],
+          },
+        ]
+      : []),
     // README 화면 촬영(pnpm screenshots). 검사가 아니라 화면 파일을 덮어쓰므로 SCREENSHOTS=1일 때만 넣습니다.
     ...(process.env.SCREENSHOTS
       ? [

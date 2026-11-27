@@ -30,13 +30,16 @@
 
 ## 4. 검사·테스트 명령
 
-- 완료 기준: 루트에서 `pnpm typecheck && pnpm lint && pnpm test && pnpm e2e && pnpm build`가 모두 통과해야 합니다.
-- CI(`.github/workflows/ci.yml`, 작업 하나) 순서: `pnpm install --frozen-lockfile` → `pnpm audit --prod --audit-level high` → `pnpm typecheck` → `pnpm lint` → `pnpm test:coverage` → `pnpm build` → `pnpm --filter @avocado/web size` → `pnpm --filter @avocado/web lhci` → Playwright 설치 → `pnpm e2e` → `pnpm build-storybook` → `pnpm test:stories`(모든 스토리 axe)
+- 완료 기준: 루트에서 `pnpm check`(CI와 같은 검사, `scripts/check.mjs`)가 통과해야 합니다. 한 단계만은 `pnpm check static|build|lhci|e2e|stories|visual`.
+- CI(`.github/workflows/ci.yml`)는 같은 단계를 작업으로 나눠 부릅니다: `changes`(문서만 바뀌면 건너뜀) → `static`(감사·타입·린트·커버리지, PR은 `--affected`) · `build`(빌드·번들 예산) → `e2e`(2개로 샤딩) · `lighthouse` · `visual`(Playwright 공식 이미지 안) · `stories` → `check`(모두 모아 판정, main 보호의 필수 검사 이름). 캐시: pnpm, `.turbo/cache`(빌드 결과를 E2E·Lighthouse·시각 회귀가 다시 씀), `.next/cache`, Playwright 브라우저. 원격 캐시는 쓰지 않습니다.
+- 커버리지: 전체는 `coverage-baseline.json` 아래로, 로직 계층(서버·저장소·model·lib·api·설정, 기준은 `scripts/coverage-report.mjs`)은 80% 아래로 내려가면 실패합니다. 표는 CI 작업 요약에 나옵니다.
+- 시각 회귀: `e2e/visual.spec.ts`(세 앱 주요 화면, 데스크톱·모바일·키오스크)와 `visual-stories.spec.ts`(모든 스토리). 기준 이미지 `e2e/__screenshots__`는 리눅스 결과물이라 macOS에서는 `pnpm check visual`이 Docker(tmpfs) 안에서 돕니다. 화면을 바꿨으면 `pnpm check visual --update-snapshots=all`로 다시 만들거나 CI `visual` 실패 결과물의 `__screenshots__`를 받아 커밋합니다. CI 이미지 버전(`mcr.microsoft.com/playwright:v…`)은 `@playwright/test`와 같게 둡니다.
 - 타입 검사는 TypeScript 7(`tsc7`), 도구는 TypeScript 6입니다. 각 패키지의 `typescript`는 `~6.0.3`으로 고정하고 7로 올리지 않습니다(lint가 실패). 편집기와 결과가 다르면 `pnpm typecheck`를 기준으로 삼습니다.
 - E2E(`apps/admin/e2e/`)는 세 앱을 프로덕션 빌드로 띄워 병렬로 돕니다. 데이터를 바꾸는 테스트는 서로 다른 매장을 씁니다(배정은 `docs/conventions.md`).
 - 오프라인 검사: `offline.spec.ts`가 localhost 밖 브라우저 요청을 모두 끊은 채 세 앱의 모든 라우트·주요 상태가 내용과 함께 뜨고 axe 위반 0건인지, `kiosk-offline.spec.ts`가 키오스크 오프라인 동작을, `deployed-offline.spec.ts`가 데모 설정 서버에서 공유 DB·백오피스 API·이미지 최적화가 끊긴 배포본을 봅니다. 3100번대 포트를 다른 프로젝트가 쓰면 `E2E_PORT_BASE=4700 pnpm e2e`. 외부 의존(데모 Neon DB, 키오스크 API, BoardGameGeek 표지, Google Fonts)을 새로 늘리면 대체 방식을 함께 둡니다(`docs/demo.md`의 오프라인 동작).
 - CI·배포·릴리스 상태는 명령 결과(`gh pr checks`, `gh run list`, Vercel 배포 READY, 주소 200)로 확인한 뒤에만 말합니다.
-- 품질 예산(홍보 사이트): JS 450 kB·CSS 70 kB(gzip, `apps/web/.size-limit.json`), Lighthouse 데스크톱 성능 90·접근성 100·권장 95·SEO 90(`apps/web/lighthouserc.json`)
+- 품질 예산: 홍보 사이트 JS 450 kB·CSS 70 kB(gzip, `apps/web/.size-limit.json`), Lighthouse 데스크톱 성능 90·접근성 100·권장 95·SEO 90(`apps/web/lighthouserc.json`). 백오피스 JS 716 kB·CSS 22 kB, 키오스크 JS 352 kB·CSS 21 kB(`apps/{admin,launcher}/.size-limit.json`, 1.2.5 측정값). 예산을 올리지 말고 줄일 곳을 먼저 찾습니다.
+- 백엔드 API 부하는 로컬 서버에서만 잽니다: `pnpm load:api http://localhost:<포트>`(운영·데모 주소 금지).
 - 테스트 원칙(Testing Library): 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 단위는 Vitest(백오피스 컴포넌트는 Vitest + Testing Library), 화면 흐름은 Playwright E2E(프로덕션 빌드), 접근성은 axe(`@axe-core/playwright`, Storybook 스토리 `test:stories`)로 검사합니다. 파일 이름은 `*.test.ts`(백오피스 컴포넌트는 `*.test.tsx`)이고 Jest는 쓰지 않습니다. 버그를 고치면 고치기 전에 실패하는 테스트를 함께 넣습니다.
 
 ## 5. 코드 스타일

@@ -86,6 +86,7 @@ export const posthogOptions = {
   persistence: "memory",
   person_profiles: "never",
   autocapture: false,
+  // slim 빌드는 첫 화면의 페이지 보기만 보내고, 화면 안 주소 이동은 shared/lib/analytics/pageviews.tsx가 보낸다.
   capture_pageview: "history_change",
   capture_pageleave: false,
   disable_session_recording: true,

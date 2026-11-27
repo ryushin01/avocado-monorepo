@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-11-27
+
+### 추가
+
+- `pnpm check`(`scripts/check.mjs`): CI와 같은 검사를 한 명령으로 돌린다. 단계 `static`(보안 감사·타입·린트·커버리지) → `build`(빌드·세 앱 번들 예산) → `lhci` → `e2e` → `stories` → `visual`, 한 단계만 `pnpm check <단계> [인자]`. CI도 이 단계들을 부른다.
+- 커버리지 기준(`scripts/coverage-report.mjs`, `coverage-baseline.json`): 로직 계층(백오피스 서버·저장소, model·lib·api·설정, 공통 패키지. 화면·훅·서버 액션·얇은 data 함수는 E2E가 봄)은 80%, 패키지 전체는 지금 값 아래로 내려가면 실패한다. 표를 CI 작업 요약(`$GITHUB_STEP_SUMMARY`)에 쓴다. 모자란 곳에 테스트를 더했다: 키오스크 API 라우트(인증·대기·예약 확인·도착, 실제 메모리 DB), 홍보 사이트 분석 로더, 예약·키오스크 API 계약 스키마.
+- 시각 회귀(Playwright `toHaveScreenshot`): 세 앱 주요 화면(홍보 사이트·백오피스 데스크톱 1280×800·모바일 390×844, 키오스크 1280×800)과 모든 스토리(`e2e/visual.spec.ts`, `visual-stories.spec.ts`). 기준 이미지는 Playwright 공식 이미지(리눅스) 결과물이고, macOS에서는 `pnpm check visual`이 Docker 안(tmpfs)에서 돈다. 외부 요청을 끊고 움직임을 줄이며, 시각에 따라 바뀌는 이용 현황 글자는 가린다.
+- 백오피스·키오스크 번들 예산(size-limit): 백오피스 JS 716 kB·CSS 22 kB, 키오스크 JS 352 kB·CSS 21 kB(지금 측정값 715.31·21.9, 351.5·20.28 kB).
+- 로컬 백오피스 API 부하 측정 `pnpm load:api`(키오스크·예약 읽기 API, localhost만).
+
+### 바뀜
+
+- CI를 작업으로 나눠 병렬로 돈다: `changes`(문서만 바뀐 PR은 건너뜀) → `static`(PR은 `turbo --affected`)·`build` → `e2e` 2개 샤딩·`lighthouse`·`visual`(Playwright 공식 이미지 안)·`stories` → `check`(결과를 모아 판정, main 보호의 필수 검사 이름 그대로). 캐시는 pnpm, `.turbo/cache`(빌드 결과를 E2E·Lighthouse·시각 회귀가 다시 씀), `.next/cache`, Playwright 브라우저이고 원격 캐시는 쓰지 않는다. 이전 실행 취소(`concurrency`)는 그대로다. 리포트·차이 이미지는 실패할 때만 7일간 올린다.
+- 홍보 사이트 JS를 449.88 → 382.8 kB로 줄였다(예산 450 kB는 그대로). 분석(PostHog)을 쓰는 기능만 든 slim 빌드(`posthog-js/dist/module.slim`)로 받고, slim에 없는 화면 안 주소 이동의 페이지 보기는 `shared/lib/analytics/pageviews.tsx`가 보낸다. 가짜 수집 서버로 확인한 이벤트(첫 화면·화면 안 이동·새로 연 화면의 `$pageview` 3건, `web_vitals`)는 바꾸기 전과 같다.
+
 ## [1.2.4] - 2026-11-27
 
 ### 추가

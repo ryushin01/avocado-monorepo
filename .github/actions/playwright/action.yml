@@ -1,0 +1,20 @@
+# Playwright 브라우저(chromium)를 캐시해 두고, 캐시가 맞으면 내려받지 않고 시스템 라이브러리만 설치한다.
+name: Playwright 브라우저
+description: chromium 캐시와 설치
+runs:
+  using: composite
+  steps:
+    - id: version
+      shell: bash
+      run: echo "version=$(node -p "require('./apps/admin/node_modules/@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+    - id: cache
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm --filter @avocado/admin exec playwright install --with-deps chromium
+    - if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: pnpm --filter @avocado/admin exec playwright install-deps chromium

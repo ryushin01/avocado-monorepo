@@ -61,13 +61,34 @@ export async function scrollToEnd(page: Page) {
 export const totalFrom = async (page: Page, pattern: RegExp) =>
   Number((await page.getByText(pattern).textContent())?.match(/\d+/)?.[0]);
 
+/**
+ * E2E 서버 포트의 시작 번호. 기본 3100이고, 이 장비의 다른 프로젝트가 그 포트를 쓰고 있으면 `E2E_PORT_BASE=4100 pnpm e2e`처럼
+ * 빈 포트로 옮긴다(로컬은 이미 떠 있는 서버를 다시 쓰므로, 남의 서버에 붙지 않게).
+ */
+const portBase = Number.parseInt(process.env.E2E_PORT_BASE ?? "", 10);
+export const E2E_PORT_BASE = Number.isInteger(portBase) && portBase > 0 ? portBase : 3100;
+
+/** 백오피스 테스트 포트 */
+export const ADMIN_PORT = E2E_PORT_BASE;
+
 /** 키오스크 테스트용 런처 포트 (playwright.config.ts가 둔산점으로 띄운다) */
-export const LAUNCHER_PORT = 3101;
+export const LAUNCHER_PORT = E2E_PORT_BASE + 1;
 export const LAUNCHER_URL = `http://localhost:${LAUNCHER_PORT}`;
 
 /** 홈페이지 테스트 포트 */
-export const WEB_PORT = 3102;
+export const WEB_PORT = E2E_PORT_BASE + 2;
 export const WEB_URL = `http://localhost:${WEB_PORT}`;
+
+/**
+ * 배포본의 외부가 끊긴 상황을 흉내 내는 서버(e2e/deployed-offline.spec.ts). 같은 빌드를 데모 모드로 띄우되,
+ * 백오피스 주소와 공유 데모 DB 주소를 아무도 듣지 않는 포트로 줘서 서버 쪽 외부 요청이 모두 실패한다.
+ */
+export const DEPLOYED_ADMIN_PORT = E2E_PORT_BASE + 10;
+export const DEPLOYED_ADMIN_URL = `http://localhost:${DEPLOYED_ADMIN_PORT}`;
+export const DEPLOYED_LAUNCHER_URL = `http://localhost:${E2E_PORT_BASE + 11}`;
+export const DEPLOYED_WEB_URL = `http://localhost:${E2E_PORT_BASE + 12}`;
+/** 아무도 듣지 않는 주소(연결 거부). 끊긴 외부 서비스 대신 준다. */
+export const DEAD_URL = "http://127.0.0.1:9";
 
 /** 한국 날짜 YYYY-MM-DD (offsetDays: 0 오늘, 1 내일) */
 export function kstDate(offsetDays = 0) {

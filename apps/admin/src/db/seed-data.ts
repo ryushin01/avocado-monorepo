@@ -13,6 +13,7 @@ import type { PlaySession } from "@/entities/play";
 import { createSeedReservations, createSeedWaitlist } from "@/server/reservations/seed";
 import type { Reservation } from "@/entities/reservation";
 import type { WaitlistEntry } from "@/entities/waitlist";
+import { createSeedAudit, type SeedAuditLog } from "@/server/audit/seed";
 
 export type SeedData = {
   cafes: New<Cafe>[];
@@ -23,6 +24,8 @@ export type SeedData = {
   reservations: New<Reservation>[];
   waitlist: WaitlistEntry[];
   tables: CafeTable[];
+  /** 변경 이력 화면이 처음부터 비지 않게 넣는 지난 작업 몇 건 */
+  audit: SeedAuditLog[];
 };
 
 /**
@@ -34,14 +37,16 @@ export function createSeedData(init: Partial<SeedData> = {}, now = new Date()): 
   const games = init.games ?? createSeedGames();
   const inventory = init.inventory ?? createSeedInventory(cafes, games);
   const tables = init.tables ?? createSeedTables(cafes);
+  const users = init.users ?? SEED_USERS.map((u) => ({ ...u }));
   return {
     cafes,
     games,
     inventory,
     plays: init.plays ?? createSeedPlays(cafes, games, inventory, now),
-    users: init.users ?? SEED_USERS.map((u) => ({ ...u })),
+    users,
     reservations: init.reservations ?? createSeedReservations(cafes, now, tables),
     waitlist: init.waitlist ?? createSeedWaitlist(cafes, now),
     tables,
+    audit: init.audit ?? createSeedAudit(users, cafes, now),
   };
 }

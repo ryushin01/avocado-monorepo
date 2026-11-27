@@ -1,18 +1,10 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+import { expectNoViolations } from "./checks";
 import { kstDate, uniquePhone, WEB_URL } from "./helpers";
 
 // 온라인 예약·테이블 테스트는 판교점과 3일 뒤부터의 날짜만 쓴다(다른 예약 테스트는 서면점·오늘~내일, 키오스크는 둔산점).
 const CAFE = { id: "c_pangyo", name: "판교점" };
-
-/** `ignoreContrast`: 백오피스 개편 화면은 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다. */
-async function expectNoViolations(page: Page, { ignoreContrast = false } = {}) {
-  const axe = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]);
-  if (ignoreContrast) axe.disableRules(["color-contrast"]);
-  const { violations } = await axe.analyze();
-  expect(violations.map((v) => ({ rule: v.id, targets: v.nodes.map((n) => n.html.slice(0, 160)) }))).toEqual([]);
-}
 
 /** 손님(로그인 안 한 브라우저)이 홈페이지에서 매장·날짜·인원을 골라 빈 시간을 본다. */
 async function openSlots(page: Page, date: string, people: number) {

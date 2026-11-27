@@ -1,6 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
+import { expectNoViolations } from "./checks";
 import { LAUNCHER_URL, waitForMobileList } from "./helpers";
 
 /**
@@ -8,17 +8,6 @@ import { LAUNCHER_URL, waitForMobileList } from "./helpers";
  * axe를 통과해도 KWCAG 준수는 아니므로, 새 화면은 키보드·화면 낭독기로 직접도 확인한다.
  * 홍보 사이트는 Lighthouse(접근성 100점)가 CI에서 따로 검사한다.
  */
-/** `ignoreContrast`: 백오피스 개편 화면은 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다. */
-async function expectNoViolations(page: Page, { ignoreContrast = false } = {}) {
-  const axe = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]);
-  if (ignoreContrast) axe.disableRules(["color-contrast"]);
-  const { violations } = await axe.analyze();
-  // 실패하면 규칙 id와 걸린 요소를 보여 준다.
-  expect(
-    violations.map((v) => ({ rule: v.id, impact: v.impact, targets: v.nodes.map((n) => n.html.slice(0, 160)) })),
-  ).toEqual([]);
-}
-
 test.describe("백오피스 (관리자)", () => {
   const pages: [string, string, RegExp][] = [
     ["대시보드", "/", /^대시보드/],

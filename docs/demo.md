@@ -44,9 +44,13 @@
 | BoardGameGeek 표지 원본 | 홍보 사이트 게임 칸·게임 화면 | 함께 배포한 썸네일(`/images/games/*.webp`)로 바꿉니다. |
 | 백오피스 예약 API | 홍보 사이트 온라인 예약 | 기존대로 매장 전화번호를 안내합니다. |
 | 글꼴(Geist·Instrument Sans·IBM Plex Mono·Comfortaa·고운돋움) | 세 앱 | npm 패키지의 파일을 함께 배포해 외부 요청이 없습니다(빌드 때도). |
+| Vercel 이미지 최적화(`/_next/image`) | 홍보 사이트 사진·게임 표지 | 사이트 사진(큰 사진·유형 배너·매장 사진·메뉴 배너·10위권 표시)은 이미 줄인 webp라 최적화를 거치지 않고 원본 파일을 보냅니다(`unoptimized`). 무료 요금제 변환 한도를 넘어 402가 나도 그대로 보입니다. 게임 표지는 위처럼 썸네일로 바꿉니다. |
 | PostHog·Sentry | 홍보 사이트 분석, 세 앱 오류 수집 | 키(`NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_SENTRY_DSN`)가 없으면 스크립트를 받지 않습니다. 보내기 실패는 화면에 영향이 없습니다. |
 
-로컬에서 `.env` 없이 확인하려면 `pnpm install` 뒤 `pnpm dev`(개발 서버) 또는 `pnpm preview`(세 앱 프로덕션 빌드 뒤 실행, 메모리 DB·개발용 시드·로컬 전용 토큰)를 씁니다. `apps/admin/e2e/offline.spec.ts`는 브라우저의 localhost 밖 요청을 모두 끊고(표지 원본 요청도 실패시킴) 세 화면 축의 주요 화면이 내용과 함께 뜨는지와 axe 위반이 없는지를 CI(`pnpm e2e`)에서 검사합니다.
+로컬에서 `.env` 없이 확인하려면 `pnpm install` 뒤 `pnpm dev`(개발 서버) 또는 `pnpm preview`(세 앱 프로덕션 빌드 뒤 실행, 메모리 DB·개발용 시드·로컬 전용 토큰)를 씁니다. CI(`pnpm e2e`)는 두 가지를 검사합니다.
+
+- `apps/admin/e2e/offline.spec.ts`: 브라우저의 localhost 밖 요청을 모두 끊고(표지 원본 요청도 실패시킴) 세 앱의 모든 라우트와 주요 상태(온라인 예약 찾기·오류·확정, 키오스크 대기 등록·내 순서·예약 도착, 백오피스 실시간 반영·테이블 배정, 모바일 목록, 없는 주소)가 내용과 함께 뜨는지, 이미지·글꼴이 깨지지 않는지, 화면·상태마다 axe 위반이 없는지 봅니다. `kiosk-offline.spec.ts`는 키오스크 태블릿의 인터넷이 끊긴 경우를 봅니다.
+- `apps/admin/e2e/deployed-offline.spec.ts`: 같은 빌드를 공개 데모 설정(`NEXT_PUBLIC_DEMO_MODE=1`)으로 한 벌 더 띄우고 공유 데모 DB·백오피스 주소를 아무도 듣지 않는 포트로 줘서, 배포본의 서버 쪽 외부가 끊겼을 때 위 표의 대체(임시 데이터 안내, 카탈로그 스냅숏, 연결 안내, 전화 예약 안내)와 이미지 최적화 402를 봅니다.
 
 ## 한계
 

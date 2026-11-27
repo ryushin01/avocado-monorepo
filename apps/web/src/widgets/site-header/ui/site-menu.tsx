@@ -58,7 +58,7 @@ export function SiteMenu() {
         />
         <MenuLinks label="사이트 안내" links={SITE_LINKS} onNavigate={close} />
         <div className="relative h-[100px] shrink-0 overflow-hidden rounded-lg lg:h-[200px]">
-          <Image src="/images/banners/strategy.webp" alt="" fill sizes="100vw" className="object-cover" />
+          <Image src="/images/banners/strategy.webp" alt="" fill unoptimized className="object-cover" />
         </div>
       </SheetContent>
     </Sheet>

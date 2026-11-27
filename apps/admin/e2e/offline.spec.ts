@@ -1,46 +1,54 @@
-import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-import { LAUNCHER_URL, WEB_URL } from "./helpers";
+import { blockExternal, expectNoViolations } from "./checks";
+import { kstDate, kstHour, LAUNCHER_URL, uniquePhone, USERS, WEB_URL } from "./helpers";
 
 /**
  * 오프라인 검증: localhost 밖으로 나가는 브라우저 요청을 모두 끊은 채, 세 화면 축(홍보 사이트·백오피스·키오스크)의
- * 주요 화면이 내용과 함께 뜨는지 본다. 서버는 .env 없이 메모리 PGlite·개발용 시드로 뜬다(playwright.config.ts).
- * 글꼴·스크립트는 모두 같은 주소에서 나가야 하므로, 끊긴 요청이 하나라도 있으면 실패한다.
- * 게임 표지 원본(BoardGameGeek)은 서버의 이미지 최적화가 받으므로, 그 요청을 끊어 원본 서버 장애를 흉내 내고
- * 함께 배포한 썸네일로 대신하는지 확인한다.
+ * 모든 화면과 주요 상태(예약 흐름, 키오스크 대기 등록·도착, 백오피스 실시간 반영·테이블 배정)가 내용과 함께 뜨는지 보고,
+ * 화면·상태마다 axe 위반이 없는지 함께 본다. 서버는 .env 없이 메모리 PGlite·개발용 시드로 뜬다(playwright.config.ts).
+ * 글꼴·스크립트·이미지는 모두 같은 주소에서 나가야 하므로, 끊긴 요청이 하나라도 있으면 실패한다.
+ * 서버 쪽 외부(공유 데모 DB·백오피스 API)가 끊긴 배포본은 e2e/deployed-offline.spec.ts가 본다.
+ *
+ * 데이터를 바꾸는 테스트의 매장: 온라인 예약은 판교점 6일 뒤, 테이블 배정은 판교점 5일 뒤(booking.spec은 3·4일 뒤),
+ * 키오스크는 둔산점(런처가 그 매장으로 떠 있음).
  */
-async function blockExternal(context: BrowserContext) {
-  const blocked: string[] = [];
-  await context.route(
-    (url) => url.hostname !== "localhost" && url.hostname !== "127.0.0.1",
-    (route) => {
-      blocked.push(route.request().url());
-      return route.abort("internetdisconnected");
-    },
-  );
-  // 원본 표지 서버가 끊긴 상황: 최적화 경로 중 외부 원본을 가리키는 요청만 실패시킨다(로컬 썸네일은 그대로).
-  await context.route(/\/_next\/image\?url=https?%3A%2F%2F/, (route) => route.abort("internetdisconnected"));
-  return blocked;
+
+/** 화면의 이미지가 모두 실제로 그려졌는지(깨진 그림이 없는지) 본다. 지연 로딩 그림은 아직 받지 않았을 수 있어 받은 것만 본다. */
+async function expectImagesLoaded(page: Page) {
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...document.images]
+          .filter((img) => img.complete && img.naturalWidth === 0 && (img.currentSrc || img.src))
+          .map((img) => img.currentSrc || img.src),
+      ),
+    )
+    .toEqual([]);
 }
 
-/** `ignoreContrast`: 백오피스 개편 화면은 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다. */
-async function expectNoViolations(page: Page, { ignoreContrast = false } = {}) {
-  const axe = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]);
-  if (ignoreContrast) axe.disableRules(["color-contrast"]);
-  const { violations } = await axe.analyze();
-  expect(
-    violations.map((v) => ({ rule: v.id, impact: v.impact, targets: v.nodes.map((n) => n.html.slice(0, 160)) })),
-  ).toEqual([]);
+/** 쓰는 글꼴이 모두 받아졌는지 본다(외부 글꼴이 끊겨 대체 글꼴로 그려지지 않았는지). */
+async function expectFontsLoaded(page: Page) {
+  await page.evaluate(() => document.fonts.ready);
+  const failed = await page.evaluate(() => [...document.fonts].filter((f) => f.status === "error").map((f) => f.family));
+  expect(failed).toEqual([]);
+}
+
+async function pressDigits(kiosk: Page, digits: string) {
+  for (const d of digits) await kiosk.getByRole("button", { name: d, exact: true }).click();
 }
 
 test.describe("오프라인 · 홍보 사이트", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test("홈·유형·게임 화면이 외부 요청 없이 내용과 함께 뜨고, 표지는 로컬 썸네일로 대신한다", async ({ context, page }) => {
     const blocked = await blockExternal(context);
 
     await page.goto(WEB_URL);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator('main a[href^="/game/"]').first()).toBeVisible();
+    await expectImagesLoaded(page);
+    await expectFontsLoaded(page);
     await expectNoViolations(page);
 
     await page.goto(`${WEB_URL}/games/strategy`);
@@ -60,6 +68,69 @@ test.describe("오프라인 · 홍보 사이트", () => {
 
     expect(blocked).toEqual([]);
   });
+
+  test("모든 유형 화면과 소개·없는 주소 화면이 외부 요청 없이 뜬다", async ({ context, page }) => {
+    const blocked = await blockExternal(context);
+
+    await page.goto(WEB_URL);
+    const categories = [
+      ...new Set(
+        await page.locator('a[href^="/games/"]').evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? "")),
+      ),
+    ];
+    expect(categories.length).toBeGreaterThan(0);
+    for (const path of categories) {
+      await page.goto(`${WEB_URL}${path}`);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.locator('main a[href^="/game/"]').first()).toBeVisible();
+      await expectNoViolations(page);
+    }
+
+    await page.goto(`${WEB_URL}/about`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expectImagesLoaded(page);
+    await expectNoViolations(page);
+
+    const response = await page.goto(`${WEB_URL}/없는-화면`);
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expectNoViolations(page);
+
+    expect(blocked).toEqual([]);
+  });
+
+  test("온라인 예약: 빈 시간 찾기·오류·확정이 외부 요청 없이 된다", async ({ context, page }) => {
+    const blocked = await blockExternal(context);
+    const date = kstDate(6);
+    const name = `오프예약${Date.now() % 100000}`;
+
+    await page.goto(`${WEB_URL}/reservation`);
+    await expect(page.getByRole("heading", { level: 1, name: "온라인 예약" })).toBeVisible();
+    await expectNoViolations(page);
+
+    // 고르지 않고 찾으면 매장 칸에 오류
+    await page.getByRole("button", { name: "빈 시간 보기" }).click();
+    await expect(page.getByLabel("매장", { exact: true })).toHaveAttribute("aria-invalid", "true");
+    await expectNoViolations(page);
+
+    await page.getByLabel("매장", { exact: true }).selectOption("c_pangyo");
+    await page.getByLabel("날짜", { exact: true }).selectOption(date);
+    await page.getByLabel("인원", { exact: true }).selectOption("2");
+    await page.getByRole("button", { name: "빈 시간 보기" }).click();
+    await expect(page.getByRole("heading", { name: "2. 시간과 연락처" })).toBeVisible();
+    await expectNoViolations(page);
+
+    await page.getByRole("radio", { name: "15:00" }).click();
+    await page.getByLabel("이름", { exact: true }).fill(name);
+    await page.getByLabel("휴대전화", { exact: true }).fill(uniquePhone().phone);
+    await page.getByRole("checkbox", { name: /개인정보 수집·이용에 동의합니다/ }).click();
+    await page.getByRole("button", { name: "예약하기" }).click();
+    await expect(page.getByRole("heading", { name: "예약했습니다" })).toBeFocused();
+    await expect(page.locator("dl")).toContainText("15:00");
+    await expectNoViolations(page);
+
+    expect(blocked).toEqual([]);
+  });
 });
 
 test.describe("오프라인 · 백오피스", () => {
@@ -69,45 +140,204 @@ test.describe("오프라인 · 백오피스", () => {
     const page = await context.newPage();
     await page.goto("/login");
     await expect(page.getByLabel("이메일")).toBeVisible();
+    await expectImagesLoaded(page);
+    await expectFontsLoaded(page);
     await expectNoViolations(page, { ignoreContrast: true });
     expect(blocked).toEqual([]);
     await context.close();
   });
 
-  for (const [name, path, heading] of [
+  const tables = new Set(["/games", "/inventory", "/plays", "/cafes", "/staff", "/audit"]);
+  const pages: [string, string, RegExp][] = [
     ["대시보드", "/", /^대시보드/],
+    ["통계", "/stats", /^통계/],
     ["보드게임", "/games", /^보드게임/],
+    ["재고 관리", "/inventory", /^재고 관리/],
+    ["이용 기록", "/plays", /^이용 기록/],
     ["예약·대기", "/reservations", /^예약·대기/],
-  ] as const) {
+    ["매장 관리", "/cafes", /^매장 관리/],
+    ["직원 관리", "/staff", /^직원 관리/],
+    ["변경 이력", "/audit", /^변경 이력/],
+    ["비밀번호 변경", "/password", /^비밀번호 변경/],
+  ];
+  for (const [name, path, heading] of pages) {
     test(`${name} 화면이 시드 데이터와 함께 뜬다`, async ({ context, page }) => {
       const blocked = await blockExternal(context);
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
-      if (path === "/") await expect(page.locator("svg.recharts-surface").first()).toBeVisible();
-      if (path === "/games") await expect(page.locator("tbody tr").first()).toBeVisible();
+      if (path === "/" || path === "/stats") await expect(page.locator("svg.recharts-surface").first()).toBeVisible();
+      if (tables.has(path)) await expect(page.locator("tbody tr").first()).toBeVisible();
+      if (path === "/reservations") await expect(page.getByRole("heading", { name: /^현장 대기 \d+팀$/ })).toBeVisible();
+      if (path === "/password") await expect(page.getByLabel("지금 비밀번호")).toBeVisible();
+      await expectImagesLoaded(page);
       await expectNoViolations(page, { ignoreContrast: true });
       expect(blocked).toEqual([]);
     });
   }
+
+  test("모바일 목록과 테이블 배정: 고른 테이블로 예약을 등록하면 목록에 그 테이블이 보인다", async ({ context, page }) => {
+    const blocked = await blockExternal(context);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/games");
+    await expect(page.getByTestId("list-item").first()).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const date = kstDate(5);
+    const name = `오프배정${Date.now() % 100000}`;
+    await page.goto(`/reservations?cafe=c_pangyo&date=${date}`);
+    await page.getByRole("button", { name: "예약 등록" }).click();
+    const dialog = page.getByRole("dialog", { name: "예약 등록" });
+    await dialog.getByLabel("이름").fill(name);
+    await dialog.getByLabel("휴대전화").fill(uniquePhone().phone);
+    await dialog.getByLabel("인원").fill("4");
+    await dialog.getByLabel("날짜").fill(date);
+    await dialog.getByLabel("시각").fill("11:00");
+    await dialog.getByRole("combobox", { name: "테이블" }).click();
+    await expect(page.getByRole("option", { name: "C1 · 6석" })).toBeVisible();
+    // 열린 선택 목록은 body 끝(랜드마크 밖)에 그려지는 팝업이라 region 규칙만 빼고 목록 자체를 검사한다.
+    await expectNoViolations(page, { ignoreContrast: true, include: '[role="listbox"]', disableRules: ["region"] });
+    await page.getByRole("option", { name: "C1 · 6석" }).click();
+    await dialog.getByRole("button", { name: "등록" }).click();
+    await expect(page.getByText(`'${name}' 예약을 등록했습니다.`)).toBeVisible();
+    await expect(page.getByTestId("reservation-row").filter({ hasText: name })).toContainText("C1");
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    expect(blocked).toEqual([]);
+  });
+
+  test("실시간 반영: 열어 둔 직원 화면에 키오스크 대기 등록이 새로고침 없이 나타난다", async ({ browser, context, page }) => {
+    const blocked = await blockExternal(context);
+    const name = `오프실시간${Date.now() % 100000}`;
+    await page.goto("/reservations?cafe=c_dunsan");
+    await expect(page.getByRole("heading", { name: /^현장 대기 \d+팀$/ })).toBeVisible();
+
+    const kioskContext = await browser.newContext({
+      storageState: { cookies: [], origins: [] },
+      viewport: { width: 1024, height: 900 },
+    });
+    const kioskBlocked = await blockExternal(kioskContext);
+    const kiosk = await kioskContext.newPage();
+    await kiosk.goto(`${LAUNCHER_URL}/waitlist`);
+    await kiosk.getByRole("button", { name: "대기 등록하기" }).click();
+    await kiosk.getByLabel("이름").fill(name);
+    await kiosk.getByLabel("휴대전화").fill(uniquePhone().phone);
+    await kiosk.getByRole("button", { name: "대기 등록", exact: true }).click();
+    await expect(kiosk.getByText("대기 등록을 마쳤습니다")).toBeVisible();
+
+    // 15초마다 다시 받으므로 그 안에 나타나고, 화면 낭독기에도 알린다.
+    await expect(page.getByTestId("waitlist-entry").filter({ hasText: name })).toBeVisible({ timeout: 25_000 });
+    await expect(page.getByTestId("live-updates")).toContainText(`${name}님이 등록했습니다.`);
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    expect([...blocked, ...kioskBlocked]).toEqual([]);
+    await kioskContext.close();
+  });
 });
 
 test.describe("오프라인 · 키오스크", () => {
-  test("처음 화면과 보유 게임 화면이 외부 요청 없이 뜬다", async ({ browser }) => {
-    const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
+  test.use({ storageState: { cookies: [], origins: [] }, viewport: { width: 1024, height: 900 } });
+
+  test("처음·보유 게임·없는 주소 화면이 외부 요청 없이 뜬다", async ({ context, page }) => {
     const blocked = await blockExternal(context);
-    const page = await context.newPage();
 
     await page.goto(LAUNCHER_URL);
     await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
     await expect(page.getByText(/보유 게임 \d+종/)).toBeVisible();
+    await expectImagesLoaded(page);
+    await expectFontsLoaded(page);
     await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${LAUNCHER_URL}/games`);
     await expect(page.getByRole("heading", { level: 1, name: /보유 게임$/ })).toBeVisible();
     await expect(page.getByTestId("kiosk-game").first()).toBeVisible();
+    await expectImagesLoaded(page);
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await page.getByRole("link", { name: "지금 이용 가능한 게임만" }).click();
+    await expect(page).toHaveURL(/available=1/);
+    await expect(page.getByTestId("kiosk-game").first()).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    const response = await page.goto(`${LAUNCHER_URL}/없는-화면`);
+    expect(response?.status()).toBe(404);
+    await expect(page.getByText("화면을 찾을 수 없습니다")).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     expect(blocked).toEqual([]);
-    await context.close();
+  });
+
+  test("대기 등록: 오류를 알리고, 번호표를 받고, 내 순서를 확인한다", async ({ context, page }) => {
+    const blocked = await blockExternal(context);
+    const name = `오프대기${Date.now() % 100000}`;
+    const { phone, last4 } = uniquePhone();
+
+    await page.goto(`${LAUNCHER_URL}/waitlist`);
+    await expect(page.getByText(/팀이 기다리고 있습니다/)).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await page.getByRole("button", { name: "대기 등록하기" }).click();
+    // 비워 두고 누르면 칸에 오류를 잇는다.
+    await page.getByRole("button", { name: "대기 등록", exact: true }).click();
+    await expect(page.getByLabel("이름")).toHaveAttribute("aria-invalid", "true");
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await page.getByLabel("이름").fill(name);
+    await page.getByLabel("휴대전화").fill(phone);
+    await page.getByRole("button", { name: "대기 등록", exact: true }).click();
+    await expect(page.getByText("대기 등록을 마쳤습니다")).toBeVisible();
+    const ticket = (await page.getByText(/^\d+번$/).textContent()) ?? "";
+    expect(ticket).toMatch(/^\d+번$/);
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await page.goto(`${LAUNCHER_URL}/waitlist`);
+    await page.getByRole("button", { name: "내 순서 확인" }).click();
+    await expect(page.getByRole("button", { name: "1", exact: true })).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+    await pressDigits(page, last4);
+    await expect(page.getByText(ticket, { exact: true })).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    expect(blocked).toEqual([]);
+  });
+
+  test("예약 확인: 뒷자리로 오늘 예약을 찾아 도착을 알린다", async ({ browser, context, page }) => {
+    // 오늘 남은 시각에만 예약할 수 있어서, 밤 11시 이후에는 건너뛴다.
+    test.skip(kstHour() >= 23, "오늘 남은 예약 시각이 없음");
+    const blocked = await blockExternal(context);
+    const name = `오프도착${Date.now() % 100000}`;
+    const { phone, last4 } = uniquePhone();
+
+    // 직원이 오늘 예약을 등록해 둔다(관리자 로그인 상태).
+    const staff = await browser.newContext({ storageState: USERS.admin.storageState });
+    const staffBlocked = await blockExternal(staff);
+    const admin = await staff.newPage();
+    await admin.goto("/reservations?cafe=c_dunsan");
+    await admin.getByRole("button", { name: "예약 등록" }).click();
+    const dialog = admin.getByRole("dialog", { name: "예약 등록" });
+    await dialog.getByLabel("이름").fill(name);
+    await dialog.getByLabel("휴대전화").fill(phone);
+    await dialog.getByLabel("날짜").fill(kstDate(0));
+    await dialog.getByLabel("시각").fill(`${String(kstHour() + 1).padStart(2, "0")}:00`);
+    await dialog.getByRole("button", { name: "등록" }).click();
+    await expect(admin.getByText(`'${name}' 예약을 등록했습니다.`)).toBeVisible();
+
+    await page.goto(`${LAUNCHER_URL}/reservation`);
+    await expect(page.getByRole("button", { name: "1", exact: true })).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await pressDigits(page, last4);
+    await expect(page.getByText(`뒷자리 ${last4}로 찾은 오늘 예약 1건`)).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+    await page.getByRole("button", { name: "도착했어요" }).click();
+    await expect(page.getByText("도착을 알렸습니다")).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+
+    await admin.reload();
+    await expect(admin.getByTestId("reservation-row").filter({ hasText: name })).toContainText("도착");
+
+    expect([...blocked, ...staffBlocked]).toEqual([]);
+    await staff.close();
   });
 });

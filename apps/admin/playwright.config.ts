@@ -1,13 +1,24 @@
 import { defineConfig, devices } from "@playwright/test";
 
-import { LAUNCHER_PORT, WEB_PORT } from "./e2e/helpers";
+import {
+  ADMIN_PORT,
+  DEAD_URL,
+  DEPLOYED_ADMIN_PORT,
+  DEPLOYED_ADMIN_URL,
+  DEPLOYED_LAUNCHER_URL,
+  DEPLOYED_WEB_URL,
+  LAUNCHER_PORT,
+  WEB_PORT,
+} from "./e2e/helpers";
 
-const PORT = 3100;
+const PORT = ADMIN_PORT;
 const BOOKING_TOKEN = "e2e-booking-token";
 
 // CI는 앞 단계의 pnpm build 결과를 그대로 쓴다.
 const buildThen = (command: string, dir = ".") =>
   process.env.CI ? `pnpm --dir ${dir} ${command}` : `pnpm --dir ${dir} build && pnpm --dir ${dir} ${command}`;
+// 같은 빌드를 한 번 더 띄우는 서버(배포본 흉내)는 빌드를 다시 하지 않는다. 위 서버가 빌드를 마친 뒤 뜨도록 뒤에 둔다.
+const portOf = (url: string) => new URL(url).port;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -79,6 +90,42 @@ export default defineConfig({
       timeout: 300_000,
       env: {
         BACKOFFICE_URL: `http://localhost:${PORT}`,
+        BOOKING_API_TOKEN: BOOKING_TOKEN,
+      },
+    },
+    // 배포본에서 외부가 끊긴 상황(e2e/deployed-offline.spec.ts): 공개 데모 설정으로 띄우되 공유 데모 DB와 백오피스 주소를
+    // 아무도 듣지 않는 포트로 준다. NEXT_PUBLIC_DEMO_MODE는 서버 코드가 켤 때 읽으므로 다시 빌드하지 않는다.
+    {
+      command: `pnpm --dir . exec next start --port ${DEPLOYED_ADMIN_PORT}`,
+      url: `${DEPLOYED_ADMIN_URL}/login`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
+      env: {
+        NEXT_PUBLIC_DEMO_MODE: "1",
+        DATABASE_URL: `postgres://demo:demo@${new URL(DEAD_URL).host}/demo`,
+        NEXTAUTH_URL: DEPLOYED_ADMIN_URL,
+        NEXTAUTH_SECRET: "e2e-only-secret",
+      },
+    },
+    {
+      command: `pnpm --dir ../launcher exec next start --port ${portOf(DEPLOYED_LAUNCHER_URL)}`,
+      url: DEPLOYED_LAUNCHER_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
+      env: {
+        NEXT_PUBLIC_DEMO_MODE: "1",
+        BACKOFFICE_URL: DEAD_URL,
+        LAUNCHER_CAFE_ID: "c_gangnam",
+        KIOSK_API_TOKEN: "kio_dev_c_gangnam",
+      },
+    },
+    {
+      command: `pnpm --dir ../web exec next start --port ${portOf(DEPLOYED_WEB_URL)}`,
+      url: DEPLOYED_WEB_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
+      env: {
+        BACKOFFICE_URL: DEAD_URL,
         BOOKING_API_TOKEN: BOOKING_TOKEN,
       },
     },

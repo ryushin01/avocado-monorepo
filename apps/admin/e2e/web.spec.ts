@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 import { WEB_URL } from "./helpers";
@@ -34,8 +35,13 @@ test("홈에서 유형 목록을 거쳐 게임 상세까지 이동한다", async
 test("없는 게임·유형·주소는 안내 화면에서 홈으로 돌아간다", async ({ page }) => {
   for (const path of ["/game/0", "/games/없는유형", "/없는-페이지"]) {
     await page.goto(`${WEB_URL}${path}`);
-    await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();
+    // 화면 낭독기 사용자가 제목으로 바로 알 수 있게 안내 문구가 이 화면의 제목(h1)이다.
+    await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없습니다" })).toBeVisible();
   }
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+    .analyze();
+  expect(violations.map((v) => v.id)).toEqual([]);
   await page.getByRole("link", { name: "홈으로" }).click();
   await expect(page).toHaveURL(`${WEB_URL}/`);
 });

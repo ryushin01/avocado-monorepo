@@ -1,4 +1,7 @@
 import { byGameName } from "@/server/games/repository";
+import { TZDate } from "@date-fns/tz";
+import { addDays } from "date-fns/addDays";
+import { subDays } from "date-fns/subDays";
 import { and, gte, inArray, lt } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
@@ -11,7 +14,8 @@ import {
 } from "@/db/schema";
 import {
   DAY,
-  KST_OFFSET,
+  inKst,
+  KST_ZONE,
   minutesBetween,
   startOfKstDay,
   toKstDate,
@@ -43,9 +47,15 @@ const durations = (plays: PlaySession[]) =>
   plays.flatMap((p) => (p.returnedAt ? [minutesBetween(p.startedAt, p.returnedAt)] : []));
 
 /** 한국 시간 기준 요일(0=일)과 시(0~23) */
-function kstWeekdayHour(iso: string) {
-  const kst = new Date(Date.parse(iso) + KST_OFFSET);
-  return { weekday: kst.getUTCDay(), hour: kst.getUTCHours() };
+function kstWeekdayHourFrom(midnight: number) {
+  // 한국은 서머타임이 없어 하루가 늘 24시간이다. 그래서 TZDate는 기준 0시에 한 번만 만들고, 기록마다는 거기서 지난
+  // 시간으로 센다(기록마다 TZDate를 만들면 13만 건에서 몇 초 걸린다).
+  const weekday = new TZDate(midnight, KST_ZONE).getDay();
+  return (iso: string) => {
+    const offset = Date.parse(iso) - midnight;
+    const days = Math.floor(offset / DAY);
+    return { weekday: (((weekday + days) % 7) + 7) % 7, hour: Math.floor((offset - days * DAY) / HOUR) };
+  };
 }
 
 /** 백엔드가 정해지면 이 인터페이스의 API 구현체로 교체한다. 집계는 백엔드에서 하는 편이 낫다. */
@@ -78,7 +88,7 @@ export type StatsData = {
 /** 지난 기간 시작부터 오늘 0시(제외)까지 */
 function statWindow(period: StatPeriod, now: Date) {
   const to = startOfKstDay(now.getTime());
-  return { from: to - 2 * period * DAY, to };
+  return { from: subDays(to, 2 * period, { in: inKst }).getTime(), to };
 }
 
 /** 같은 키끼리 모은다. 배열을 복사하지 않고 넣어 기록이 많아도 한 번에 끝난다. */
@@ -100,8 +110,8 @@ function groupBy<T>(items: T[], keyOf: (item: T) => string) {
 export function summarizeStats(db: StatsData, cafeIds: string[], period: StatPeriod, now: Date): StatsSummary {
   const scope = new Set(cafeIds);
   const to = startOfKstDay(now.getTime()); // 오늘 0시 (제외)
-  const from = to - period * DAY;
-  const prevFrom = from - period * DAY;
+  const from = subDays(to, period, { in: inKst }).getTime();
+  const prevFrom = subDays(from, period, { in: inKst }).getTime();
 
   const inScope = db.plays.filter((p) => scope.has(p.cafeId));
   const between = (start: number, end: number) =>
@@ -122,14 +132,14 @@ export function summarizeStats(db: StatsData, cafeIds: string[], period: StatPer
   };
   const currentDaily = countByDay(current, from);
   const previousDaily = countByDay(previous, prevFrom);
-  // toKstDate는 UTC 시각을 받으므로 그날 정오(한국)를 넘겨 날짜가 밀리지 않게 한다.
   const daily = currentDaily.map((count, i) => ({
-    date: toKstDate(from + i * DAY + 12 * HOUR),
+    date: toKstDate(addDays(from, i, { in: inKst }).getTime()),
     current: count,
     previous: previousDaily[i],
   }));
 
   // 요일 × 시간대
+  const kstWeekdayHour = kstWeekdayHourFrom(to);
   const cellCounts = new Map<string, number>();
   for (const p of current) {
     const { weekday, hour } = kstWeekdayHour(p.startedAt);

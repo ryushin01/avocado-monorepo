@@ -73,6 +73,7 @@
 | UI | shadcn/ui (Base UI), Tailwind CSS 4, lucide-react, Recharts, Embla Carousel, sonner, TanStack Table, TanStack Virtual | 컴포넌트를 저장소 안에서 직접 고칠 수 있습니다 |
 | 데이터 | PostgreSQL, Drizzle ORM, PGlite | 개발과 테스트는 설치 없이 PGlite로 돌고, 운영은 `DATABASE_URL`로 PostgreSQL에 붙습니다 |
 | 인증·검증 | Auth.js 4, zod 4 | 이메일·비밀번호 로그인과 서버 쪽 입력 검증을 씁니다 |
+| 날짜·시간 | date-fns 4, `@date-fns/tz` | 예약 시간대·날짜 경계·표시를 한국 시간(`Asia/Seoul`)으로 계산합니다. 함수별로 가져오고, 홍보 사이트에서는 서버 컴포넌트에서만 써서 손님 브라우저 번들은 늘지 않습니다 |
 | 테스트 | Vitest 5, Testing Library, Playwright, axe-core | 규칙은 단위 테스트로, 화면 흐름과 접근성은 프로덕션 빌드 대상 E2E로 확인합니다 |
 | 부품 문서 | Storybook 10 (`@storybook/nextjs-vite`, a11y 애드온) | 공통 UI 부품과 앱의 표시용 컴포넌트를 앱 밖에서 상태별로 보고, CI가 모든 스토리를 axe로 검사합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙, jsx-a11y), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |

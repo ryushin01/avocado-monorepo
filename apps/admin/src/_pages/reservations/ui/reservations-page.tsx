@@ -17,7 +17,7 @@ import { resolveCafe, visibleCafes } from "@/entities/user";
 import { listCafes, listCafeTables } from "@/server/cafes/data";
 import { firstParam } from "@/shared/lib/search-params";
 import { buildListHref } from "@/shared/lib/list";
-import { DAY, kstDayRange, toKstDate } from "@/shared/lib/kst-time";
+import { addKstDays, toKstDate } from "@/shared/lib/kst-time";
 import { listReservations, listWaitlistToday } from "@/server/reservations/data";
 import { OPEN_RESERVATION_STATUSES, type Reservation } from "@/entities/reservation";
 import { parseReservationDate } from "@/entities/reservation/index.server";
@@ -63,7 +63,7 @@ async function ReservationsContent({ searchParams }: Pick<PageProps<"/reservatio
   const dayHref = (offset: number) =>
     buildListHref("/reservations", {
       cafe: cafeParam,
-      date: toKstDate(kstDayRange(date).from + offset * DAY),
+      date: addKstDays(date, offset),
     });
   const activeWaits = waitlist.entries.filter((e) => ACTIVE_WAITLIST_STATUSES.includes(e.status));
   const isOpen = (r: Reservation) => OPEN_RESERVATION_STATUSES.includes(r.status);

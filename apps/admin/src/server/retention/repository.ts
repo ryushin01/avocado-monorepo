@@ -1,8 +1,9 @@
+import { subDays } from "date-fns/subDays";
 import { inArray, lt } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
 import { auditLogs, loginAttempts, rateLimits, reservations, waitlistEntries } from "@/db/schema";
-import { DAY } from "@/shared/lib/kst-time";
+import { inKst } from "@/shared/lib/kst-time";
 
 /**
  * 보관 기간. 지난 기록은 하루에 한 번 지운다(server/retention/route.ts, scripts/prune.ts).
@@ -25,7 +26,7 @@ export type PruneResult = {
   rateLimits: number;
 };
 
-const daysBefore = (now: Date, days: number) => new Date(now.getTime() - days * DAY);
+const daysBefore = (now: Date, days: number) => new Date(subDays(now, days, { in: inKst }).getTime());
 /** 달력으로 years년 전. 윤년이 끼면 365일×years보다 길다. */
 function yearsBefore(now: Date, years: number) {
   const date = new Date(now);

@@ -1,5 +1,12 @@
 import type { CafeTable } from "@/entities/cafe/@x/reservation";
-import { DAY, toKstDate } from "@/shared/lib/kst-time";
+import { addDays } from "date-fns/addDays";
+import { addMinutes } from "date-fns/addMinutes";
+import { areIntervalsOverlapping } from "date-fns/areIntervalsOverlapping";
+import { eachMinuteOfInterval } from "date-fns/eachMinuteOfInterval";
+import { isBefore } from "date-fns/isBefore";
+import { parse } from "date-fns/parse";
+
+import { inKst, kstIso, toKstDate, toKstTime } from "@/shared/lib/kst-time";
 
 /**
  * 정원·테이블 배정 규칙 (DB와 무관한 순수 함수). 저장소(server/reservations)가 트랜잭션 안에서 쓴다.
@@ -25,34 +32,31 @@ export const ONLINE_BOOKING = {
   maxPartySize: 8,
 } as const;
 
-const minutes = (time: string) => {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-};
-const hhmm = (total: number) => `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+/** HH:mm → 기준일(1970-01-01 한국) 그 시각. 시각표를 만들 때만 쓴다. */
+const clock = (time: string) => parse(time, "HH:mm", 0, { in: inKst });
+
+/** 시각표는 바뀌지 않으므로 모듈을 읽을 때 한 번만 만든다(예약 가능 날짜 계산이 수백 번 확인한다). */
+const BOOKING_TIMES: readonly string[] = eachMinuteOfInterval(
+  { start: clock(ONLINE_BOOKING.firstTime), end: clock(ONLINE_BOOKING.lastTime) },
+  { step: ONLINE_BOOKING.stepMinutes, in: inKst },
+).map((time) => toKstTime(time.getTime()));
 
 /** 온라인으로 받는 시작 시각 ("12:00", "12:30", … "20:00") */
 export function onlineBookingTimes(): string[] {
-  const times: string[] = [];
-  for (let t = minutes(ONLINE_BOOKING.firstTime); t <= minutes(ONLINE_BOOKING.lastTime); t += ONLINE_BOOKING.stepMinutes) {
-    times.push(hhmm(t));
-  }
-  return times;
+  return [...BOOKING_TIMES];
 }
 
 /** 한국 날짜(YYYY-MM-DD)와 시각(HH:mm)의 ISO 시각 */
-export const kstStartsAt = (date: string, time: string) => new Date(`${date}T${time}:00+09:00`).toISOString();
+export const kstStartsAt = kstIso;
 
 /** 온라인으로 받는 시각인지: 받는 시각표에 있고, 지금부터 준비 시간 뒤이며, 받는 기간(오늘부터 daysAhead일 뒤까지) 안 */
 export function isBookableTime(startsAt: string, now: Date): boolean {
   const t = Date.parse(startsAt);
-  const date = toKstDate(t);
-  const time = new Date(t + 9 * 3_600_000).toISOString().slice(11, 16);
-  const lastDay = toKstDate(now.getTime() + ONLINE_BOOKING.daysAhead * DAY);
+  const lastDay = toKstDate(addDays(now, ONLINE_BOOKING.daysAhead, { in: inKst }).getTime());
   return (
-    onlineBookingTimes().includes(time) &&
-    t >= now.getTime() + ONLINE_BOOKING.leadMinutes * 60_000 &&
-    date <= lastDay
+    BOOKING_TIMES.includes(toKstTime(t)) &&
+    !isBefore(t, addMinutes(now, ONLINE_BOOKING.leadMinutes)) &&
+    toKstDate(t) <= lastDay
   );
 }
 
@@ -61,7 +65,7 @@ export function bookableDates(now: Date): string[] {
   const times = onlineBookingTimes();
   const dates: string[] = [];
   for (let day = 0; day <= ONLINE_BOOKING.daysAhead; day++) {
-    const date = toKstDate(now.getTime() + day * DAY);
+    const date = toKstDate(addDays(now, day, { in: inKst }).getTime());
     if (times.some((time) => isBookableTime(kstStartsAt(date, time), now))) dates.push(date);
   }
   return dates;
@@ -71,8 +75,11 @@ export function bookableDates(now: Date): string[] {
 export type TakenSeat = { tableId: string; startsAt: string };
 
 /** a와 b에 시작하는 두 예약이 같은 테이블에서 겹치는지 */
-export const overlaps = (a: string, b: string) =>
-  Math.abs(Date.parse(a) - Date.parse(b)) < RESERVATION_MINUTES * 60_000;
+export const overlaps = (a: string, b: string) => {
+  const seat = (startsAt: string) => ({ start: Date.parse(startsAt), end: addMinutes(startsAt, RESERVATION_MINUTES) });
+  // 끝 시각이 다른 예약의 시작과 같으면(정확히 2시간 차이) 겹치지 않는다.
+  return areIntervalsOverlapping(seat(a), seat(b));
+};
 
 /** 이 테이블에 그 시각·인원으로 앉힐 수 없는 이유. 앉힐 수 있으면 null */
 export function seatProblem(

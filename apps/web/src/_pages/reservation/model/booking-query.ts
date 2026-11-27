@@ -1,3 +1,12 @@
+// 서버 컴포넌트(booking-steps·booking-search)에서만 가져온다. 클라이언트 컴포넌트가 가져오면 date-fns(한국어 로캘·시간대)가
+// 손님 브라우저 번들에 들어가므로, 클라이언트에서 쓰는 방문 시각 표시는 format-visit.ts에 따로 둔다.
+// (server-only를 붙이면 같은 컴포넌트를 그리는 Storybook에서 가져올 수 없어 주석으로 남긴다.)
+import { tz } from "@date-fns/tz";
+import { addDays } from "date-fns/addDays";
+import { format } from "date-fns/format";
+import { ko } from "date-fns/locale/ko";
+import { parse } from "date-fns/parse";
+
 import type { BookingOptions } from "@avocado/domain/booking";
 
 type Params = Record<string, string | string[] | undefined>;
@@ -19,18 +28,19 @@ export function parseBookingQuery(params: Params, options: BookingOptions) {
 
 export type BookingQuery = ReturnType<typeof parseBookingQuery>;
 
-const DATE = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short" });
-const TIME = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const kst = { in: tz("Asia/Seoul"), locale: ko };
+/** 한국 날짜 YYYY-MM-DD → 한국 시간 그날 0시 */
+const kstDay = (date: string) => parse(date, "yyyy-MM-dd", 0, kst);
 
-const nextDay = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+/** 지금의 한국 날짜 YYYY-MM-DD */
+export const kstToday = (now: number = Date.now()) => format(now, "yyyy-MM-dd", kst);
+
+const nextDay = (date: string) => format(addDays(kstDay(date), 1, kst), "yyyy-MM-dd", kst);
 
 /** 한국 날짜 → "11월 21일 (토)". today(한국 날짜)를 주면 오늘·내일을 덧붙인다. */
 export function formatBookingDate(date: string, today?: string) {
-  const label = DATE.format(new Date(`${date}T12:00:00+09:00`));
+  const label = format(kstDay(date), "M월 d일 (EEE)", kst);
   if (date === today) return `${label} · 오늘`;
   if (today && date === nextDay(today)) return `${label} · 내일`;
   return label;
 }
-
-/** 방문 시각(ISO) → "11월 21일 (토) 18:00" */
-export const formatVisit = (iso: string) => `${DATE.format(new Date(iso))} ${TIME.format(new Date(iso))}`;

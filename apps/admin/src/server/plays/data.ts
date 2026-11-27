@@ -1,7 +1,9 @@
 import "server-only";
 
+import { subDays } from "date-fns/subDays";
 import { connection } from "next/server";
 
+import { inKst } from "@/shared/lib/kst-time";
 import type { ListRange } from "@/shared/lib/list";
 import { getDb } from "@/db/server";
 
@@ -14,7 +16,6 @@ import {
   type PopularityRanking,
 } from "@/entities/play";
 
-const DAY = 86_400_000;
 const repository = async () => createPlayRepository(await getDb());
 
 /** 최근 7일(주간)·30일(월간) 인기 게임 순위. 지금 시각을 기준으로 계산한다. */
@@ -24,7 +25,7 @@ export async function getPopularityRanking(
 ): Promise<PopularityRanking> {
   await connection();
   const to = new Date();
-  const from = new Date(to.getTime() - POPULARITY_PERIOD_DAYS[period] * DAY);
+  const from = new Date(subDays(to, POPULARITY_PERIOD_DAYS[period], { in: inKst }).getTime());
   const items = await (await repository()).ranking(cafeIds, { from, to });
   return { period, from: from.toISOString(), to: to.toISOString(), items };
 }

@@ -1,3 +1,4 @@
+import { subDays } from "date-fns/subDays";
 import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, lt } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
@@ -16,7 +17,7 @@ import type {
   PopularGame,
   RentableGame,
 } from "@/entities/play";
-import { DAY, kstDayRange, startOfKstDay } from "@/shared/lib/kst-time";
+import { inKst, kstDayRange, startOfKstDay } from "@/shared/lib/kst-time";
 
 /**
  * - unavailable: 이용 가능 상태가 아니거나 남은 박스가 없음
@@ -73,7 +74,7 @@ export function createPlayRepository(db: Database): PlayRepository {
     async usage(cafeIds, now) {
       const nowTime = now.getTime();
       const todayStart = startOfKstDay(nowTime);
-      const weekStart = nowTime - 7 * DAY;
+      const weekStart = subDays(nowTime, 7, { in: inKst }).getTime();
       const empty = () => ({ inUse: 0, today: 0, week: 0 });
       const byCafe = new Map(cafeIds.map((id) => [id, empty()]));
       const totals = empty();

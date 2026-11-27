@@ -22,7 +22,7 @@ import { Textarea } from "@avocado/ui/components/textarea";
 import { descriptionIdOf, errorIdOf, fieldA11y } from "@avocado/ui/lib/field-a11y";
 
 import { bookAction, type BookingFormState, type BookingFormValues } from "../api/actions";
-import { formatVisit } from "../model/booking-query";
+import { formatVisit } from "../model/format-visit";
 
 const IDLE: BookingFormState = { status: "idle" };
 const EMPTY: BookingFormValues = { time: "", name: "", phone: "", memo: "", agreed: false };

@@ -93,3 +93,36 @@ describe("bookableDates", () => {
     expect(bookableDates(new Date("2026-11-20T15:30:00Z"))[0]).toBe("2026-11-21");
   });
 });
+
+describe("경계값 (date-fns로 바꾼 계산)", () => {
+  it("준비 시간은 딱 60분 뒤까지 받고 1밀리초라도 모자라면 받지 않는다", () => {
+    const startsAt = kstStartsAt("2026-11-20", "18:00");
+    expect(isBookableTime(startsAt, new Date("2026-11-20T17:00:00+09:00"))).toBe(true);
+    expect(isBookableTime(startsAt, new Date("2026-11-20T17:00:00.001+09:00"))).toBe(false);
+  });
+
+  it("받는 기간 끝은 한국 날짜 자정으로 끊는다(23:59에 보면 14일 뒤 20시까지)", () => {
+    const now = new Date("2026-11-20T23:59:59+09:00");
+    expect(isBookableTime(kstStartsAt("2026-12-04", "20:00"), now)).toBe(true);
+    expect(isBookableTime(kstStartsAt("2026-12-05", "12:00"), now)).toBe(false);
+    // 자정이 지나면 하루 밀린다.
+    expect(isBookableTime(kstStartsAt("2026-12-05", "12:00"), new Date("2026-11-21T00:00:00+09:00"))).toBe(true);
+  });
+
+  it("월·연·윤일을 넘는 받는 날짜", () => {
+    const dates = bookableDates(new Date("2027-12-25T09:00:00+09:00"));
+    expect([dates[0], dates.at(-1)]).toEqual(["2027-12-25", "2028-01-08"]);
+    expect(bookableDates(new Date("2028-02-20T09:00:00+09:00"))).toContain("2028-02-29");
+  });
+
+  it("kstStartsAt은 UTC ISO(Z)로 쓰고 한국 자정은 전날 15시(UTC)다", () => {
+    expect(kstStartsAt("2026-11-21", "00:00")).toBe("2026-11-20T15:00:00.000Z");
+    expect(kstStartsAt("2026-12-31", "20:00")).toBe("2026-12-31T11:00:00.000Z");
+  });
+
+  it("겹침은 밀리초 단위로 본다(1시간 59분 59.999초는 겹침)", () => {
+    expect(overlaps("2026-11-20T09:00:00.000Z", "2026-11-20T10:59:59.999Z")).toBe(true);
+    expect(overlaps("2026-11-20T09:00:00.000Z", "2026-11-20T11:00:00.000Z")).toBe(false);
+    expect(overlaps("2026-11-20T09:00:00.000Z", "2026-11-20T09:00:00.000Z")).toBe(true);
+  });
+});

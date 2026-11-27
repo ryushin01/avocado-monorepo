@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
 
+import { analyzeWhenIdle } from "./analyze-when-idle.mjs";
+
 // 경로에 공백·한글이 있어도 되게 파일 URL을 경로로 바꾼다(.pathname은 %20 그대로).
 const root = fileURLToPath(new URL("../storybook-static/", import.meta.url));
 if (!existsSync(join(root, "index.json"))) {
@@ -60,12 +62,15 @@ try {
     // 백오피스·키오스크 스토리는 개편 화면이라 사용자 지시로 글자 대비(color-contrast)를 검사하지 않는다. 다른 규칙은 그대로 본다.
     const skipped = ["region", "landmark-one-main", "page-has-heading-one", "bypass"];
     if (story.title.startsWith("백오피스/") || story.title.startsWith("키오스크/")) skipped.push("color-contrast");
-    const { violations } = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
-      .disableRules(skipped)
-      // Base UI가 열린 메뉴·선택 상자 앞뒤에 두는 초점 가두기용 span(aria-hidden, 초점을 받자마자 넘김)은 뺀다.
-      .exclude("[data-base-ui-focus-guard]")
-      .analyze();
+    // a11y 애드온이 같은 창에서 돌리는 axe와 겹치면 끝날 때까지 기다렸다 다시 검사한다(analyze-when-idle.mjs).
+    const { violations } = await analyzeWhenIdle(() =>
+      new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+        .disableRules(skipped)
+        // Base UI가 열린 메뉴·선택 상자 앞뒤에 두는 초점 가두기용 span(aria-hidden, 초점을 받자마자 넘김)은 뺀다.
+        .exclude("[data-base-ui-focus-guard]")
+        .analyze(),
+    );
     for (const v of violations) {
       for (const node of v.nodes) failures.push(`${story.title} › ${story.name}: ${v.id} ${node.target.join(" ")} — ${node.failureSummary?.replace(/\s+/g, " ")}`);
     }

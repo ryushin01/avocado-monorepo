@@ -18,19 +18,32 @@ const VIEWPORTS = {
 test.use({ reducedMotion: "reduce", colorScheme: "light" });
 
 async function settle(page: Page) {
-  // 전체 화면을 찍으므로 지연 로딩 그림도 바로 받게 하고, 모두 그려질 때까지 기다린다.
-  await page.evaluate(() => {
+  // 전체 화면을 찍으므로 지연 로딩 그림도 받게 한다. 화면 밖 구역은 그리기를 미루기도 해서 끝까지 내렸다가 올린다.
+  await page.evaluate(async () => {
     for (const img of document.querySelectorAll("img")) img.loading = "eager";
+    for (let y = 0; y < document.documentElement.scrollHeight; y += window.innerHeight) {
+      window.scrollTo(0, y);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    window.scrollTo(0, 0);
   });
   await page.evaluate(() => document.fonts.ready);
+  // 표지는 원본이 끊기면 썸네일 그림으로 새로 그려지므로(다시 지연 로딩) 기다리는 동안에도 바로 받게 한다.
+  // 실패하면 아직 그려지지 않은 그림 주소를 보여 준다.
   await expect
-    .poll(() => page.evaluate(() => [...document.images].every((img) => img.complete)))
-    .toBe(true);
+    .poll(() =>
+      page.evaluate(() => {
+        for (const img of document.querySelectorAll("img")) img.loading = "eager";
+        return [...document.images].filter((img) => !img.complete).map((img) => img.currentSrc || img.src);
+      }),
+    )
+    .toEqual([]);
 }
 
 async function snap(page: Page, name: string, mask: ReturnType<Page["locator"]>[] = []) {
   await settle(page);
-  await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, mask, animations: "disabled", caret: "hide" });
+  // 한 화면이 달라도 나머지 화면까지 모두 비교하도록 soft로 본다.
+  await expect.soft(page).toHaveScreenshot(`${name}.png`, { fullPage: true, mask, animations: "disabled", caret: "hide" });
 }
 
 test.describe("홍보 사이트", () => {

@@ -11,3 +11,15 @@ export async function createTestDb(init: Partial<SeedData> = {}, now = new Date(
   await insertSeedData(db, createSeedData(init, now), passwordHash);
   return db;
 }
+
+/**
+ * 실행한 SQL을 차례로 모으는 테스트 DB(개발용 시드). 요청 하나가 DB에 몇 번 다녀오는지 검사할 때 쓴다.
+ * 마이그레이션·시드 질의는 빼고 돌려준다.
+ */
+export async function createQueryCountingTestDb() {
+  const queries: string[] = [];
+  const db = await openPglite("memory://", { logQuery: (query) => queries.push(query) });
+  await insertSeedData(db, createSeedData({}, new Date()));
+  queries.length = 0;
+  return { db, queries };
+}

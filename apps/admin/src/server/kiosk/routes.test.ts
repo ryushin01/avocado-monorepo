@@ -9,10 +9,17 @@ import {
   KioskWaitlistStatusSchema,
 } from "@avocado/domain/kiosk";
 
+import { and, eq } from "drizzle-orm";
+
 import type { Database } from "@/db/index";
-import { createTestDb } from "@/db/testing";
+import { inventoryItems, playSessions } from "@/db/schema";
+import { createQueryCountingTestDb, createTestDb } from "@/db/testing";
 import { reservationInputSchema } from "@/entities/reservation/index.server";
+import { listCafes } from "@/server/cafes/data";
+import { listInventory } from "@/server/inventory/data";
 import { createReservationRepository } from "@/server/reservations/repository";
+
+import { toKioskGames } from "./to-kiosk-games";
 
 // 키오스크 API 라우트를 실제 메모리 DB(개발용 시드)와 함께 부른다. 화면 다시 그리기·요청 시점 표시만 가짜로 둔다.
 const state = vi.hoisted(() => ({ db: undefined as Database | undefined, revalidatePath: vi.fn() }));
@@ -83,6 +90,63 @@ describe("보유 게임", () => {
     const body = KioskCafeGamesSchema.parse(await res.json());
     expect(body.cafe).toEqual({ id: CAFE, name: "대전 둔산점" });
     expect(body.games.length).toBeGreaterThan(0);
+  });
+
+  it("응답의 게임 목록(순서·상태·남은 수·썸네일)은 관리 화면 재고 목록으로 만든 결과와 같다", async () => {
+    // 상태가 섞인 매장을 만든다: 폐기·점검 중, 반납 전 이용 기록이 보유 수보다 많은 게임
+    const db = await createTestDb();
+    const [first, second, third] = await db
+      .select()
+      .from(inventoryItems)
+      .where(eq(inventoryItems.cafeId, CAFE))
+      .orderBy(inventoryItems.gameId)
+      .limit(3);
+    await db.update(inventoryItems).set({ status: "retired" }).where(and(eq(inventoryItems.cafeId, CAFE), eq(inventoryItems.gameId, first.gameId)));
+    await db.update(inventoryItems).set({ status: "maintenance" }).where(and(eq(inventoryItems.cafeId, CAFE), eq(inventoryItems.gameId, second.gameId)));
+    await db.insert(playSessions).values(
+      Array.from({ length: third.quantity + 1 }, (_, i) => ({
+        id: `ps_eq_${i}`,
+        cafeId: CAFE,
+        gameId: third.gameId,
+        startedAt: new Date(),
+        playerCount: 2,
+      })),
+    );
+
+    const previous = state.db;
+    state.db = db;
+    try {
+      const cafeIds = (await listCafes()).filter((c) => c.status === "open").map((c) => c.id);
+      expect(cafeIds.length).toBeGreaterThan(1);
+      for (const cafeId of cafeIds) {
+        const res = await getGames(request("/g", { token: `kio_dev_${cafeId}` }), ctx(cafeId));
+        const body = KioskCafeGamesSchema.parse(await res.json());
+        // 관리 화면 재고 화면이 부르는 함수 그대로
+        const { items } = await listInventory(cafeId);
+        expect(body.games).toEqual(toKioskGames(items, "http://localhost"));
+      }
+      const mine = KioskCafeGamesSchema.parse(await (await getGames(request("/g"), ctx())).json()).games;
+      expect(mine.find((g) => g.id === first.gameId)).toBeUndefined();
+      expect(mine.find((g) => g.id === second.gameId)?.availability).toBe("unavailable");
+      expect(mine.find((g) => g.id === third.gameId)).toMatchObject({ availability: "in-use", availableCount: 0 });
+    } finally {
+      state.db = previous;
+    }
+  });
+
+  it("요청 하나에 DB를 세 번 넘게 읽지 않는다 (기기 확인·매장·게임 목록)", async () => {
+    const { db, queries } = await createQueryCountingTestDb();
+    const previous = state.db;
+    state.db = db;
+    try {
+      // 첫 요청은 기기의 마지막 사용 시각을 고치므로 한 번 보낸 뒤 센다.
+      await getGames(request("/g"), ctx());
+      queries.length = 0;
+      expect((await getGames(request("/g"), ctx())).status).toBe(200);
+      expect(queries.length).toBeLessThanOrEqual(3);
+    } finally {
+      state.db = previous;
+    }
   });
 });
 

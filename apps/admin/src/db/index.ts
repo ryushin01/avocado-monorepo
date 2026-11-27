@@ -4,6 +4,7 @@ import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
+import type { Logger } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
@@ -21,10 +22,10 @@ export const MIGRATIONS = path.join(process.cwd(), "src/db/migrations");
  * Node 안에서 도는 PostgreSQL(PGlite). 개발·테스트용.
  * dataDir: 폴더 경로면 파일로 남고, "memory://"면 메모리에만 둔다(프로세스가 끝나면 사라짐).
  */
-export async function openPglite(dataDir = "memory://"): Promise<Database> {
+export async function openPglite(dataDir = "memory://", logger?: Logger): Promise<Database> {
   // PGlite는 상위 폴더까지 만들어 주지 않아, 처음 내려받은 저장소에서 .data/pglite를 열면 실패한다.
   if (!dataDir.includes("://")) mkdirSync(dataDir, { recursive: true });
-  const db = drizzlePglite({ client: new PGlite(dataDir), schema });
+  const db = drizzlePglite({ client: new PGlite(dataDir), schema, logger });
   await migratePglite(db, { migrationsFolder: MIGRATIONS });
   return db as unknown as Database;
 }

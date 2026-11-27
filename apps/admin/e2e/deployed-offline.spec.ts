@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { blockExternal, expectNoViolations } from "./checks";
 import { DEPLOYED_ADMIN_URL, DEPLOYED_LAUNCHER_URL, DEPLOYED_WEB_URL } from "./helpers";
@@ -12,39 +12,47 @@ import { DEPLOYED_ADMIN_URL, DEPLOYED_LAUNCHER_URL, DEPLOYED_WEB_URL } from "./h
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("배포본 · 공유 데모 DB가 끊긴 백오피스", () => {
-  test("데모 계정으로 들어가면 임시 데이터로 모든 화면을 보여 주고 그렇다고 알린다", async ({ context, page }) => {
-    const blocked = await blockExternal(context);
-
+  /** 로그인 화면의 데모 계정 버튼으로 들어간다. */
+  async function enterDemo(page: Page) {
     await page.goto(`${DEPLOYED_ADMIN_URL}/login`);
-    const demoLogin = page.getByRole("button", { name: /본사 관리자로 둘러보기/ });
-    await expect(demoLogin).toBeVisible();
-    await expectNoViolations(page, { ignoreContrast: true });
-    await demoLogin.click();
-
+    await page.getByRole("button", { name: /본사 관리자로 둘러보기/ }).click();
     await expect(page.getByRole("heading", { level: 1, name: /^대시보드/ })).toBeVisible();
+  }
+
+  test("데모 계정으로 들어가면 임시 데이터로 대시보드를 보여 주고 그렇다고 알린다", async ({ context, page }) => {
+    const blocked = await blockExternal(context);
+    await page.goto(`${DEPLOYED_ADMIN_URL}/login`);
+    await expect(page.getByRole("button", { name: /본사 관리자로 둘러보기/ })).toBeVisible();
+    await expectNoViolations(page, { ignoreContrast: true });
+    await enterDemo(page);
     await expect(page.getByRole("status").filter({ hasText: "오프라인 데이터로 표시 중" })).toBeVisible();
     await expect(page.locator("svg.recharts-surface").first()).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
+    expect(blocked).toEqual([]);
+  });
 
-    for (const [path, heading] of [
-      ["/stats", /^통계/],
-      ["/games", /^보드게임/],
-      ["/inventory", /^재고 관리/],
-      ["/plays", /^이용 기록/],
-      ["/reservations", /^예약·대기/],
-      ["/cafes", /^매장 관리/],
-      ["/staff", /^직원 관리/],
-      ["/audit", /^변경 이력/],
-    ] as const) {
+  for (const [path, heading] of [
+    ["/stats", /^통계/],
+    ["/games", /^보드게임/],
+    ["/inventory", /^재고 관리/],
+    ["/plays", /^이용 기록/],
+    ["/reservations", /^예약·대기/],
+    ["/cafes", /^매장 관리/],
+    ["/staff", /^직원 관리/],
+    ["/audit", /^변경 이력/],
+  ] as const) {
+    test(`${path} 화면도 임시 데이터로 내용과 함께 뜬다`, async ({ context, page }) => {
+      const blocked = await blockExternal(context);
+      await enterDemo(page);
       await page.goto(`${DEPLOYED_ADMIN_URL}${path}`);
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
       if (path === "/reservations") await expect(page.getByRole("heading", { name: /^현장 대기 \d+팀$/ })).toBeVisible();
-      else if (path !== "/stats") await expect(page.locator("tbody tr").first()).toBeVisible();
+      else if (path === "/stats") await expect(page.locator("svg.recharts-surface").first()).toBeVisible();
+      else await expect(page.locator("tbody tr").first()).toBeVisible();
       await expectNoViolations(page, { ignoreContrast: true });
-    }
-
-    expect(blocked).toEqual([]);
-  });
+      expect(blocked).toEqual([]);
+    });
+  }
 });
 
 test.describe("배포본 · 백오피스에 닿지 않는 키오스크", () => {
@@ -52,7 +60,8 @@ test.describe("배포본 · 백오피스에 닿지 않는 키오스크", () => {
 
   test("처음·보유 게임 화면은 카탈로그 스냅숏으로, 예약 확인·대기 등록은 연결 안내로 대신한다", async ({ context, page }) => {
     const blocked = await blockExternal(context);
-    const snapshotNotice = page.getByText("오프라인 데이터로 표시 중");
+    // 스트리밍 중에는 숨은 영역에 같은 글자가 잠깐 하나 더 있으므로 보이는 것만 본다.
+    const snapshotNotice = page.getByText("오프라인 데이터로 표시 중").filter({ visible: true });
 
     await page.goto(DEPLOYED_LAUNCHER_URL);
     await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();

@@ -27,10 +27,16 @@ async function expectImagesLoaded(page: Page) {
     .toEqual([]);
 }
 
-/** 쓰는 글꼴이 모두 받아졌는지 본다(외부 글꼴이 끊겨 대체 글꼴로 그려지지 않았는지). */
+/**
+ * 쓰는 글꼴이 모두 받아졌는지 본다(외부 글꼴이 끊겨 대체 글꼴로 그려지지 않았는지).
+ * next/font가 만드는 "… Fallback" 글꼴은 장비의 기본 글꼴(local("Arial") 등)을 가리키는 크기 맞춤용이라,
+ * 그 글꼴이 없는 장비(리눅스 CI)에서는 error가 되지만 받는 파일이 아니므로 뺀다.
+ */
 async function expectFontsLoaded(page: Page) {
   await page.evaluate(() => document.fonts.ready);
-  const failed = await page.evaluate(() => [...document.fonts].filter((f) => f.status === "error").map((f) => f.family));
+  const failed = await page.evaluate(() =>
+    [...document.fonts].filter((f) => f.status === "error" && !/ Fallback$/.test(f.family)).map((f) => f.family),
+  );
   expect(failed).toEqual([]);
 }
 

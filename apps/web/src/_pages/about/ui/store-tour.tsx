@@ -31,7 +31,14 @@ export function StoreTour() {
               style={{ "--i": i, "--n": HERO_IMAGES.length } as CSSProperties}
             >
               <div className="store-tour-photo">
-                <Image src={image.src} alt={image.alt} fill sizes="(min-width: 1024px) 50vw, 85vw" className="object-cover" />
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  // 사이트 사진은 이미 줄인 webp라 최적화 서버를 거치지 않는다(변환 한도 402에도 그대로 보이게).
+                  unoptimized
+                  className="object-cover"
+                />
               </div>
               <p className="flex items-baseline gap-3">
                 <span lang="en" className="font-stat text-sm text-muted-foreground tabular-nums">

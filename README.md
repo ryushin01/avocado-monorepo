@@ -107,7 +107,7 @@ pnpm preview                            # 세 앱을 프로덕션 빌드한 뒤 
 | `pnpm typecheck` | 타입 검사 |
 | `pnpm lint` | ESLint, Steiger(FSD 구조) |
 | `pnpm test` | 단위·컴포넌트 테스트 |
-| `pnpm e2e` | E2E 테스트 (외부 요청을 모두 막은 오프라인 검사 `apps/admin/e2e/offline.spec.ts` 포함) |
+| `pnpm e2e` | E2E 테스트 (외부 요청을 모두 막은 오프라인 검사 `offline.spec.ts`, 서버 쪽 외부가 끊긴 배포본 검사 `deployed-offline.spec.ts` 포함) |
 | `pnpm storybook` | 공통 UI 부품과 세 앱의 표시용 컴포넌트 Storybook (http://localhost:6006, a11y 패널로 axe 결과 확인) |
 | `pnpm build-storybook && pnpm test:stories` | Storybook을 빌드하고 모든 스토리를 axe로 검사 |
 | `pnpm --dir apps/admin screenshots` | README 화면과 키오스크 흐름 GIF 다시 만들기 (개발용 시드) |

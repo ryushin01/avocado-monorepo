@@ -50,10 +50,11 @@ export function HeroCarousel() {
           <CarouselItem key={image.src} className="relative h-[90svh] pl-0 lg:h-screen">
             <Image
               src={image.src}
+              // 사이트 사진은 이미 줄인 webp라 최적화 서버를 거치지 않는다(변환 한도 402에도 그대로 보이게).
+              unoptimized
               alt={image.alt}
               fill
               priority={i === 0}
-              sizes="(min-width: 1024px) 34vw, 100vw"
               className="object-cover"
             />
           </CarouselItem>

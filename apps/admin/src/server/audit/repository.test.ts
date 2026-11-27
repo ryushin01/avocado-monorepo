@@ -8,7 +8,7 @@ const actor = { id: "u_admin", name: "김관리" };
 
 describe("AuditRepository", () => {
   it("최근 작업부터 보여 주고 매장 이름을 함께 돌려준다", async () => {
-    const db = await createTestDb();
+    const db = await createTestDb({ audit: [] });
     const audit = createAuditRepository(db);
     await audit.record(actor, { action: "game.create", targetName: "새 게임" }, new Date("2026-01-01T00:00:00Z"));
     await audit.record(
@@ -37,7 +37,7 @@ describe("AuditRepository", () => {
   });
 
   it("범위만큼 나눠 읽고 전체 개수는 그대로 알려 준다", async () => {
-    const audit = createAuditRepository(await createTestDb());
+    const audit = createAuditRepository(await createTestDb({ audit: [] }));
     for (const day of [1, 2, 3]) {
       await audit.record(actor, { action: "game.update", targetName: `게임${day}` }, new Date(2026, 0, day));
     }

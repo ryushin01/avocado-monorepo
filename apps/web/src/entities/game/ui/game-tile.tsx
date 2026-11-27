@@ -25,7 +25,7 @@ export function GameTile({ game, sizes }: { game: CatalogGame; sizes: string }) 
         className="object-contain px-4 pt-4 pb-20 transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       />
       {game.rank <= 10 && (
-        <Image src="/images/top-ten.png" alt="10위권" width={40} height={40} className="absolute top-2 left-2" />
+        <Image src="/images/top-ten.png" alt="10위권" width={40} height={40} unoptimized className="absolute top-2 left-2" />
       )}
       <span className="absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/90 via-black/75 to-transparent p-4 pt-10 text-white">
         <span className="line-clamp-2 font-bold">{game.name}</span>

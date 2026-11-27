@@ -79,9 +79,10 @@ export function CategorySection({ category }: { category: CategoryInfo }) {
         <div className="space-reveal relative h-[50vw] overflow-hidden rounded-lg border border-page lg:h-[28vw]">
           <Image
             src={banner.src}
+            // 사이트 사진은 이미 줄인 webp라 최적화 서버를 거치지 않는다(변환 한도 402에도 그대로 보이게).
+            unoptimized
             alt={banner.alt}
             fill
-            sizes="(min-width: 1024px) 67vw, 100vw"
             className="space-reveal-image object-cover"
             style={{ objectPosition: banner.position }}
           />

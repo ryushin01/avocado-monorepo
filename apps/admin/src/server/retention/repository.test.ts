@@ -11,7 +11,7 @@ const ago = (days: number, extraMs = 0) => new Date(now.getTime() - days * DAY -
 const guest = { cafeId: "c_gangnam", name: "김철수", phone: "01012345678", partySize: 2 };
 
 async function setup() {
-  const db = await createTestDb({ plays: [], reservations: [], waitlist: [] }, now);
+  const db = await createTestDb({ plays: [], reservations: [], waitlist: [], audit: [] }, now);
   const insertReservation = (id: string, startsAt: Date) =>
     db.insert(reservations).values({ ...guest, id, startsAt, status: "seated", createdAt: startsAt });
   const insertWaitlist = (id: string, createdAt: Date) =>

@@ -43,6 +43,13 @@
       "when": 1794841639880,
       "tag": "0005_tables_online_booking",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795777640759,
+      "tag": "0006_play_sessions_open_idx",
+      "breakpoints": true
     }
   ]
 }

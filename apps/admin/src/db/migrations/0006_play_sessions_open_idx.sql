@@ -1,0 +1,1 @@
+CREATE INDEX "play_sessions_open_idx" ON "play_sessions" USING btree ("cafe_id","game_id") WHERE "play_sessions"."returned_at" is null;

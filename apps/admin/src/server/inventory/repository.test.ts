@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import type { New } from "@/db/mappers";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import type { Cafe } from "@/entities/cafe";
 import type { BoardGame } from "@/entities/game";
@@ -11,7 +12,7 @@ import { createTestDb } from "@/db/testing";
 
 import { createPlayRepository } from "@/server/plays/repository";
 
-import { createInventoryRepository, distributions } from "./repository";
+import { countInUse, createInventoryRepository, distributions } from "./repository";
 import { createSeedInventory } from "./seed";
 import type { InventoryItem } from "@/entities/inventory";
 
@@ -284,4 +285,29 @@ describe("createSeedInventory", () => {
     expect(share("maintenance")).toBeGreaterThan(0.03);
     expect(share("retired")).toBeGreaterThan(0.005);
   });
+});
+
+describe("countInUse", () => {
+  it("반납 전 이용 기록만 인덱스로 읽는다 (쌓인 이용 기록 전체를 훑지 않음)", async () => {
+    const db = await createTestDb();
+    // 반납한 이용 기록이 오래 쌓인 매장. 키오스크 '보유 게임'과 재고 화면이 요청마다 이용 중 수를 센다.
+    await db.execute(sql`
+      insert into play_sessions (id, cafe_id, game_id, started_at, returned_at, player_count)
+      select 'ps_history_' || n, 'c_gangnam', (select game_id from inventory_items where cafe_id = 'c_gangnam' limit 1),
+        now() - make_interval(mins => n), now() - make_interval(mins => n - 30), 2
+      from generate_series(1, 20000) as n`);
+    await db.execute(sql`analyze play_sessions`);
+    const open = await db.select().from(playSessions).where(eq(playSessions.cafeId, "c_gangnam"));
+    const expected = new Map<string, number>();
+    for (const p of open) if (!p.returnedAt) expected.set(p.gameId, (expected.get(p.gameId) ?? 0) + 1);
+    expect(await countInUse(db, "c_gangnam")).toEqual(expected);
+
+    const plan = await db.execute(sql`
+      explain select game_id, count(*) from play_sessions
+      where cafe_id = 'c_gangnam' and returned_at is null group by game_id`);
+    const { rows } = z.object({ rows: z.array(z.record(z.string(), z.unknown())) }).parse(plan);
+    const text = rows.map((row) => Object.values(row).join(" ")).join("\n");
+    expect(text).toContain("play_sessions_open_idx");
+    expect(text).not.toContain("Seq Scan on play_sessions");
+  }, 60_000);
 });

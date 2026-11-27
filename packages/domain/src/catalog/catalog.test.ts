@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CATALOG_GAMES, CATEGORY_INFO, catalogGamesIn, GAME_CATEGORIES } from "./index";
+import { CATALOG_GAMES, CATEGORY_INFO, catalogGamesIn, findCatalogGame, GAME_CATEGORIES } from "./index";
 
 describe("catalog", () => {
   it("avocado의 게임 110개를 순위순으로, 모두 로컬 썸네일과 함께 담는다", () => {
@@ -16,5 +16,11 @@ describe("catalog", () => {
     for (const category of GAME_CATEGORIES) {
       expect(catalogGamesIn(category).length).toBeGreaterThan(0);
     }
+  });
+
+  it("BoardGameGeek 번호로 게임을 찾고, 없는 번호는 undefined", () => {
+    const first = CATALOG_GAMES[0];
+    expect(findCatalogGame(first.bggId)).toBe(first);
+    expect(findCatalogGame(0)).toBeUndefined();
   });
 });

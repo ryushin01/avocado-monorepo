@@ -77,7 +77,9 @@
 | 테스트 | Vitest 5, Testing Library, Playwright, axe-core | 규칙은 단위 테스트로, 화면 흐름과 접근성은 프로덕션 빌드 대상 E2E로 확인합니다 |
 | 부품 문서 | Storybook 10 (`@storybook/nextjs-vite`, a11y 애드온) | 공통 UI 부품과 앱의 표시용 컴포넌트를 앱 밖에서 상태별로 보고, CI가 모든 스토리를 axe로 검사합니다 |
 | 품질 | ESLint 9 (FSD 경계 규칙, jsx-a11y), GitHub Actions, CodeRabbit | PR마다 타입 검사, 린트, 테스트, 빌드, E2E를 돌리고 리뷰를 받습니다 |
-| 성능 예산 | size-limit, Lighthouse CI(홍보 사이트) | 번들 크기와 Lighthouse 점수가 기준 아래로 떨어지면 PR을 막습니다 |
+| 성능 예산 | size-limit(세 앱), Lighthouse CI(홍보 사이트) | 번들 크기와 Lighthouse 점수가 기준 아래로 떨어지면 PR을 막습니다 |
+| 시각 회귀 | Playwright `toHaveScreenshot` | 세 앱 주요 화면(데스크톱·모바일·키오스크)과 모든 스토리를 리눅스 기준 이미지와 비교합니다 |
+| 커버리지 기준 | Vitest + `scripts/coverage-report.mjs` | 로직 계층 80%, 전체는 기준선 아래로 못 내려갑니다 |
 | 배포 | Vercel(홍보 사이트, 백오피스·키오스크 공개 데모) | `main`에 머지하면 세 앱이 자동 배포됩니다(PR 미리보기 배포는 껐음). 공개 데모 설정은 [docs/demo.md](docs/demo.md) |
 | 모니터링 | Sentry(세 앱) | 브라우저와 서버 오류, 키오스크의 백오피스 연결 실패 같은 운영 오류를 모읍니다. 개인정보는 모으지 않고, DSN이 없으면 동작하지 않습니다 |
 | 분석 | PostHog, Web Vitals(홍보 사이트) | 실제 방문자의 LCP·INP·CLS와 페이지 이동을 모읍니다. 쿠키 없이 사람을 식별하지 않고, 키가 없으면 동작하지 않습니다 |
@@ -106,6 +108,7 @@ pnpm preview                            # 세 앱을 프로덕션 빌드한 뒤 
 | `pnpm build` | 모든 앱 프로덕션 빌드 |
 | `pnpm typecheck` | 타입 검사 |
 | `pnpm lint` | ESLint, Steiger(FSD 구조) |
+| `pnpm check` | CI와 같은 검사 전부(단계별: `pnpm check static\|build\|lhci\|e2e\|stories\|visual`) |
 | `pnpm test` | 단위·컴포넌트 테스트 |
 | `pnpm e2e` | E2E 테스트 (외부 요청을 모두 막은 오프라인 검사 `offline.spec.ts`, 서버 쪽 외부가 끊긴 배포본 검사 `deployed-offline.spec.ts` 포함) |
 | `pnpm storybook` | 공통 UI 부품과 세 앱의 표시용 컴포넌트 Storybook (http://localhost:6006, a11y 패널로 axe 결과 확인) |

@@ -1,6 +1,6 @@
 {
   "name": "@avocado/launcher",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "scripts": {
     "dev": "copy-catalog-assets public && next dev --port 3001",
@@ -10,7 +10,8 @@
     "lint": "eslint && steiger ./src",
     "typecheck": "next typegen && tsc7 --noEmit",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "size": "size-limit"
   },
   "dependencies": {
     "@avocado/config": "workspace:*",

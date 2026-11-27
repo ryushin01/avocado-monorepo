@@ -6,7 +6,7 @@ import { CATEGORY_INFO } from "@avocado/domain/catalog";
 import { SiteFooter } from "@/widgets/site-footer";
 import { SiteMenuProvider } from "@/widgets/site-header";
 import { BRAND, SHARE_IMAGE, siteUrl } from "@/shared/config";
-import { WebVitals } from "@/shared/lib/analytics";
+import { Pageviews, WebVitals } from "@/shared/lib/analytics";
 
 import "@fontsource-variable/comfortaa/wght.css";
 import "@fontsource/gowun-dodum/400.css";
@@ -45,6 +45,7 @@ export function RootLayout({ children }: LayoutProps<"/">) {
         </SiteMenuProvider>
         <SiteFooter />
         <WebVitals />
+        <Pageviews />
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import type { PostHog } from "posthog-js";
+import type { PostHog } from "posthog-js/dist/module.slim";
 
 import { analyticsEnabled, posthogKey, posthogOptions } from "@/shared/config";
 
@@ -12,7 +12,9 @@ const MAX_PENDING = 50;
 export async function initAnalytics() {
   if (!analyticsEnabled || client || stopped) return;
   try {
-    const { default: posthog } = await import("posthog-js");
+    // 쓰는 기능(직접 보내는 이벤트·페이지 이동 기록)만 든 slim 빌드를 받는다. 기본 빌드의 자동 수집·설문·실험 기능은 옵션으로
+    // 모두 끄고 있어 필요 없고, 이 조각이 사이트 전체 JS 예산(450 kB)의 큰 몫을 차지했다.
+    const { default: posthog } = await import("posthog-js/dist/module.slim");
     posthog.init(posthogKey, posthogOptions);
     client = posthog;
   } catch {

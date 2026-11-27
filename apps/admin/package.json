@@ -1,6 +1,6 @@
 {
   "name": "@avocado/admin",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "scripts": {
     "dev": "copy-catalog-assets public && next dev --port 3000",
@@ -11,6 +11,7 @@
     "typecheck": "next typegen && tsc7 --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "size": "size-limit",
     "test:watch": "vitest",
     "e2e": "playwright test",
     "screenshots": "SCREENSHOTS=1 playwright test --project=screenshots",

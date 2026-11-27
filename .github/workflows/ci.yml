@@ -1,5 +1,6 @@
-# 완료 기준 다섯 가지(타입 검사·린트·단위 테스트·빌드·E2E)를 푸시·PR마다 실행한다.
-# 단위 테스트는 커버리지를 함께 재서 7일간 보관한다.
+# CI와 같은 검사를 로컬에서 `pnpm check`로 돌린다(scripts/check.mjs). 이 워크플로는 그 단계들을 작업으로 나눠 병렬로 부른다.
+# main 보호 규칙의 필수 검사 이름은 `check`이므로, 마지막 `check` 작업이 모든 작업의 결과를 모아 성공·실패를 정한다.
+# 리포트·차이 이미지는 실패할 때만 7일간 올린다. 커버리지 표는 작업 요약에 쓴다.
 name: CI
 
 on:
@@ -7,6 +8,7 @@ on:
     branches: [main]
   pull_request:
 
+# 같은 브랜치에 새로 푸시하면 이전 실행을 취소한다.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -14,60 +16,178 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  NEXT_TELEMETRY_DISABLED: 1
+
 jobs:
-  check:
+  # 경로 필터: 문서만 바뀐 PR은 무거운 작업을 건너뛴다(필수 검사 `check`는 그대로 통과로 남는다).
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then echo "code=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if git diff --name-only "$BASE"...HEAD | grep -qvE '(\.md$|^docs/|^LICENSE$|^\.coderabbit\.yaml$)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "문서만 바뀌어 검사를 건너뜁니다." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # 보안 감사·타입 검사·린트·단위 테스트 커버리지(기준선 비교, 표는 작업 요약). PR은 바뀐 패키지만(turbo --affected).
+  static:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-
-      # pnpm 버전은 package.json의 packageManager를 따른다.
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v7
         with:
-          node-version-file: .node-version
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      # 운영 의존성의 높음 이상 취약점만 막는다. 개발 도구는 Dependabot으로 관리한다.
-      - run: pnpm audit --prod --audit-level high
-
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm test:coverage
-
-      - name: 테스트 커버리지 보관
-        if: always()
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-key: static
+      - run: pnpm check static
+        env:
+          CHECK_AFFECTED: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+          # 체크아웃에는 로컬 main 브랜치가 없으므로 PR의 기준 커밋과 비교한다.
+          TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+      - name: 커버리지 보관(실패할 때만)
+        if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: |
-            apps/*/coverage/lcov.info
-            packages/*/coverage/lcov.info
+            apps/*/coverage/
+            packages/*/coverage/
           if-no-files-found: ignore
           retention-days: 7
 
+  # 세 앱 빌드와 번들 예산. 빌드 결과는 Turborepo 캐시로 저장해 E2E·Lighthouse·시각 회귀가 다시 쓴다.
+  build:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          turbo-key: build
+      - uses: actions/cache@v6
+        with:
+          path: apps/*/.next/cache
+          key: next-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            next-${{ hashFiles('pnpm-lock.yaml') }}-
+      - run: pnpm check build
+
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          turbo-key: build
+      # 빌드 작업이 저장한 캐시를 되살린다(다시 빌드하지 않음).
       - run: pnpm build
-      - run: pnpm --filter @avocado/web size
-      - run: pnpm --filter @avocado/web lhci
-
-      - name: Playwright 브라우저 설치
-        run: pnpm --filter @avocado/admin exec playwright install --with-deps chromium
-      - run: pnpm e2e
-      # 공통 UI 스토리를 빌드하고 모든 스토리를 axe로 검사한다(대화상자·오류 상태 등 앱 E2E가 덜 보는 모습).
-      - run: pnpm build-storybook
-      - run: pnpm test:stories
-
+      - uses: ./.github/actions/playwright
+      - run: pnpm check e2e --shard=${{ matrix.shard }}/2
       - name: E2E 실패 기록 보관
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: reports
+          name: e2e-${{ matrix.shard }}
+          path: apps/admin/test-results/
+          retention-days: 7
+
+  lighthouse:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          turbo-key: build
+      - run: pnpm build
+      - run: pnpm check lhci
+      - name: Lighthouse 리포트 보관(실패할 때만)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse
           # .lighthouseci는 숨김 폴더라 따로 켜야 올라간다.
           include-hidden-files: true
+          path: apps/web/.lighthouseci/
+          retention-days: 7
+
+  # 공통 UI 스토리를 빌드하고 모든 스토리를 axe로 검사한다(대화상자·오류 상태 등 앱 E2E가 덜 보는 모습).
+  stories:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          turbo-key: stories
+      - uses: ./.github/actions/playwright
+      - run: pnpm check stories
+
+  # 시각 회귀: 기준 이미지를 만든 것과 같은 Playwright 공식 이미지 안에서 세 앱 주요 화면과 모든 스토리를 비교한다.
+  visual:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          turbo-key: build
+      - run: pnpm build
+      - run: pnpm check visual
+      - name: 시각 회귀 차이 이미지 보관(실패할 때만)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual
+          # 새로 더한 화면은 기준 이미지가 없어 실패하며 __screenshots__에 리눅스 결과물이 생긴다. 받아서 커밋한다.
           path: |
             apps/admin/test-results/
-            apps/web/.lighthouseci/
+            apps/admin/e2e/__screenshots__/
           retention-days: 7
+
+  # main 보호 규칙의 필수 검사. 앞 작업이 모두 성공했거나(문서만 바뀌어) 건너뛰었으면 통과한다.
+  check:
+    if: always()
+    needs: [changes, static, build, e2e, lighthouse, stories, visual]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULTS: ${{ toJSON(needs) }}
+          CODE: ${{ needs.changes.outputs.code }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          if echo "$RESULTS" | jq -e 'to_entries | any(.value.result == "failure" or .value.result == "cancelled")' > /dev/null; then exit 1; fi
+          if [ "$CODE" = "true" ] && echo "$RESULTS" | jq -e 'to_entries | any(.value.result == "skipped")' > /dev/null; then exit 1; fi

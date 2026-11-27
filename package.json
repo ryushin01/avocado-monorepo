@@ -1,9 +1,11 @@
 {
   "name": "avocado",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "packageManager": "pnpm@12.16.1",
   "scripts": {
+    "check": "node scripts/check.mjs",
+    "load:api": "node scripts/load-api.mjs",
     "dev": "turbo run dev",
     "dev:admin": "turbo run dev --filter=@avocado/admin",
     "dev:launcher": "turbo run dev --filter=@avocado/launcher --filter=@avocado/admin",

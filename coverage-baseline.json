@@ -1,0 +1,38 @@
+{
+  "apps/admin": {
+    "lines": 48.14,
+    "statements": 49.77,
+    "functions": 46.57,
+    "branches": 44.74
+  },
+  "apps/launcher": {
+    "lines": 23.76,
+    "statements": 24.93,
+    "functions": 18.51,
+    "branches": 29.19
+  },
+  "apps/web": {
+    "lines": 34.28,
+    "statements": 35.44,
+    "functions": 24.67,
+    "branches": 38.25
+  },
+  "packages/domain": {
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100
+  },
+  "packages/logger": {
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 86.66
+  },
+  "packages/monitoring": {
+    "lines": 98,
+    "statements": 95.9,
+    "functions": 93.1,
+    "branches": 89.47
+  }
+}

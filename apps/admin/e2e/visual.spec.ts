@@ -18,6 +18,10 @@ const VIEWPORTS = {
 test.use({ reducedMotion: "reduce", colorScheme: "light" });
 
 async function settle(page: Page) {
+  // 전체 화면을 찍으므로 지연 로딩 그림도 바로 받게 하고, 모두 그려질 때까지 기다린다.
+  await page.evaluate(() => {
+    for (const img of document.querySelectorAll("img")) img.loading = "eager";
+  });
   await page.evaluate(() => document.fonts.ready);
   await expect
     .poll(() => page.evaluate(() => [...document.images].every((img) => img.complete)))

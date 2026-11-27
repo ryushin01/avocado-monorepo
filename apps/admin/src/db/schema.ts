@@ -111,7 +111,11 @@ export const playSessions = pgTable(
     playerCount: integer("player_count").notNull(),
     table: text("table_label"),
   },
-  (t) => [index("play_sessions_cafe_started_idx").on(t.cafeId, t.startedAt)],
+  (t) => [
+    index("play_sessions_cafe_started_idx").on(t.cafeId, t.startedAt),
+    // 반납 전(이용 중) 기록만 담는 부분 인덱스. 이용 기록은 지우지 않고 쌓이므로, 요청마다 세는 이용 중 수(countInUse)가 전체를 훑지 않게 한다.
+    index("play_sessions_open_idx").on(t.cafeId, t.gameId).where(sql`${t.returnedAt} is null`),
+  ],
 );
 
 export const users = pgTable(

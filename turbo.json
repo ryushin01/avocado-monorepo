@@ -18,7 +18,9 @@
       ],
       "outputs": [
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        "public/images/games/**",
+        "public/images/game-placeholder.png"
       ]
     },
     "typecheck": {

@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### 고침
+
+- Turborepo 빌드 캐시가 맞으면 앱의 `build` 스크립트(맨 앞의 `copy-catalog-assets public`)를 건너뛰고 `.next`만 되살려, 게임 썸네일(`public/images/games`)과 자리표시 그림이 없는 빌드가 뜨던 문제를 고쳤다. 원본 표지(BoardGameGeek)가 끊기면 대체할 썸네일까지 없어 표지가 비었다. 복사본을 `turbo.json` build `outputs`에 넣어 캐시와 함께 되살린다(`packages/domain/scripts/copy-assets.test.ts`).
+
 ## [1.2.3] - 2026-11-27
 
 ### 바뀜

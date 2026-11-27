@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 
 import { kstDate, kstHour, LAUNCHER_URL, uniquePhone } from "./helpers";
@@ -101,7 +102,13 @@ test("키오스크 게임 둘러보기: 인원·이용 가능으로 거르고 �
 test("키오스크의 없는 주소는 안내 화면에서 처음 화면으로 돌아간다", async ({ page }) => {
   const response = await page.goto(`${LAUNCHER_URL}/없는-화면`);
   expect(response?.status()).toBe(404);
-  await expect(page.getByText("화면을 찾을 수 없습니다")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "화면을 찾을 수 없습니다" })).toBeVisible();
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+    // 키오스크 개편 화면만 색 대비를 보지 않는다(사용자 지시). 다른 규칙은 그대로 검사한다.
+    .disableRules(["color-contrast"])
+    .analyze();
+  expect(violations.map((v) => v.id)).toEqual([]);
   await page.getByRole("link", { name: "처음 화면으로" }).click();
   await expect(page).toHaveURL(`${LAUNCHER_URL}/`);
 });

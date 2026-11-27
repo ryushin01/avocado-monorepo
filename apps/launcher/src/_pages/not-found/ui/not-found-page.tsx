@@ -23,7 +23,9 @@ export function NotFoundPage() {
           <EmptyMedia variant="icon">
             <FileQuestion />
           </EmptyMedia>
-          <EmptyTitle className="text-3xl font-normal tracking-[-0.02em]">화면을 찾을 수 없습니다</EmptyTitle>
+          <EmptyTitle className="text-3xl font-normal tracking-[-0.02em]">
+            <h1>화면을 찾을 수 없습니다</h1>
+          </EmptyTitle>
           <EmptyDescription className="text-base">처음 화면에서 다시 골라주세요.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

@@ -12,6 +12,7 @@ import {
   KioskWaitlistStatusSchema,
 } from "@avocado/domain/kiosk";
 import { connection } from "next/server";
+import superagent from "superagent";
 import type { ZodType } from "zod";
 
 import { isDemoMode } from "@/shared/config";
@@ -24,6 +25,16 @@ const production = process.env.NODE_ENV === "production";
 export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; reason: "not-found" | "unreachable" | "rejected"; error?: KioskApiError };
+
+/** 버퍼로 받은 본문을 JSON으로 읽는다. 비었거나 JSON이 아니면 undefined(뒤의 zod 검증이 걸러 낸다). */
+function readJson(body: unknown): unknown {
+  if (!Buffer.isBuffer(body)) return undefined;
+  try {
+    return JSON.parse(body.toString("utf8"));
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * 백오피스 키오스크 API 호출. 손님이 보는 화면이라 항상 최신 값을 읽는다(캐시하지 않음).
@@ -48,25 +59,25 @@ async function call<T>(
   const { backofficeUrl, cafeId, apiToken } = LAUNCHER_CONFIG;
   const url = new URL(`/api/kiosk/cafes/${encodeURIComponent(cafeId)}${path}`, backofficeUrl);
   try {
-    const res = await fetch(url, {
-      method: init?.method ?? "GET",
-      cache: "no-store",
+    // SuperAgent(Node http)는 Next.js의 fetch 캐시를 거치지 않으므로 cache: "no-store"와 같게 매번 새로 읽는다.
+    // .ok(() => true): 4xx·5xx도 예외 대신 응답으로 받아 아래에서 상태별로 나눈다.
+    // .responseType: 본문을 버퍼로 받아, 모양이 틀린 JSON도 예외 대신 아래 검증에서 걸러지게 한다(fetch의 res.json().catch와 같게).
+    const req = superagent(init?.method ?? "GET", url.href)
       // 공개 데모의 백오피스는 한동안 쉬면 메모리 DB를 새로 만드느라 첫 응답이 느리다.
-      signal: AbortSignal.timeout(isDemoMode() ? 15_000 : 5000),
-      headers: {
-        ...(apiToken ? { authorization: `Bearer ${apiToken}` } : {}),
-        ...(init ? { "content-type": "application/json" } : {}),
-      },
-      body: init ? JSON.stringify(init.body) : undefined,
-    });
+      .timeout(isDemoMode() ? 15_000 : 5000)
+      .ok(() => true)
+      .responseType("arraybuffer");
+    if (apiToken) req.set("authorization", `Bearer ${apiToken}`);
+    if (init) req.set("content-type", "application/json").send(JSON.stringify(init.body));
+    const res = await req;
     if (res.ok) {
       // 백오피스와 런처는 따로 배포되므로 응답이 약속과 다를 수 있다. 손님 화면이 깨지는 대신 연결 문제로 안내한다.
-      const parsed = schema.safeParse(await res.json().catch(() => undefined));
+      const parsed = schema.safeParse(readJson(res.body));
       if (parsed.success) return { ok: true, data: parsed.data };
       logError("launcher", "backoffice_invalid_response", { path: url.pathname, issues: parsed.error.issues.length });
       return { ok: false, reason: "unreachable" };
     }
-    const errorBody = KioskApiErrorSchema.safeParse(await res.json().catch(() => undefined));
+    const errorBody = KioskApiErrorSchema.safeParse(readJson(res.body));
     const error: KioskApiError | undefined = errorBody.success ? errorBody.data : undefined;
     if (res.status === 404) return { ok: false, reason: "not-found", error };
     // 토큰 오류(401), 다른 매장의 토큰(403), 서버 오류는 손님이 고칠 수 없으니 연결 문제로 안내한다.
@@ -77,9 +88,9 @@ async function call<T>(
     logError("launcher", "backoffice_error", { path: url.pathname, status: res.status });
     return { ok: false, reason: "unreachable", error };
   } catch (cause) {
-    // 프리렌더링이 끝나 Next.js가 요청을 끊은 것은 장애가 아니다.
-    const interrupted = cause instanceof Error && cause.message.startsWith("During prerendering");
-    if (!interrupted) logError("launcher", "backoffice_unreachable", { path: url.pathname, error: cause });
+    // 연결 실패·시간 초과. (Next.js fetch가 프리렌더링 끝에 요청을 끊던 일은 SuperAgent에서 생기지 않고,
+    // 위 connection()이 프리렌더링 중에는 여기까지 오지 않게 한다.)
+    logError("launcher", "backoffice_unreachable", { path: url.pathname, error: cause });
     return { ok: false, reason: "unreachable" };
   }
 }

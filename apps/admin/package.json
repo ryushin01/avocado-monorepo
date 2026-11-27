@@ -1,6 +1,6 @@
 {
   "name": "@avocado/admin",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "private": true,
   "scripts": {
     "dev": "copy-catalog-assets public && next dev --port 3000",

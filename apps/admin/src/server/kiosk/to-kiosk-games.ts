@@ -1,13 +1,32 @@
 import type { KioskGame } from "@avocado/domain/kiosk";
 
 import { byGameName } from "@/server/games/repository";
+import type { BoardGame } from "@/entities/game";
 import type { InventoryEntry } from "@/entities/inventory";
+
+/** 키오스크 게임 목록을 만드는 데 필요한 재고 칸만. 관리 화면 재고(InventoryEntry)도 그대로 넣을 수 있다. */
+export type KioskInventoryRow = Pick<InventoryEntry, "status" | "quantity" | "inUse"> & {
+  game: Pick<
+    BoardGame,
+    | "id"
+    | "name"
+    | "englishName"
+    | "thumbnailUrl"
+    | "imageUrl"
+    | "categories"
+    | "minPlayers"
+    | "maxPlayers"
+    | "playTimeMin"
+    | "playTimeMax"
+    | "difficulty"
+  >;
+};
 
 /**
  * 매장 재고 → 키오스크에 보여줄 게임 목록. 폐기한 게임은 빼고 이름순으로 둔다.
  * origin: 썸네일을 절대 주소로 만들 백오피스 주소 (런처는 다른 주소에서 뜬다)
  */
-export function toKioskGames(entries: InventoryEntry[], origin: string): KioskGame[] {
+export function toKioskGames(entries: KioskInventoryRow[], origin: string): KioskGame[] {
   return entries
     .filter((e) => e.status !== "retired")
     .sort((a, b) => byGameName(a.game, b.game))

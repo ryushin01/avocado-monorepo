@@ -42,7 +42,7 @@ export function matchesGame(game: BoardGame, filter: GameListFilter = {}) {
   );
 }
 
-export const byGameName = (a: BoardGame, b: BoardGame) => a.name.localeCompare(b.name, "ko");
+export const byGameName = (a: Pick<BoardGame, "name">, b: Pick<BoardGame, "name">) => a.name.localeCompare(b.name, "ko");
 
 /**
  * matchesGame의 이름 검색을 SQL 조건으로: 한글·영문 이름 부분 일치(대소문자 무시).

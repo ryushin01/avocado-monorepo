@@ -1,6 +1,6 @@
 {
   "name": "@avocado/launcher",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "scripts": {
     "dev": "copy-catalog-assets public && next dev --port 3001",
@@ -18,7 +18,9 @@
     "@avocado/logger": "workspace:*",
     "@avocado/monitoring": "workspace:*",
     "@avocado/ui": "workspace:*",
+    "@date-fns/tz": "^1.5.0",
     "@sentry/nextjs": "^11.13.0",
+    "date-fns": "^4.4.0",
     "geist": "^1.9.2",
     "lucide-react": "^1.74.0",
     "next": "16.4.6",

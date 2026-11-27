@@ -1,12 +1,9 @@
 import { fetchBookingAvailability, fetchBookingOptions } from "@/shared/api";
 
-import { formatBookingDate, parseBookingQuery } from "../model/booking-query";
+import { formatBookingDate, kstToday, parseBookingQuery } from "../model/booking-query";
 import { BookingForm } from "./booking-form";
 import { BookingSearch } from "./booking-search";
 import { BookingUnavailable } from "./booking-unavailable";
-
-/** 한국 날짜 YYYY-MM-DD */
-const kstToday = () => new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
 
 /** 예약 단계. 선택지와 빈 시각은 요청마다 백오피스에서 받는다. */
 export async function BookingSteps({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

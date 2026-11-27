@@ -1,3 +1,6 @@
+import { addMinutes } from "date-fns/addMinutes";
+import { isSameDay } from "date-fns/isSameDay";
+import { subMinutes } from "date-fns/subMinutes";
 import { and, asc, eq, getTableColumns, gt, gte, inArray, isNotNull, lt, ne } from "drizzle-orm";
 
 import type { Database } from "@/db/index";
@@ -6,7 +9,7 @@ import { toCafe, toCafeTable, toReservation } from "@/db/mappers";
 import { cafeTables, cafes, reservations } from "@/db/schema";
 import { nextVersion } from "@/db/version";
 import { phoneLast4 } from "@/entities/guest";
-import { kstDayRange, toKstDate } from "@/shared/lib/kst-time";
+import { inKst, kstDayRange, toKstDate } from "@/shared/lib/kst-time";
 import { omit } from "@/shared/lib/omit";
 
 import {
@@ -90,8 +93,11 @@ export interface ReservationRepository {
   availability(cafeId: string, date: string, partySize: number, now: Date): Promise<BookingAvailability | null>;
 }
 
-/** 예약 하나가 테이블을 쓰는 시간(ms) */
-const SPAN = RESERVATION_MINUTES * 60_000;
+/** 그 시각 앞뒤로 예약 하나가 테이블을 쓰는 시간만큼 넓힌 범위 [시작, 끝] (ms) */
+const seatingWindow = (from: number, to: number = from) => ({
+  from: subMinutes(from, RESERVATION_MINUTES).getTime(),
+  to: addMinutes(to, RESERVATION_MINUTES).getTime(),
+});
 
 export function createReservationRepository(db: Database): ReservationRepository {
   const isOpen = (r: Reservation) => OPEN_RESERVATION_STATUSES.includes(r.status);
@@ -183,10 +189,10 @@ export function createReservationRepository(db: Database): ReservationRepository
     { exceptId, keep }: { exceptId?: string; keep?: string } = {},
   ): Promise<{ tableId: string | null } | ReservationError> {
     if (choice === "none") return { tableId: null };
-    const t = Date.parse(startsAt);
+    const around = seatingWindow(Date.parse(startsAt));
     const [tables, taken] = await Promise.all([
       tablesOf(q, cafeId),
-      takenBetween(q, cafeId, t - SPAN, t + SPAN, exceptId),
+      takenBetween(q, cafeId, around.from, around.to, exceptId),
     ]);
     if (choice === "auto") {
       const table = pickTable(tables, taken, startsAt, partySize);
@@ -292,9 +298,10 @@ export function createReservationRepository(db: Database): ReservationRepository
 
     async checkIn(cafeId, id, last4, now) {
       const current = await find(cafeId, id);
-      const { from, to } = kstDayRange(toKstDate(now.getTime()));
-      const t = current ? Date.parse(current.startsAt) : NaN;
-      if (!current || phoneLast4(current.phone) !== last4 || !(t >= from && t < to)) return "not-found";
+      // 도착은 예약한 날(한국 날짜) 당일에만 받는다.
+      if (!current || phoneLast4(current.phone) !== last4 || !isSameDay(current.startsAt, now, { in: inKst })) {
+        return "not-found";
+      }
       if (!isOpen(current)) return "finished";
       if (current.arrivedAt) return current;
       // 그사이 입장·취소로 끝났으면 도착을 남기지 않는다.
@@ -355,9 +362,8 @@ export function createReservationRepository(db: Database): ReservationRepository
       const [cafe] = await db.select().from(cafes).where(and(eq(cafes.id, cafeId), eq(cafes.status, "open")));
       if (!cafe) return null;
       const times = onlineBookingTimes().map((time) => ({ time, startsAt: kstStartsAt(date, time) }));
-      const first = Date.parse(times[0].startsAt);
-      const last = Date.parse(times[times.length - 1].startsAt);
-      const [tables, taken] = await Promise.all([tablesOf(db, cafeId), takenBetween(db, cafeId, first - SPAN, last + SPAN)]);
+      const around = seatingWindow(Date.parse(times[0].startsAt), Date.parse(times[times.length - 1].startsAt));
+      const [tables, taken] = await Promise.all([tablesOf(db, cafeId), takenBetween(db, cafeId, around.from, around.to)]);
       return {
         cafe: toCafe(cafe),
         slots: times.map(({ time, startsAt }) => ({

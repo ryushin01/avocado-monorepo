@@ -23,6 +23,7 @@ import {
   POPULARITY_PERIODS,
   type PopularityRanking,
 } from "@/entities/play";
+import { formatMonthDay } from "@/shared/lib/format";
 import { ChartDataTable } from "@/shared/ui/chart-data-table";
 
 // 단일 계열이므로 잉크(#111110) 한 색만 쓴다. 흰 바탕 대비 18:1.
@@ -34,13 +35,6 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const NAME_MAX = 14;
-
-const formatDay = (iso: string) =>
-  new Intl.DateTimeFormat("ko-KR", {
-    month: "long",
-    day: "numeric",
-    timeZone: "Asia/Seoul",
-  }).format(new Date(iso));
 
 /** 축 이름표: "1. 게임 이름". 길면 줄이고, 전체 이름은 툴팁과 표에서 보여준다. */
 function RankTick({
@@ -203,8 +197,8 @@ export function PopularGamesChart({
         return (
           <TabsContent key={period} value={period} className="flex flex-col gap-2">
             <p className="text-xs text-muted-foreground">
-              최근 {POPULARITY_PERIOD_DAYS[period]}일 · {formatDay(ranking.from)} ~{" "}
-              {formatDay(ranking.to)} · 이용 횟수 기준
+              최근 {POPULARITY_PERIOD_DAYS[period]}일 · {formatMonthDay(ranking.from)} ~{" "}
+              {formatMonthDay(ranking.to)} · 이용 횟수 기준
             </p>
             <RankingChart ranking={ranking} />
           </TabsContent>

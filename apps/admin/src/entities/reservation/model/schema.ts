@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { kstIso } from "@/shared/lib/kst-time";
 import { firstParam } from "@/shared/lib/search-params";
 import { omit } from "@/shared/lib/omit";
 import { isMobilePhone, normalizePhone } from "@/entities/guest/@x/reservation";
@@ -32,7 +33,6 @@ const kstDate = z.iso.date({ error: "날짜를 입력해주세요." });
 const kstTime = z
   .string({ error: "시각을 입력해주세요." })
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "시각을 입력해주세요.");
-const toStartsAt = (date: string, time: string) => new Date(`${date}T${time}:00+09:00`).toISOString();
 
 /** 백오피스 예약 등록·수정 폼. 날짜·시각은 한국 시간으로 받는다. */
 export const reservationInputSchema = z
@@ -47,7 +47,7 @@ export const reservationInputSchema = z
     /** 테이블: auto(빈 테이블 자동 배정), none(배정 안 함), 또는 테이블 id */
     table: z.preprocess((v) => (v === "" || v === undefined ? "auto" : v), z.string().min(1)),
   })
-  .transform(({ date, time, ...rest }) => ({ ...rest, startsAt: toStartsAt(date, time) }));
+  .transform(({ date, time, ...rest }) => ({ ...rest, startsAt: kstIso(date, time) }));
 
 export type ReservationInput = z.infer<typeof reservationInputSchema>;
 
@@ -73,7 +73,7 @@ export const onlineBookingSchema = z
     agreed: z.literal(true, { error: "개인정보 수집·이용에 동의해주세요." }),
   })
   // 동의는 받았는지만 확인하고 저장하지 않는다.
-  .transform(({ date, time, ...rest }) => ({ ...omit(rest, "agreed"), startsAt: toStartsAt(date, time) }));
+  .transform(({ date, time, ...rest }) => ({ ...omit(rest, "agreed"), startsAt: kstIso(date, time) }));
 
 export type OnlineBookingInput = z.infer<typeof onlineBookingSchema>;
 

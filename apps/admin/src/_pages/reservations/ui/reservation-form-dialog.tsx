@@ -25,7 +25,7 @@ import { saveReservationAction } from "../api/actions";
 import { FormErrorAlert } from "@/shared/ui/form-error-alert";
 import { useDialogForm } from "@/shared/lib/use-dialog-form";
 import { formatPhone } from "@/entities/guest";
-import { toKstDate } from "@/shared/lib/kst-time";
+import { toKstDate, toKstTime } from "@/shared/lib/kst-time";
 import type { Reservation } from "@/entities/reservation";
 import type { CafeTable } from "@/entities/cafe";
 import { FormTextField } from "@/shared/ui/form-text-field";
@@ -50,9 +50,6 @@ function tableItems(tables: CafeTable[], current?: string) {
   ];
 }
 
-/** ISO → 한국 시각 "HH:mm" */
-const kstTime = (iso: string) => new Date(Date.parse(iso) + 9 * 3_600_000).toISOString().slice(11, 16);
-
 function toFormValues(reservation: Reservation | undefined, date: string) {
   if (!reservation) {
     return { name: "", phone: "", partySize: "2", date, time: "18:00", memo: "", status: "confirmed", table: "auto" };
@@ -62,7 +59,7 @@ function toFormValues(reservation: Reservation | undefined, date: string) {
     phone: formatPhone(reservation.phone),
     partySize: String(reservation.partySize),
     date: toKstDate(Date.parse(reservation.startsAt)),
-    time: kstTime(reservation.startsAt),
+    time: toKstTime(reservation.startsAt),
     memo: reservation.memo ?? "",
     status: reservation.status === "pending" ? "pending" : "confirmed",
     table: reservation.tableId ?? "none",

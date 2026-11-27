@@ -1,8 +1,7 @@
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { extname, join, normalize } from "node:path";
-import { fileURLToPath } from "node:url";
+import { extname, join, normalize, resolve } from "node:path";
 
 import { expect, test } from "@playwright/test";
 import { z } from "zod";
@@ -12,7 +11,8 @@ import { z } from "zod";
  * 공통 부품과 앱 표시용 컴포넌트의 상태별 모습(열린 대화상자·오류 등)을 앱 화면보다 촘촘히 본다.
  * `pnpm check visual`이 Storybook을 먼저 빌드한다.
  */
-const root = fileURLToPath(new URL("../../../packages/ui/storybook-static/", import.meta.url));
+// Playwright는 apps/admin에서 돈다(pnpm --filter @avocado/admin exec playwright).
+const root = `${resolve("../../packages/ui/storybook-static")}/`;
 const IndexSchema = z.object({
   entries: z.record(z.string(), z.object({ id: z.string(), title: z.string(), name: z.string(), type: z.string() })),
 });

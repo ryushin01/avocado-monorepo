@@ -59,6 +59,8 @@ jobs:
       - run: pnpm check static
         env:
           CHECK_AFFECTED: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+          # 체크아웃에는 로컬 main 브랜치가 없으므로 PR의 기준 커밋과 비교한다.
+          TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
       - name: 커버리지 보관(실패할 때만)
         if: failure()
         uses: actions/upload-artifact@v7

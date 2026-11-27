@@ -244,13 +244,14 @@ test.describe("오프라인 · 백오피스", () => {
 
 test.describe("오프라인 · 키오스크", () => {
   test.use({ storageState: { cookies: [], origins: [] }, viewport: { width: 1024, height: 900 } });
+  // 스트리밍 중에는 숨은 영역에 같은 글자가 잠깐 하나 더 있으므로, 글자로 찾을 때는 보이는 것만 본다.
 
   test("처음·보유 게임·없는 주소 화면이 외부 요청 없이 뜬다", async ({ context, page }) => {
     const blocked = await blockExternal(context);
 
     await page.goto(LAUNCHER_URL);
     await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
-    await expect(page.getByText(/보유 게임 \d+종/)).toBeVisible();
+    await expect(page.getByText(/보유 게임 \d+종/).filter({ visible: true })).toBeVisible();
     await expectImagesLoaded(page);
     await expectFontsLoaded(page);
     await expectNoViolations(page, { ignoreContrast: true });
@@ -268,7 +269,7 @@ test.describe("오프라인 · 키오스크", () => {
 
     const response = await page.goto(`${LAUNCHER_URL}/없는-화면`);
     expect(response?.status()).toBe(404);
-    await expect(page.getByText("화면을 찾을 수 없습니다")).toBeVisible();
+    await expect(page.getByText("화면을 찾을 수 없습니다").filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     expect(blocked).toEqual([]);
@@ -280,7 +281,7 @@ test.describe("오프라인 · 키오스크", () => {
     const { phone, last4 } = uniquePhone();
 
     await page.goto(`${LAUNCHER_URL}/waitlist`);
-    await expect(page.getByText(/팀이 기다리고 있습니다/)).toBeVisible();
+    await expect(page.getByText(/팀이 기다리고 있습니다/).filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     await page.getByRole("button", { name: "대기 등록하기" }).click();
@@ -292,8 +293,8 @@ test.describe("오프라인 · 키오스크", () => {
     await page.getByLabel("이름").fill(name);
     await page.getByLabel("휴대전화").fill(phone);
     await page.getByRole("button", { name: "대기 등록", exact: true }).click();
-    await expect(page.getByText("대기 등록을 마쳤습니다")).toBeVisible();
-    const ticket = (await page.getByText(/^\d+번$/).textContent()) ?? "";
+    await expect(page.getByText("대기 등록을 마쳤습니다").filter({ visible: true })).toBeVisible();
+    const ticket = (await page.getByText(/^\d+번$/).filter({ visible: true }).textContent()) ?? "";
     expect(ticket).toMatch(/^\d+번$/);
     await expectNoViolations(page, { ignoreContrast: true });
 
@@ -302,7 +303,7 @@ test.describe("오프라인 · 키오스크", () => {
     await expect(page.getByRole("button", { name: "1", exact: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
     await pressDigits(page, last4);
-    await expect(page.getByText(ticket, { exact: true })).toBeVisible();
+    await expect(page.getByText(ticket, { exact: true }).filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     expect(blocked).toEqual([]);
@@ -334,10 +335,10 @@ test.describe("오프라인 · 키오스크", () => {
     await expectNoViolations(page, { ignoreContrast: true });
 
     await pressDigits(page, last4);
-    await expect(page.getByText(`뒷자리 ${last4}로 찾은 오늘 예약 1건`)).toBeVisible();
+    await expect(page.getByText(`뒷자리 ${last4}로 찾은 오늘 예약 1건`).filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
     await page.getByRole("button", { name: "도착했어요" }).click();
-    await expect(page.getByText("도착을 알렸습니다")).toBeVisible();
+    await expect(page.getByText("도착을 알렸습니다").filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     await admin.reload();

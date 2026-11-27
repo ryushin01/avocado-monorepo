@@ -60,12 +60,12 @@ test.describe("배포본 · 백오피스에 닿지 않는 키오스크", () => {
 
   test("처음·보유 게임 화면은 카탈로그 스냅숏으로, 예약 확인·대기 등록은 연결 안내로 대신한다", async ({ context, page }) => {
     const blocked = await blockExternal(context);
-    // 스트리밍 중에는 숨은 영역에 같은 글자가 잠깐 하나 더 있으므로 보이는 것만 본다.
+    // 스트리밍 중에는 숨은 영역에 같은 글자가 잠깐 하나 더 있으므로, 글자로 찾을 때는 보이는 것만 본다.
     const snapshotNotice = page.getByText("오프라인 데이터로 표시 중").filter({ visible: true });
 
     await page.goto(DEPLOYED_LAUNCHER_URL);
     await expect(page.getByRole("heading", { name: "무엇을 도와드릴까요?" })).toBeVisible();
-    await expect(page.getByText(/보유 게임 \d+종/)).toBeVisible();
+    await expect(page.getByText(/보유 게임 \d+종/).filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${DEPLOYED_LAUNCHER_URL}/games`);
@@ -79,13 +79,13 @@ test.describe("배포본 · 백오피스에 닿지 않는 키오스크", () => {
     await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${DEPLOYED_LAUNCHER_URL}/waitlist`);
-    await expect(page.getByText("매장 시스템에 연결할 수 없습니다")).toBeVisible();
+    await expect(page.getByText("매장 시스템에 연결할 수 없습니다").filter({ visible: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "대기 등록하기" })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     await page.goto(`${DEPLOYED_LAUNCHER_URL}/reservation`);
     for (const d of "1234") await page.getByRole("button", { name: d, exact: true }).click();
-    await expect(page.getByText("예약을 불러오지 못했습니다. 직원에게 문의해주세요.")).toBeVisible();
+    await expect(page.getByText("예약을 불러오지 못했습니다. 직원에게 문의해주세요.").filter({ visible: true })).toBeVisible();
     await expectNoViolations(page, { ignoreContrast: true });
 
     expect(blocked).toEqual([]);
